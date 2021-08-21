@@ -8,7 +8,9 @@
 #include <boost/beast/websocket/ssl.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/executor_work_guard.hpp>
+#include <boost/asio/thread_pool.hpp>
 #include <boost/json.hpp>
+#include <boost/bind/bind.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -23,12 +25,16 @@ namespace bblib
 #define BB_FUNCTION_ENTER BB_FUNCTION_MSG(" enter")
 
 
+using namespace boost::placeholders;
+
+
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
 namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
 namespace ssl = boost::asio::ssl;       // from <boost/asio/ssl.hpp>
 namespace json = boost::json;
+
 
 
 
@@ -55,7 +61,7 @@ struct RestResult
 };
 
 
-using RestCallback = std::function<void(RestResult&&)>;
+using RestCallback = std::function<void(RestResult)>;
 
 
 struct ConnectionConfig
@@ -123,11 +129,12 @@ class RestSession : public std::enable_shared_from_this<RestSession>
 {
 
 public:
-    explicit RestSession(net::any_io_executor ex, ssl::context& ctx, const ConnectionConfig::ConnectionKeys& keys, const RestCallback&& callback) :
+    explicit RestSession(net::any_io_executor ex, ssl::context& ctx, const ConnectionConfig::ConnectionKeys& keys, const RestCallback&& callback, net::thread_pool& threadPool) :
         resolver_(ex),
         stream_(ex, ctx),
         apiKeys_(keys),
-        callback_(callback)
+        callback_(callback),
+        threadPool_(threadPool)
     {
     }
 
@@ -212,7 +219,6 @@ public:
         {
             return fail(ec, "read");
         }
-            
 
         if (res_[http::field::content_type] == "application/json")
         {
@@ -227,10 +233,9 @@ public:
                 if (callback_)
                 {
                     RestResult result {std::move(value)};
-                    callback_(std::move(result));
+                    net::post(threadPool_, boost::bind(callback_, std::move(result)));
                 }
-            }
-            
+            }            
         }
 
         // Set a timeout on the operation
@@ -271,6 +276,7 @@ private:
     http::response<http::string_body> res_;
     ConnectionConfig::ConnectionKeys apiKeys_;
     RestCallback callback_;
+    net::thread_pool& threadPool_;
 };
 
 
@@ -286,6 +292,7 @@ public:
     // REST calls
     void ping ();
     void exchangeInfo(RestCallback&& rr);
+    void serverTime(RestCallback&& rr);
 
 private:
     void createRestSession(const string& host, const string& path, const bool createStrand, RestCallback&& rr = nullptr)
@@ -294,11 +301,11 @@ private:
 
         if (createStrand)
         {
-            session = std::make_shared<RestSession>(net::make_strand(m_restIoc), *m_restCtx, m_config.keys, std::move(rr));
+            session = std::make_shared<RestSession>(net::make_strand(m_restIoc), *m_restCtx, m_config.keys, std::move(rr), m_restThreadPool);
         }
         else
         {
-            session = std::make_shared<RestSession>(m_restIoc.get_executor(), *m_restCtx, m_config.keys, std::move(rr));
+            session = std::make_shared<RestSession>(m_restIoc.get_executor(), *m_restCtx, m_config.keys, std::move(rr), m_restThreadPool);
         }
         
         // we don't need to worry about the session's lifetime because RestSession::run(), passes the session
@@ -313,6 +320,7 @@ private:
     std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> m_restWorkGuard;
     std::unique_ptr<ssl::context> m_restCtx;
     std::unique_ptr<std::thread> m_iocRestThread;
+    net::thread_pool m_restThreadPool;
 };
 
 }   // namespace BinanceBeast

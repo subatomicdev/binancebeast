@@ -5,11 +5,20 @@
 using namespace bblib;
 
 
-void onExchangeInfo (RestResult&& result)
+void onExchangeInfo (RestResult result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
 
     std::cout << result.json.as_object()["rateLimits"].as_array()[0].as_object()["interval"] << "\n";
+}
+
+
+
+void onServerTime (RestResult result)
+{
+    std::cout << BB_FUNCTION_ENTER << "\n";
+
+    std::cout << result.json.as_object()["serverTime"] << "\n";
 }
 
 
@@ -35,8 +44,9 @@ int main (int argc, char ** argv)
 
     bb.start(config);
 
-    //bb.ping();
+    
     bb.exchangeInfo(onExchangeInfo);
+    bb.serverTime(onServerTime);
 
     cmdFut.wait();
 

@@ -9,7 +9,7 @@ namespace bblib
 {
 
 
-BinanceBeast::BinanceBeast() 
+BinanceBeast::BinanceBeast()
 {
 
 }
@@ -22,7 +22,7 @@ BinanceBeast::~BinanceBeast()
     if (!m_restIoc.stopped())
         m_restIoc.stop();
 
-    m_iocRestThread->join();
+    m_iocRestThread->join();    
 }
 
 
@@ -45,6 +45,7 @@ void BinanceBeast::start (const ConnectionConfig& config)
 
 
     m_config = config;
+    
 
     m_restWorkGuard = std::make_unique<net::executor_work_guard<net::io_context::executor_type>> (m_restIoc.get_executor());
     
@@ -60,6 +61,12 @@ void BinanceBeast::ping ()
 
 
 void BinanceBeast::exchangeInfo(RestCallback&& rr)
+{
+    createRestSession(m_config.restApiUri, "/fapi/v1/exchangeInfo", false, std::move(rr));
+}
+
+
+void BinanceBeast::serverTime(RestCallback&& rr)
 {
     createRestSession(m_config.restApiUri, "/fapi/v1/exchangeInfo", false, std::move(rr));
 }
