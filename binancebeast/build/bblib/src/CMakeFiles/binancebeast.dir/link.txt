@@ -1,0 +1,2 @@
+/bin/x86_64-linux-gnu-ar qc libbinancebeast.a CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o
+/bin/x86_64-linux-gnu-ranlib libbinancebeast.a

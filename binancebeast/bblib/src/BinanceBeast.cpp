@@ -55,13 +55,13 @@ void BinanceBeast::start (const ConnectionConfig& config)
 
 void BinanceBeast::ping ()
 { 
-    createRestSession(m_config.restApiUri, "/fapi/v1/ping");
+    createRestSession(m_config.restApiUri, "/fapi/v1/ping", false);
 }
 
 
-void BinanceBeast::exchangeInfo()
+void BinanceBeast::exchangeInfo(RestCallback&& rr)
 {
-    createRestSession(m_config.restApiUri, "/fapi/v1/exchangeInfo");
+    createRestSession(m_config.restApiUri, "/fapi/v1/exchangeInfo", false, std::move(rr));
 }
 
 

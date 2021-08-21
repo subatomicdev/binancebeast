@@ -8,6 +8,7 @@
 #include <boost/beast/websocket/ssl.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/executor_work_guard.hpp>
+#include <boost/json.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -17,15 +18,44 @@
 namespace bblib
 {
 
+#define BB_FUNCTION std::string {__func__}
+#define BB_FUNCTION_MSG(msg) std::string {__func__} +"()"+ msg
+#define BB_FUNCTION_ENTER BB_FUNCTION_MSG(" enter")
+
+
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
 namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
 namespace ssl = boost::asio::ssl;       // from <boost/asio/ssl.hpp>
+namespace json = boost::json;
+
+
+
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
-
-
 using std::string;
+
+
+struct RestResult
+{
+    enum class State { Fail, Success };
+
+    RestResult () : state(State::Fail)
+    {
+
+    }
+
+    RestResult(json::value&& object) : json (std::move(object)), state(State::Success)
+    {
+
+    }
+
+    json::value json;
+    State state;
+};
+
+
+using RestCallback = std::function<void(RestResult&&)>;
 
 
 struct ConnectionConfig
@@ -46,6 +76,21 @@ struct ConnectionConfig
         return ConnectionConfig {DefaultUsdFuturesRestUri, DefaultFuturesWsUri, true};
     }
 
+    struct ConnectionKeys
+    {
+        ConnectionKeys(const string& apiKey = "") : api(apiKey)
+        {
+
+        }
+        ConnectionKeys(const string& apiKey, const string secretKey) : api(apiKey), secret(secretKey)
+        {
+
+        }
+
+        string api;
+        string secret;
+    };
+
 
 public:
     ConnectionConfig() : verifyPeer(false)
@@ -54,7 +99,13 @@ public:
 
 
 private:
-    ConnectionConfig (const string& restUri, const string& wsUri, const bool sslVerifyPeer) : restApiUri(restUri), wsApiUri(wsUri), verifyPeer(sslVerifyPeer)
+    
+
+    ConnectionConfig (const string& restUri, const string& wsUri, const bool sslVerifyPeer, const ConnectionKeys& apiKeys = ConnectionKeys{}) :   
+            restApiUri(restUri),
+            wsApiUri(wsUri),
+            verifyPeer(sslVerifyPeer),
+            keys(apiKeys)
     {
         
     }
@@ -64,6 +115,7 @@ public:
     string restApiUri;
     string wsApiUri;
     bool verifyPeer;
+    ConnectionKeys keys;
 };
 
 
@@ -71,7 +123,11 @@ class RestSession : public std::enable_shared_from_this<RestSession>
 {
 
 public:
-    explicit RestSession(net::any_io_executor ex, ssl::context& ctx) : resolver_(ex) , stream_(ex, ctx)
+    explicit RestSession(net::any_io_executor ex, ssl::context& ctx, const ConnectionConfig::ConnectionKeys& keys, const RestCallback&& callback) :
+        resolver_(ex),
+        stream_(ex, ctx),
+        apiKeys_(keys),
+        callback_(callback)
     {
     }
 
@@ -82,19 +138,21 @@ public:
         if (!SSL_set_tlsext_host_name(stream_.native_handle(), host.c_str()))
         {
             beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
-            std::cerr << ec.message() << "\n";
-            return;
+            fail(ec, "SNI hostname");
         }
+        else
+        {
+            // Set up an HTTP GET request message
+            req_.version(version);
+            req_.method(http::verb::get);
+            req_.target(target);
+            req_.set(http::field::host, host);
+            req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+            req_.insert("X-MBX-APIKEY", apiKeys_.api);
 
-        // Set up an HTTP GET request message
-        req_.version(version);
-        req_.method(http::verb::get);
-        req_.target(target);
-        req_.set(http::field::host, host);
-        req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
-        // Look up the domain name
-        resolver_.async_resolve(host, port, beast::bind_front_handler(&RestSession::on_resolve,shared_from_this()));
+            // Look up the domain name
+            resolver_.async_resolve(host, port, beast::bind_front_handler(&RestSession::on_resolve,shared_from_this()));
+        }
     }
 
 
@@ -150,15 +208,33 @@ public:
     {
         boost::ignore_unused(bytes_transferred);
 
-        if(ec)
+        if (ec)
+        {
             return fail(ec, "read");
+        }
+            
 
-        // Write the message to standard out
-        std::cout << res_ << std::endl;
+        if (res_[http::field::content_type] == "application/json")
+        {
+            json::error_code ec;
+
+            if (auto value = json::parse(res_.body(), ec); ec)
+            {
+                fail(ec, "read");
+            }
+            else
+            {                
+                if (callback_)
+                {
+                    RestResult result {std::move(value)};
+                    callback_(std::move(result));
+                }
+            }
+            
+        }
 
         // Set a timeout on the operation
-        beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
-
+        //beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
         // Gracefully close the stream
         //stream_.async_shutdown(beast::bind_front_handler(&RestSession::on_shutdown,shared_from_this()));
     }
@@ -193,6 +269,8 @@ private:
     beast::flat_buffer buffer_;     // must persist between reads
     http::request<http::string_body> req_;
     http::response<http::string_body> res_;
+    ConnectionConfig::ConnectionKeys apiKeys_;
+    RestCallback callback_;
 };
 
 
@@ -207,23 +285,26 @@ public:
 
     // REST calls
     void ping ();
-    void exchangeInfo();
+    void exchangeInfo(RestCallback&& rr);
 
 private:
-    void createRestSession(const string& host, const string& path, const bool createStrand = false)
+    void createRestSession(const string& host, const string& path, const bool createStrand, RestCallback&& rr = nullptr)
     {
         std::shared_ptr<RestSession> session;
 
         if (createStrand)
         {
-            session = std::make_shared<RestSession>(net::make_strand(m_restIoc), *m_restCtx);
+            session = std::make_shared<RestSession>(net::make_strand(m_restIoc), *m_restCtx, m_config.keys, std::move(rr));
         }
         else
         {
-            session = std::make_shared<RestSession>(m_restIoc.get_executor(), *m_restCtx);
+            session = std::make_shared<RestSession>(m_restIoc.get_executor(), *m_restCtx, m_config.keys, std::move(rr));
         }
         
-        session->run(host, "443", path, 11);
+        // we don't need to worry about the session's lifetime because RestSession::run(), passes the session
+        // by value into the io_context. The session will be destroyed when there are no more io operations pending.
+
+        session->run(host, "443", path, 11);    // 11 is HTTP version 1.1
     }
 
 private:

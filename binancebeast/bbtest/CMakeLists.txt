@@ -12,4 +12,4 @@ add_executable (bbtest "bbtest.cpp")
 
 set_target_properties(bbtest PROPERTIES CXX_STANDARD 17)
 
-target_link_libraries(bbtest binancebeast -lssl -lcrypto -lpthread -ldl)
+target_link_libraries(bbtest binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl)
