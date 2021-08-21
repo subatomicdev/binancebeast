@@ -11,10 +11,14 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/json.hpp>
 #include <boost/bind/bind.hpp>
+#include <openssl/hmac.h>   // to sign query params
 #include <iostream>
 #include <string>
 #include <vector>
 #include <thread>
+#include <unordered_map>
+#include <map>
+#include <sstream>
 
 
 namespace bblib
@@ -46,7 +50,7 @@ struct RestResult
 {
     enum class State { Fail, Success };
 
-    RestResult () : state(State::Fail)
+    RestResult (string failReason) : state(State::Fail), failMessage(failReason)
     {
 
     }
@@ -56,8 +60,45 @@ struct RestResult
 
     }
 
+    bool hasErrorCode() const
+    {
+        bool error = false;
+        try
+        {
+            if (json.is_object())
+                error = json.as_object().if_contains("code");
+        }
+        catch(...)
+        {            
+        }
+        
+        return error;
+    }
+
     json::value json;
     State state;
+    string failMessage;
+};
+
+struct RestParams
+{
+    using QueryParams = std::unordered_map<string, string>;
+
+    RestParams () 
+    {
+
+    }
+    
+    RestParams (QueryParams&& params) : queryParams(std::move(params))
+    {
+    }
+
+    RestParams (const QueryParams& params) : queryParams(params)
+    {
+    }
+
+
+    QueryParams queryParams;
 };
 
 
@@ -156,7 +197,7 @@ public:
             req_.set(http::field::host, host);
             req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
             req_.insert("X-MBX-APIKEY", apiKeys_.api);
-
+            
             // Look up the domain name
             resolver_.async_resolve(host, port, beast::bind_front_handler(&RestSession::on_resolve,shared_from_this()));
         }
@@ -226,7 +267,7 @@ public:
 
             if (auto value = json::parse(res_.body(), ec); ec)
             {
-                fail(ec, "read");
+                fail(ec, "json read");
             }
             else
             {                
@@ -262,9 +303,16 @@ public:
 
 
 private:
-    void fail(beast::error_code ec, char const* what)
+    void fail(beast::error_code ec, const string what)
     {
-        std::cerr << what << ": " << ec.category().name() << " : " << ec.message() << "\n";
+        if (callback_)
+        {
+            net::post(threadPool_, boost::bind(callback_, RestResult {std::move(what)})); // call with RestResult with a Failed state
+        }
+        else
+        {
+            std::cerr << what << ": " << ec.category().name() << " : " << ec.message() << "\n";    
+        }        
     }
 
 
@@ -287,15 +335,19 @@ public:
     ~BinanceBeast();
 
     void start(const ConnectionConfig& config);
-
+    
 
     // REST calls
     void ping ();
-    void exchangeInfo(RestCallback&& rr);
-    void serverTime(RestCallback&& rr);
+    void exchangeInfo(RestCallback rr);
+    void serverTime(RestCallback rr);
+
+    void orderBook(RestCallback rr, RestParams params);
+    void allOrders(RestCallback rr, RestParams params);
+
 
 private:
-    void createRestSession(const string& host, const string& path, const bool createStrand, RestCallback&& rr = nullptr)
+    void createRestSession(const string& host, const string& path, const bool createStrand, RestCallback&& rr,  const bool sign = false, RestParams params = RestParams{})
     {
         std::shared_ptr<RestSession> session;
 
@@ -307,11 +359,75 @@ private:
         {
             session = std::make_shared<RestSession>(m_restIoc.get_executor(), *m_restCtx, m_config.keys, std::move(rr), m_restThreadPool);
         }
-        
-        // we don't need to worry about the session's lifetime because RestSession::run(), passes the session
+
+        // we don't need to worry about the session's lifetime because RestSession::run() passes the session's shared_ptr
         // by value into the io_context. The session will be destroyed when there are no more io operations pending.
 
-        session->run(host, "443", path, 11);    // 11 is HTTP version 1.1
+        if (!params.queryParams.empty())
+        {
+            std::stringstream pathWithParams;
+            
+            for (auto& param : params.queryParams)
+                pathWithParams << std::move(param.first) << "=" << std::move(param.second) << "&";                
+
+            
+            string pathToSend;
+            if (sign)
+            {
+                // signature requires the timestamp and the signature params. The signature value is a SHA256 of the query params except 'signature':
+                //  https://fapi.binance.com/fapi/v1/allOrders?symbol=ABCDEF&recvWindow=5000&timestamp=123454
+                //                                             ^                                            ^
+                //                                          from here                                    to here   
+
+                // TODO receive window
+                pathWithParams << "timestamp=" << std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count(); 
+                
+                auto pathWithoutSig = pathWithParams.str();
+                pathToSend = path + "?" + std::move(pathWithoutSig) + "&signature=" + createSignature(m_config.keys.secret, pathWithoutSig);
+            }
+            else
+            {
+                std::stringstream pathWithParams;
+                pathWithParams << path << "?";
+
+                for (auto& param : params.queryParams)
+                    pathWithParams << std::move(param.first) << "=" << std::move(param.second) << "&";                
+
+                pathToSend = std::move(pathWithParams.str());
+            }
+
+            session->run(host, "443", pathToSend, 11);    // 11 is HTTP version 1.1
+        }
+        else
+        {
+            session->run(host, "443", path, 11); 
+        }
+    }
+
+  
+    inline string b2a_hex(char* byte_arr, int n)
+    {
+        const static std::string HexCodes = "0123456789abcdef";
+        string HexString;
+        for (int i = 0; i < n; ++i)
+        {
+            unsigned char BinValue = byte_arr[i];
+            HexString += HexCodes[(BinValue >> 4) & 0x0F];
+            HexString += HexCodes[BinValue & 0x0F];
+        }
+        return HexString;
+    }
+    
+    inline string createSignature(const string& key, const string& data)
+    {
+        string hash;
+
+        if (unsigned char* digest = HMAC(EVP_sha256(), key.c_str(), static_cast<int>(key.size()), (unsigned char*)data.c_str(), data.size(), NULL, NULL); digest)
+        {
+            hash = b2a_hex((char*)digest, 32);
+        }
+
+        return hash;
     }
 
 private:

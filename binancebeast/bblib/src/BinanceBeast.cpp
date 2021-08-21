@@ -2,7 +2,6 @@
 #include "SslCertificates.h"
 
 #include <functional>
-#include <chrono>
 
 
 namespace bblib
@@ -45,7 +44,6 @@ void BinanceBeast::start (const ConnectionConfig& config)
 
 
     m_config = config;
-    
 
     m_restWorkGuard = std::make_unique<net::executor_work_guard<net::io_context::executor_type>> (m_restIoc.get_executor());
     
@@ -56,20 +54,31 @@ void BinanceBeast::start (const ConnectionConfig& config)
 
 void BinanceBeast::ping ()
 { 
-    createRestSession(m_config.restApiUri, "/fapi/v1/ping", false);
+    createRestSession(m_config.restApiUri, "/fapi/v1/ping", false, nullptr);
 }
 
 
-void BinanceBeast::exchangeInfo(RestCallback&& rr)
+void BinanceBeast::exchangeInfo(RestCallback rr)
 {
     createRestSession(m_config.restApiUri, "/fapi/v1/exchangeInfo", false, std::move(rr));
 }
 
 
-void BinanceBeast::serverTime(RestCallback&& rr)
+void BinanceBeast::serverTime(RestCallback rr)
 {
-    createRestSession(m_config.restApiUri, "/fapi/v1/exchangeInfo", false, std::move(rr));
+    createRestSession(m_config.restApiUri, "/fapi/v1/time", false, std::move(rr));
 }
 
+
+void BinanceBeast::orderBook(RestCallback rr, RestParams params)
+{
+    createRestSession(m_config.restApiUri, "/fapi/v1/depth", false, std::move(rr), false, std::move(params));
+}
+
+
+void BinanceBeast::allOrders(RestCallback rr, RestParams params)
+{
+    createRestSession(m_config.restApiUri, "/fapi/v1/allOrders", false, std::move(rr), true, std::move(params));
+}
 
 }   // namespace BinanceBeast
