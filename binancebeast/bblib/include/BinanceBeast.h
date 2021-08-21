@@ -365,13 +365,8 @@ private:
 
         if (!params.queryParams.empty())
         {
-            std::stringstream pathWithParams;
-            
-            for (auto& param : params.queryParams)
-                pathWithParams << std::move(param.first) << "=" << std::move(param.second) << "&";                
-
-            
             string pathToSend;
+
             if (sign)
             {
                 // signature requires the timestamp and the signature params. The signature value is a SHA256 of the query params except 'signature':
@@ -379,7 +374,11 @@ private:
                 //                                             ^                                            ^
                 //                                          from here                                    to here   
 
-                // TODO receive window
+                std::stringstream pathWithParams;
+            
+                for (auto& param : params.queryParams)
+                    pathWithParams << std::move(param.first) << "=" << std::move(param.second) << "&";                
+
                 pathWithParams << "timestamp=" << std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count(); 
                 
                 auto pathWithoutSig = pathWithParams.str();
