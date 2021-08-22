@@ -27,28 +27,27 @@ NOTE: the library has only been tested on Ubuntu. It *should* work on Windows bu
 ```cpp
 int main (int argc, char ** argv)
 {
-  auto config = ConnectionConfig::MakeTestNetConfig();
-  config.keys.api     = "e40fd4783309eed8285e5f00d60e19aa712ce0ecb4d449f015f8702ab1794abf";
-  config.keys.secret  = "6c3d765d9223d2cdf6fe7a16340721d58689e26d10e6a22903dd76e1d01969f0";
+    auto config = ConnectionConfig::MakeTestNetConfig();
+    config.keys.api     = "YOUR API KEY";
+    config.keys.secret  = "YOUR SECRET KEY";
 
-  std::condition_variable cvHaveReply;
-  std::mutex mux;
+    std::condition_variable cvHaveReply;
+    std::mutex mux;
 
+    BinanceBeast bb;
 
-  BinanceBeast bb;
+    bb.start(config);
+    bb.allOrders(   [&](RestResult result)
+                    {  
+                        std::cout << result.json.as_array() << "\n";
+                        cvHaveReply.notify_one();
+                    },
+                    RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
 
-  bb.start(config);
-  bb.allOrders(   [&](RestResult result)
-                  {  
-                      std::cout << result.json.as_array() << "\n";
-                      cvHaveReply.notify_one();
-                  },
-                  RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
+    std::unique_lock lck(mux);
+    cvHaveReply.wait(lck);
 
-  std::unique_lock lck(mux);
-  cvHaveReply.wait(lck);
-
-  return 0;
+    return 0;
 }
 
 
