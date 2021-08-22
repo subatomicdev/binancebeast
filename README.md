@@ -13,12 +13,6 @@ An example is below:
   * an std::function (for demo purposes) which is the callback (result handler)
   * the params which are appended to the REST query
 
-Notes:
-* The result handler is not called from a `boost::thread_pool`, separate from the underlying `boost::asio::io_context`. The idea being if your handler takes time to process, it won't delay the networking processing thread(s)
-* The are currently two instatiations of `boost::asio::io_context` , one for Rest calls and the other for Websockets
-* I am looking at creating a pool of `boost::asio::io_context` for the Websockets 
-
-
 
 ```cpp
 int main (int argc, char ** argv)
@@ -46,6 +40,15 @@ int main (int argc, char ** argv)
     return 0;
 }
 ```
+
+
+Notes:
+* The result handler is not called from a `boost::thread_pool`, separate from the underlying `boost::asio::io_context`. The idea being if your handler takes time to process, it won't delay the networking processing thread(s)
+* The are currently two instatiations of `boost::asio::io_context` , one for Rest calls and the other for Websockets
+* I am looking at creating a pool of `boost::asio::io_context` for the Websockets 
+*
+
+--
 
 ## Aims
 - Performance: handle many Rest requests and websocket sessions
