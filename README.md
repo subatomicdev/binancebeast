@@ -17,10 +17,10 @@ NOTE: the library has only been tested on Ubuntu. It *should* work on Windows bu
 ## Build
 You must have Git installed and a development environment installed (i.e. gcc, cmake). It has been developed with GCC 10.3.0.
 
-- Clone repo
-- Run script
--- Uses `vcpkg` to install the required libraries
--- Builds with `cmake`
+* Clone repo
+* Run script
+  * Uses `vcpkg` to install the required libraries
+  * Builds with `cmake`
 
 
 
