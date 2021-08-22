@@ -15,7 +15,7 @@ An example is below:
 ```cpp
 int main (int argc, char ** argv)
 {
-    auto config = ConnectionConfig::MakeTestNetConfig();
+    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig() when you're feeling brave
     config.keys.api     = "YOUR API KEY";
     config.keys.secret  = "YOUR SECRET KEY";
 
