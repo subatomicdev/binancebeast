@@ -155,6 +155,36 @@ void onAllBookTickers(WsResult result)
 }
 
 
+void onUserData(WsResult result)
+{
+    std::cout << BB_FUNCTION_ENTER << "\n";
+
+    auto topLevel = result.json.as_object();
+    const auto eventType = json::value_to<string>(topLevel["e"]);
+
+    if (eventType == "listenKeyExpired")
+    {
+        std::cout << "listen key expires, renew with BinanceBeast::renewListenKey()\n"; // TODO !
+    }
+    else if (eventType == "MARGIN_CALL")
+    {
+        std::cout << "margin call\n";
+    }
+    else if (eventType == "ACCOUNT_UPDATE")
+    {
+        std::cout << "account update\n";
+    }
+    else if (eventType == "ORDER_TRADE_UPDATE")
+    {
+        std::cout << "order trade update\n";
+    }
+    else if (eventType == "ACCOUNT_CONFIG_UPDATE")
+    {
+        std::cout << "account config update\n";
+    }
+}
+
+
 int main (int argc, char ** argv)
 {
     auto cmdFut = std::async(std::launch::async, []
@@ -190,7 +220,8 @@ int main (int argc, char ** argv)
     //bb.monitorAllMarketMiniTickers(onAllMarketMiniTickers);
     //bb.monitorIndividualSymbolTicker(onIndividualSymbolTicker, "btcusdt");
     //bb.monitorSymbolBookTicker(onSymbolBookTicker, "btcusdt");
-    bb.monitorAllBookTicker(onAllBookTickers);
+    //bb.monitorAllBookTicker(onAllBookTickers);
+    bb.monitorUserData(onUserData);
 
     cmdFut.wait();
 

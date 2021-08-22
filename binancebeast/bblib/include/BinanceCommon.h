@@ -3,6 +3,7 @@
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/ssl.hpp>
+#include <boost/beast/http.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/beast/websocket/ssl.hpp>
 #include <boost/asio/strand.hpp>
@@ -10,6 +11,7 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/json.hpp>
 #include <boost/bind/bind.hpp>
+#include <boost/json.hpp>
 
 
 namespace bblib
@@ -93,6 +95,44 @@ namespace bblib
         bool verifyPeer;
         ConnectionKeys keys;
     };
+
+    inline void fail(beast::error_code ec, char const* what)
+    {
+        std::cerr << what << ": " << ec.message() << "\n";
+    }
+
+    inline void fail(char const* what)
+    {
+        std::cerr << what << "\n";
+    }
+
+    /// Call the user's callback with the failure on the thread pool.
+    template<typename ResultT>
+    inline void fail(beast::error_code ec, const string what, net::thread_pool& callerPool, std::function<void(ResultT)> callback)
+    {
+        if (callback)
+        {
+            net::post(callerPool, boost::bind(callback, ResultT {std::move(what)})); // call callback with  a Failed state
+        }
+        else
+        {
+            std::cerr << what << ": " << ec.category().name() << " : " << ec.message() << "\n";    
+        }        
+    }
+
+    /// Call the user's callback with the failure on the calling thread.
+    template<typename ResultT>
+    inline void fail(beast::error_code ec, const string what, std::function<void(ResultT)> callback)
+    {
+        if (callback)
+        {
+            callback(ResultT {std::move(what)});
+        }
+        else
+        {
+            std::cerr << what << ": " << ec.category().name() << " : " << ec.message() << "\n";    
+        }        
+    }
 
 }
 

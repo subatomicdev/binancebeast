@@ -132,4 +132,77 @@ namespace bblib
         createWsSession(m_config.wsApiUri, std::move("/ws/!bookTicker"), std::move(wc));
     }
 
+    void BinanceBeast::monitorUserData(WsCallback wc)
+    {
+        // create listen key which we'll do synchronously
+        
+        net::io_context ioc;
+
+        tcp::resolver resolver(ioc);
+        beast::ssl_stream<beast::tcp_stream> stream(ioc, *m_wsCtx);
+
+        // Set SNI Hostname (many hosts need this to handshake successfully)
+        if(! SSL_set_tlsext_host_name(stream.native_handle(), m_config.restApiUri.c_str()))
+        {
+            beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
+            throw beast::system_error{ec};
+        }
+
+        // Look up the domain name
+        auto const results = resolver.resolve(m_config.restApiUri, "443");
+
+        // Make the connection on the IP address we get from a lookup
+        beast::get_lowest_layer(stream).connect(results);
+
+        // Perform the SSL handshake
+        stream.handshake(ssl::stream_base::client);
+
+        // Set up an HTTP GET request message
+        http::request<http::string_body> req{http::verb::post, "/fapi/v1/listenKey", 11};
+        req.set(http::field::host, m_config.restApiUri);
+        req.set(http::field::user_agent, BINANCEBEAST_USER_AGENT);
+        req.insert("X-MBX-APIKEY", m_config.keys.api);
+
+        // Send the HTTP request to the remote host
+        http::write(stream, req);
+
+        // This buffer is used for reading and must be persisted
+        beast::flat_buffer buffer;
+
+        // Declare a container to hold the response
+        http::response<http::string_body> res;
+
+        // Receive the HTTP response
+        http::read(stream, buffer, res);
+                
+        m_listenKey.clear();
+        if (res[http::field::content_type] == "application/json")
+        {
+            json::error_code ec;
+            if (auto value = json::parse(res.body(), ec); ec)
+            {
+                fail(ec, "monitorUserData(): json read");
+            }
+            else
+            {
+                m_listenKey = json::value_to<string>(value.as_object()["listenKey"]);
+            }
+        }
+        else
+        {
+            fail("monitorUserData(): content not json");
+        }
+
+        // Gracefully close the stream
+        beast::error_code ec;
+        stream.shutdown(ec);
+        
+
+        // start stream
+        if (!m_listenKey.empty())
+        {
+            createWsSession(m_config.wsApiUri, std::move("/ws/"+m_listenKey), std::move(wc));
+        }
+    }    
+
 }   // namespace BinanceBeast

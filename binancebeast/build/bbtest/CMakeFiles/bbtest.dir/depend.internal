@@ -218,6 +218,8 @@ bbtest/CMakeFiles/bbtest.dir/bbtest.cpp.o
  ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_io_context.hpp
  ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_null_buffers_op.hpp
  ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_operation.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_overlapped_op.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_overlapped_ptr.hpp
  ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_socket_accept_op.hpp
  ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_socket_connect_op.hpp
  ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_socket_recv_op.hpp
@@ -402,6 +404,7 @@ bbtest/CMakeFiles/bbtest.dir/bbtest.cpp.o
  ../../vcpkg/installed/x64-linux/include/boost/asio/unyield.hpp
  ../../vcpkg/installed/x64-linux/include/boost/asio/uses_executor.hpp
  ../../vcpkg/installed/x64-linux/include/boost/asio/wait_traits.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/asio/windows/overlapped_ptr.hpp
  ../../vcpkg/installed/x64-linux/include/boost/asio/write.hpp
  ../../vcpkg/installed/x64-linux/include/boost/asio/yield.hpp
  ../../vcpkg/installed/x64-linux/include/boost/assert.hpp
@@ -504,7 +507,11 @@ bbtest/CMakeFiles/bbtest.dir/bbtest.cpp.o
  ../../vcpkg/installed/x64-linux/include/boost/beast/core/string.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/core/string_type.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/core/tcp_stream.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/beast/http.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/beast/http/basic_dynamic_body.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/beast/http/basic_file_body.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/basic_parser.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/beast/http/buffer_body.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/chunk_encode.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/detail/basic_parsed_list.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/detail/basic_parser.hpp
@@ -513,10 +520,12 @@ bbtest/CMakeFiles/bbtest.dir/bbtest.cpp.o
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/detail/rfc7230.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/detail/rfc7230.ipp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/detail/type_traits.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/beast/http/dynamic_body.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/empty_body.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/error.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/field.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/fields.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/beast/http/file_body.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/basic_parser.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/basic_parser.ipp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/chunk_encode.hpp
@@ -525,6 +534,7 @@ bbtest/CMakeFiles/bbtest.dir/bbtest.cpp.o
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/field.ipp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/fields.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/fields.ipp
+ ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/file_body_win32.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/message.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/parser.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/read.hpp
@@ -539,9 +549,11 @@ bbtest/CMakeFiles/bbtest.dir/bbtest.cpp.o
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/read.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/rfc7230.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/serializer.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/beast/http/span_body.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/status.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/string_body.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/type_traits.hpp
+ ../../vcpkg/installed/x64-linux/include/boost/beast/http/vector_body.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/verb.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/http/write.hpp
  ../../vcpkg/installed/x64-linux/include/boost/beast/ssl.hpp
@@ -1825,4 +1837,7 @@ bbtest/CMakeFiles/bbtest.dir/bbtest.cpp.o
  ../../vcpkg/installed/x64-linux/include/openssl/x509v3.h
  ../../vcpkg/installed/x64-linux/include/openssl/x509v3err.h
  ../bblib/include/BinanceBeast.h
+ ../bblib/include/BinanceCommon.h
+ ../bblib/include/BinanceRest.h
+ ../bblib/include/BinanceWebsockets.h
  /home/callum/repos/subatomicdev/binancebeast/binancebeast/bbtest/bbtest.cpp

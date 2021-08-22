@@ -3,7 +3,6 @@
 
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/thread_pool.hpp>
-#include <boost/json.hpp>
 #include <boost/bind/bind.hpp>
 
 #include <openssl/hmac.h>   // to sign query params
@@ -98,7 +97,7 @@ namespace bblib
             if (!SSL_set_tlsext_host_name(stream_.native_handle(), host.c_str()))
             {
                 beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
-                fail(ec, "SNI hostname");
+                fail(ec, "SNI hostname", threadPool_, callback_);
             }
             else
             {
@@ -119,36 +118,47 @@ namespace bblib
         void on_resolve(beast::error_code ec, tcp::resolver::results_type results)
         {
             if (ec)
-                return fail(ec, "resolve");
+                fail(ec, "resolve", threadPool_, callback_);
+            else
+            {
+                // Set a timeout on the operation
+                beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
 
-            // Set a timeout on the operation
-            beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
-
-            // Make the connection on the IP address we get from a lookup
-            beast::get_lowest_layer(stream_).async_connect(results, beast::bind_front_handler(&RestSession::on_connect,shared_from_this()));
+                // Make the connection on the IP address we get from a lookup
+                beast::get_lowest_layer(stream_).async_connect(results, beast::bind_front_handler(&RestSession::on_connect,shared_from_this()));    
+            }
         }
 
 
         void on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type)
         {
             if (ec)
-                return fail(ec, "connect");
-
-            // Perform the SSL handshake
-            stream_.async_handshake( ssl::stream_base::client, beast::bind_front_handler(&RestSession::on_handshake, shared_from_this()));
+            {
+                fail(ec, "connect", threadPool_, callback_);
+            } 
+            else
+            {
+                // Perform the SSL handshake
+                stream_.async_handshake( ssl::stream_base::client, beast::bind_front_handler(&RestSession::on_handshake, shared_from_this()));
+            }            
         }
 
 
         void on_handshake(beast::error_code ec)
         {        
             if (ec)
-                return fail(ec, "handshake");
-            
-            // Set a timeout on the operation
-            beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
+            {
+                fail(ec, "handshake", threadPool_, callback_);
+            } 
+            else
+            {
+                // Set a timeout on the operation
+                beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
 
-            // Send the HTTP request to the remote host
-            http::async_write(stream_, req_, beast::bind_front_handler(&RestSession::on_write, shared_from_this()));
+                // Send the HTTP request to the remote host
+                http::async_write(stream_, req_, beast::bind_front_handler(&RestSession::on_write, shared_from_this()));
+            }
+            
         }
 
 
@@ -157,10 +167,9 @@ namespace bblib
             boost::ignore_unused(bytes_transferred);
 
             if (ec)
-                return fail(ec, "write");
-
-            // Receive the HTTP response
-            http::async_read(stream_, buffer_, res_, beast::bind_front_handler(&RestSession::on_read, shared_from_this()));
+                fail(ec, "write", threadPool_, callback_);
+            else // Receive the HTTP response
+                http::async_read(stream_, buffer_, res_, beast::bind_front_handler(&RestSession::on_read, shared_from_this()));
         }
 
 
@@ -170,7 +179,7 @@ namespace bblib
 
             if (ec)
             {
-                return fail(ec, "read");
+                return fail(ec, "read", threadPool_, callback_);
             }
 
             if (res_[http::field::content_type] == "application/json")
@@ -179,7 +188,7 @@ namespace bblib
 
                 if (auto value = json::parse(res_.body(), ec); ec)
                 {
-                    fail(ec, "json read");
+                    fail(ec, "json read", threadPool_, callback_);
                 }
                 else
                 {                
@@ -208,23 +217,9 @@ namespace bblib
             }
 
             if (ec)
-                return fail(ec, "shutdown");
+                return fail(ec, "shutdown", threadPool_, callback_);
 
             // If we get here then the connection is closed gracefully
-        }
-
-
-    private:
-        void fail(beast::error_code ec, const string what)
-        {
-            if (callback_)
-            {
-                net::post(threadPool_, boost::bind(callback_, RestResult {std::move(what)})); // call with RestResult with a Failed state
-            }
-            else
-            {
-                std::cerr << what << ": " << ec.category().name() << " : " << ec.message() << "\n";    
-            }        
         }
 
 

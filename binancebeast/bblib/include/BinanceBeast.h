@@ -34,7 +34,7 @@ namespace bblib
         void allOrders(RestCallback rr, RestParams params);
 
 
-        // WebSockets
+        // WebSockets: market data
         void monitorMarkPrice (WsCallback wc, string params);
         void monitorKline (WsCallback wc, string params);
         void monitorIndividualSymbolMiniTicker (WsCallback wc, string symbol);
@@ -43,6 +43,8 @@ namespace bblib
         void monitorSymbolBookTicker(WsCallback wc, string symbol);
         void monitorAllBookTicker(WsCallback wc);
         
+        // WebSockets: user data
+        void monitorUserData(WsCallback wc);
 
     private:
 
@@ -142,13 +144,14 @@ namespace bblib
 
     private:
         ConnectionConfig m_config;
+        string m_listenKey;
+
 
         // REST
         net::io_context m_restIoc;  // single io context for REST calls
         std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> m_restWorkGuard;
         std::unique_ptr<ssl::context> m_restCtx;
         std::unique_ptr<std::thread> m_restIocThread;
-        //TODO find out if this a good idea
         net::thread_pool m_restThreadPool;  // The users's callback functions are called from this pool rather than using the io_context's thread
 
 

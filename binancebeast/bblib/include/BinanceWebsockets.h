@@ -42,26 +42,8 @@ namespace bblib
     };
 
 
-    struct WsParams
-    {
-        using QueryParams = std::unordered_map<string, string>;
-
-        WsParams () = default;
-        
-        WsParams (QueryParams&& params) : queryParams(std::move(params))
-        {
-        }
-
-        WsParams (const QueryParams& params) : queryParams(params)
-        {
-        }
-
-
-        QueryParams queryParams;
-    };
-
-
     using WsCallback = std::function<void(WsResult)>;
+    
 
     // Manages a websocket client session, from initial connection until disconnect.
     class WsSession : public std::enable_shared_from_this<WsSession>
@@ -198,13 +180,7 @@ namespace bblib
             buffer_.clear();
             ws_.async_read(buffer_, beast::bind_front_handler(&WsSession::on_read,shared_from_this()));
         }
-
-
-    private:
-        void fail(beast::error_code ec, char const* what)
-        {
-            std::cerr << what << ": " << ec.message() << "\n";
-        }
+        
 
     private:
         tcp::resolver resolver_;

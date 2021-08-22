@@ -217,6 +217,8 @@ bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_io_context.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_null_buffers_op.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_operation.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_overlapped_op.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_overlapped_ptr.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_socket_accept_op.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_socket_connect_op.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/detail/win_iocp_socket_recv_op.hpp
@@ -401,6 +403,7 @@ bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/unyield.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/uses_executor.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/wait_traits.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/windows/overlapped_ptr.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/write.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/asio/yield.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/assert.hpp
@@ -503,7 +506,11 @@ bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/core/string.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/core/string_type.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/core/tcp_stream.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/basic_dynamic_body.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/basic_file_body.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/basic_parser.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/buffer_body.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/chunk_encode.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/detail/basic_parsed_list.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/detail/basic_parser.hpp
@@ -512,10 +519,12 @@ bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/detail/rfc7230.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/detail/rfc7230.ipp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/detail/type_traits.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/dynamic_body.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/empty_body.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/error.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/field.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/fields.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/file_body.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/basic_parser.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/basic_parser.ipp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/chunk_encode.hpp
@@ -524,6 +533,7 @@ bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/field.ipp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/fields.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/fields.ipp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/file_body_win32.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/message.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/parser.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/impl/read.hpp
@@ -538,9 +548,11 @@ bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/read.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/rfc7230.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/serializer.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/span_body.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/status.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/string_body.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/type_traits.hpp
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/vector_body.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/verb.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/http/write.hpp
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/boost/beast/ssl.hpp
@@ -1824,6 +1836,9 @@ bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/openssl/x509v3.h
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../../vcpkg/installed/x64-linux/include/openssl/x509v3err.h
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../bblib/include/BinanceBeast.h
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../bblib/include/BinanceCommon.h
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../bblib/include/BinanceRest.h
+bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../bblib/include/BinanceWebsockets.h
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../bblib/include/SslCertificates.h
 bblib/src/CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o: ../bblib/src/BinanceBeast.cpp
 
