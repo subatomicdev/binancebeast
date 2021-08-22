@@ -5,24 +5,12 @@ A C++ library for the Binance Futures exchange, using Boost's Beast and JSON lib
 
 NOTE: the library has only been tested on Ubuntu. It *should* work on Windows but I can't confirm.
 
+An example is below:
 
-## Aims
-- Performance: handle many Rest requests and websocket sessions
-- Configurable: provide configuration on how io_context are used, particularly if issuing many Rest calls
-- Usability: easy to build and use
-- Documentation: provide tests/examples on how to use and best practises
+* Uses an REST call to get all orders for BTCUSDT
+* This uses a mutex and cv because it's a short example, you would not normally do this
+* The call to `allOrders()`:  first arg is a std::function (for demo purposes) and the second argument is the params which are appended to the REST query
 
-
-## Quick Guide
-
-*NOTE: If you want frequent symbol information you should use the Websockets rather than Rest*
-
-*NOTE: All API functions are asychronous.*
-
-
-### Rest Calls
-
-#### Order Book
 
 ```cpp
 int main (int argc, char ** argv)
@@ -49,9 +37,24 @@ int main (int argc, char ** argv)
 
     return 0;
 }
-
-
 ```
+
+## Aims
+- Performance: handle many Rest requests and websocket sessions
+- Configurable: provide configuration on how io_context are used, particularly if issuing many Rest calls
+- Usability: easy to build and use
+- Documentation: provide tests/examples on how to use and best practises
+
+
+## Quick Guide
+
+*NOTE: If you want frequent symbol information you should use the Websockets rather than Rest*
+
+*NOTE: All API functions are asychronous.*
+
+
+### Rest Calls
+TODO
 
 ## Build
 You must have Git installed and a development environment installed (i.e. gcc, cmake). It has been developed with GCC 10.3.0.
