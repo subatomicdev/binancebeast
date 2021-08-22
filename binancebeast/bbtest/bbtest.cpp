@@ -162,6 +162,8 @@ void onUserData(WsResult result)
     auto topLevel = result.json.as_object();
     const auto eventType = json::value_to<string>(topLevel["e"]);
 
+    std::cout << eventType << "\n";
+
     if (eventType == "listenKeyExpired")
     {
         std::cout << "listen key expires, renew with BinanceBeast::renewListenKey()\n"; // TODO !
@@ -185,7 +187,23 @@ void onUserData(WsResult result)
 }
 
 
-int main (int argc, char ** argv)
+void onRenewListenKey(WsResult result)
+{
+    std::cout << BB_FUNCTION_ENTER << "\n";
+
+    std::cout << "\nListen key renewal/extend success(true) or fail(false): " << std::boolalpha << (result.state == WsResult::State::Success) << "\n";
+}
+
+
+void onCloseUserData(WsResult result)
+{
+    std::cout << BB_FUNCTION_ENTER << "\n";
+
+    std::cout << "\nUser data close success(true) or fail(false): " << std::boolalpha << (result.state == WsResult::State::Success) << "\n";
+}
+
+
+/*int main (int argc, char ** argv)
 {
     auto cmdFut = std::async(std::launch::async, []
     {
@@ -221,9 +239,45 @@ int main (int argc, char ** argv)
     //bb.monitorIndividualSymbolTicker(onIndividualSymbolTicker, "btcusdt");
     //bb.monitorSymbolBookTicker(onSymbolBookTicker, "btcusdt");
     //bb.monitorAllBookTicker(onAllBookTickers);
+    
     bb.monitorUserData(onUserData);
 
+    {
+        bb.renewListenKey(onRenewListenKey);
+        bb.closeUserData(onCloseUserData);
+        bb.monitorUserData(onUserData);
+    }
+    
+
     cmdFut.wait();
+
+    return 0;
+}*/
+
+
+
+int main (int argc, char ** argv)
+{
+    auto config = ConnectionConfig::MakeTestNetConfig();
+    config.keys.api     = "e40fd4783309eed8285e5f00d60e19aa712ce0ecb4d449f015f8702ab1794abf";
+    config.keys.secret  = "6c3d765d9223d2cdf6fe7a16340721d58689e26d10e6a22903dd76e1d01969f0";
+
+    std::condition_variable cvHaveReply;
+    std::mutex mux;
+
+
+    BinanceBeast bb;
+
+    bb.start(config);
+    bb.allOrders(   [&](RestResult result)
+                    {  
+                        std::cout << result.json.as_array() << "\n";
+                        cvHaveReply.notify_one();
+                    },
+                    RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
+
+    std::unique_lock lck(mux);
+    cvHaveReply.wait(lck);
 
     return 0;
 }

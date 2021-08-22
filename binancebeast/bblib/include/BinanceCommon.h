@@ -77,15 +77,12 @@ namespace bblib
 
 
     private:
-        
-
         ConnectionConfig (const string& restUri, const string& wsUri, const bool sslVerifyPeer, const ConnectionKeys& apiKeys = ConnectionKeys{}) :   
                 restApiUri(restUri),
                 wsApiUri(wsUri),
                 verifyPeer(sslVerifyPeer),
                 keys(apiKeys)
         {
-            
         }
 
         
@@ -96,14 +93,19 @@ namespace bblib
         ConnectionKeys keys;
     };
 
-    inline void fail(beast::error_code ec, char const* what)
+    inline void fail(beast::error_code ec, const char * what)
     {
-        std::cerr << what << ": " << ec.message() << "\n";
+        throw std::runtime_error(ec.message() + what);
     }
 
-    inline void fail(char const* what)
+    inline void fail(const char * what)
     {
-        std::cerr << what << "\n";
+        throw std::runtime_error(what);
+    }
+
+    inline void fail(const string& what)
+    {
+        throw std::runtime_error(what);
     }
 
     /// Call the user's callback with the failure on the thread pool.
@@ -113,11 +115,7 @@ namespace bblib
         if (callback)
         {
             net::post(callerPool, boost::bind(callback, ResultT {std::move(what)})); // call callback with  a Failed state
-        }
-        else
-        {
-            std::cerr << what << ": " << ec.category().name() << " : " << ec.message() << "\n";    
-        }        
+        }    
     }
 
     /// Call the user's callback with the failure on the calling thread.
@@ -127,11 +125,17 @@ namespace bblib
         if (callback)
         {
             callback(ResultT {std::move(what)});
-        }
-        else
+        }   
+    }
+
+    /// Call the user's callback with the failure on the calling thread.
+    template<typename ResultT>
+    inline void fail(const string what, std::function<void(ResultT)> callback)
+    {
+        if (callback)
         {
-            std::cerr << what << ": " << ec.category().name() << " : " << ec.message() << "\n";    
-        }        
+            callback(ResultT {std::move(what)});
+        }    
     }
 
 }

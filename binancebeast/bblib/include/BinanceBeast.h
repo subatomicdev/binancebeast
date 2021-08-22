@@ -46,6 +46,16 @@ namespace bblib
         // WebSockets: user data
         void monitorUserData(WsCallback wc);
 
+
+        // Listen Key
+
+        /// You should call this every 60 minutes to extend your listen key, otherwise your user data stream will become invalid/closed by Binance.
+        /// You must first call monitorUserData() to create (or reuse exiting) listen key, there after calll this function every ~ 60 minutes.
+        void renewListenKey(WsCallback wc);
+
+        /// This will invalidate your key, so you will no longer receive user data updates. Only call if you intend to shutdown.
+        void closeUserData (WsCallback wc);
+
     private:
 
         void createWsSession (const string& host, const std::string& path, WsCallback&& wc)
@@ -141,6 +151,100 @@ namespace bblib
             return hash;
         }
 
+
+    private:
+        enum class UserDataStreamMode { Create, Extend, Close };
+
+        bool amendUserDataListenKey (WsCallback wc, const UserDataStreamMode mode)
+        {
+            net::io_context ioc;
+
+            tcp::resolver resolver(ioc);
+            beast::ssl_stream<beast::tcp_stream> stream(ioc, *m_wsCtx);
+
+            // Set SNI Hostname (many hosts need this to handshake successfully)
+            if(! SSL_set_tlsext_host_name(stream.native_handle(), m_config.restApiUri.c_str()))
+            {
+                beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
+                throw beast::system_error{ec};
+            }
+
+            // Look up the domain name
+            auto const results = resolver.resolve(m_config.restApiUri, "443");
+
+            // Make the connection on the IP address we get from a lookup
+            beast::get_lowest_layer(stream).connect(results);
+
+            // Perform the SSL handshake
+            stream.handshake(ssl::stream_base::client);
+
+            // Set up an HTTP GET request message
+            http::verb requestVerb;
+            switch (mode)
+            {
+                case UserDataStreamMode::Create:
+                    requestVerb = http::verb::post;
+                break;
+
+                case UserDataStreamMode::Extend:
+                    requestVerb = http::verb::put;
+                break;
+
+                case UserDataStreamMode::Close:
+                    requestVerb = http::verb::delete_;
+                break;
+            }
+
+            http::request<http::string_body> req{requestVerb, "/fapi/v1/listenKey", 11};
+            req.set(http::field::host, m_config.restApiUri);
+            req.set(http::field::user_agent, BINANCEBEAST_USER_AGENT);
+            req.insert("X-MBX-APIKEY", m_config.keys.api);
+
+            // Send the HTTP request to the remote host
+            http::write(stream, req);
+
+            // This buffer is used for reading and must be persisted
+            beast::flat_buffer buffer;
+
+            // Declare a container to hold the response
+            http::response<http::string_body> res;
+
+            // Receive the HTTP response
+            http::read(stream, buffer, res);
+
+            // Gracefully close the stream
+            beast::error_code ec;
+            stream.shutdown(ec);
+
+
+            // when creating stream, a listen key is returned, otherwise nothing is returned
+            if (mode == UserDataStreamMode::Create)
+                m_listenKey.clear();
+                
+            if (res[http::field::content_type] == "application/json")
+            {
+                json::error_code ec;
+                if (auto value = json::parse(res.body(), ec); ec)
+                {
+                    fail(ec, "monitorUserData(): json read", wc);
+                }
+                else
+                {
+                    // for creating, we store the listen key, for other modes just check for error
+
+                    if (value.as_object().if_contains("code"))
+                        fail (string{"monitorUserData(): json contains error code from Binance: " + json::value_to<string>(value.as_object()["msg"])}, wc);
+                    else if (mode == UserDataStreamMode::Create)  
+                        m_listenKey = json::value_to<string>(value.as_object()["listenKey"]);
+                }
+            }
+            else
+            {
+                fail("monitorUserData(): content not json", wc);
+            }          
+
+            return !m_listenKey.empty();
+        }
 
     private:
         ConnectionConfig m_config;

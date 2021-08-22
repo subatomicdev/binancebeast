@@ -11,6 +11,11 @@ namespace bblib
     {
         enum class State { Fail, Success };
 
+        WsResult (const State s) : state(s)
+        {
+
+        }
+
         WsResult (string failReason) : state(State::Fail), failMessage(failReason)
         {
 
