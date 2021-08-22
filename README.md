@@ -41,12 +41,11 @@ int main (int argc, char ** argv)
 }
 ```
 
-
 Notes:
 * The result handler is not called from a `boost::thread_pool`, separate from the underlying `boost::asio::io_context`. The idea being if your handler takes time to process, it won't delay the networking processing thread(s)
 * The are currently two instatiations of `boost::asio::io_context` , one for Rest calls and the other for Websockets
-* I am looking at creating a pool of `boost::asio::io_context` for the Websockets 
-*
+* I am considering creating a pool of `boost::asio::io_context` for the Websockets and distributing work evenly. I don't think this is necessary for Rest calls because they shouldn't be used frequently
+
 
 ---
 
