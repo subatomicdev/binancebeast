@@ -1,5 +1,7 @@
 #include <binancebeast/BinanceBeast.h>
 #include <future>
+#include <thread>
+#include <chrono>
 
 
 using namespace bblib;
@@ -65,7 +67,7 @@ void onAllOrders (RestResult result)
 
     if (!handleError(result))
     {
-        std::cout << result.json.as_array() << "\n";
+        std::cout << result.json << "\n";
     }
 }
 
@@ -76,7 +78,7 @@ void onMonitorMarkPriceAll(WsResult result)
 
     if (!handleError(result))
     {
-        std::cout << result.json.as_array() << "\n";
+        std::cout << result.json << "\n";
     }
 }
 
@@ -87,7 +89,7 @@ void onMonitorMarkPriceSymbol(WsResult result)
 
     if (!handleError(result))
     {
-        std::cout << result.json/*.as_object()*/ << "\n";
+        std::cout << result.json << "\n";
     }
 }
 
@@ -205,52 +207,99 @@ void onCloseUserData(WsResult result)
 
 int main (int argc, char ** argv)
 {
-    auto cmdFut = std::async(std::launch::async, []
+    if (argc == 2 && std::string_view{argv[1]} == "postbuildtest")
     {
-        bool done = false;
-        while (!done)
+        std::cout << "\n\nTest REST API\n\n";
+
+        BinanceBeast bb;
+
+        auto config = ConnectionConfig::MakeTestNetConfig();
+        bb.start(config);
+
+
+        std::condition_variable cvHaveReply;
+
+        bb.exchangeInfo([&cvHaveReply](RestResult result)
         {
-            std::cout << ">\n";
-            std::string s;
-            std::getline(std::cin, s);
-            done =  (s == "stop" || s == "exit");
-        }
-    });
+            if (!handleError(result))
+            {
+                std::cout << result.json.as_object() << "\n";
+            }
 
-    auto config = ConnectionConfig::MakeTestNetConfig();
-    config.keys.api     = "e40fd4783309eed8285e5f00d60e19aa712ce0ecb4d449f015f8702ab1794abf";
-    config.keys.secret  = "6c3d765d9223d2cdf6fe7a16340721d58689e26d10e6a22903dd76e1d01969f0";
+            cvHaveReply.notify_one();
+        });
 
-    BinanceBeast bb;
+        
+        // wait for REST reply
+        std::mutex mux;
+        std::unique_lock lck(mux);
+        cvHaveReply.wait(lck);
 
-    bb.start(config);
-    
-    //bb.exchangeInfo(onExchangeInfo);
-    //bb.serverTime(onServerTime);
-    //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
-    //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
 
-    //bb.monitorMarkPrice(onMonitorMarkPriceAll, "!markPrice@arr@1s");
-    bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
-    //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "ethusdt@markPrice@1s");
-    //bb.monitorKline(onMonitorKline, "btcusdt@kline_15m");
-    //bb.monitorIndividualSymbolMiniTicker(onSymbolMiniTicker, "btcusdt");
-    //bb.monitorAllMarketMiniTickers(onAllMarketMiniTickers);
-    //bb.monitorIndividualSymbolTicker(onIndividualSymbolTicker, "btcusdt");
-    //bb.monitorSymbolBookTicker(onSymbolBookTicker, "btcusdt");
-    //bb.monitorAllBookTicker(onAllBookTickers);
-    
-    //bb.monitorUserData(onUserData);
+        std::cout << "\n\nTest Websockets API\n\n";
 
+        bb.monitorMarkPrice([](WsResult result)
+        {
+            if (!handleError(result))
+            {
+                std::cout << result.json << "\n";
+            }
+
+        }, "btcusdt@markPrice@1s");
+        
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(5s);
+    }
+    else
     {
+        auto cmdFut = std::async(std::launch::async, []
+        {
+            bool done = false;
+            while (!done)
+            {
+                std::cout << ">\n";
+                std::string s;
+                std::getline(std::cin, s);
+                done =  (s == "stop" || s == "exit");
+            }
+        });
+
+        auto config = ConnectionConfig::MakeTestNetConfig();
+        config.keys.api     = "e40fd4783309eed8285e5f00d60e19aa712ce0ecb4d449f015f8702ab1794abf";
+        config.keys.secret  = "6c3d765d9223d2cdf6fe7a16340721d58689e26d10e6a22903dd76e1d01969f0";
+
+        BinanceBeast bb;
+
+        bb.start(config);
+        
+        //bb.exchangeInfo(onExchangeInfo);
+        //bb.serverTime(onServerTime);
+        //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
+        //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
+
+        //bb.monitorMarkPrice(onMonitorMarkPriceAll, "!markPrice@arr@1s");
+        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
+        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "ethusdt@markPrice@1s");
+        //bb.monitorKline(onMonitorKline, "btcusdt@kline_15m");
+        //bb.monitorIndividualSymbolMiniTicker(onSymbolMiniTicker, "btcusdt");
+        //bb.monitorAllMarketMiniTickers(onAllMarketMiniTickers);
+        //bb.monitorIndividualSymbolTicker(onIndividualSymbolTicker, "btcusdt");
+        //bb.monitorSymbolBookTicker(onSymbolBookTicker, "btcusdt");
+        //bb.monitorAllBookTicker(onAllBookTickers);
+        
         //bb.monitorUserData(onUserData);
-        //bb.renewListenKey(onRenewListenKey);
-        //bb.closeUserData(onCloseUserData);
-        //bb.monitorUserData(onUserData);
+
+        {
+            //bb.monitorUserData(onUserData);
+            //bb.renewListenKey(onRenewListenKey);
+            //bb.closeUserData(onCloseUserData);
+            //bb.monitorUserData(onUserData);
+        }
+        
+
+        cmdFut.wait();
     }
     
-
-    cmdFut.wait();
 
     return 0;
 }

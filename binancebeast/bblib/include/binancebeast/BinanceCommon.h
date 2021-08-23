@@ -9,7 +9,6 @@
 #include <boost/asio/strand.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/thread_pool.hpp>
-#include <boost/json.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/json.hpp>
 
