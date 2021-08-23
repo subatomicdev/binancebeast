@@ -1,7 +1,9 @@
 cmake_minimum_required (VERSION 3.15)
 
-
 project (bblib C CXX)
+
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}../../../lib/)
+
 
 include_directories("../../../vcpkg/installed/x64-linux/include")
 include_directories("../include")

@@ -1,6 +1,11 @@
 cmake_minimum_required (VERSION 3.15)
 
+
+
 project (bbtest C CXX)
+
+
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}../../bin/)
 
 include_directories("../../vcpkg/installed/x64-linux/include")
 include_directories("../bblib/include")

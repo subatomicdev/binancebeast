@@ -30,6 +30,17 @@
 *.exe
 *.out
 *.app
+
+*.cmake
+
+binancebeast/bin/
+binancebeast/lib/
+
 binancebeast/build/
 binancebeast/bblib/build/
+binancebeast/bblib/CMakeFiles
+binancebeast/bblib/src/CMakeFiles
+
 binancebeast/bbtest/build/
+
+
