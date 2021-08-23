@@ -3,6 +3,7 @@
 
 #include "BinanceCommon.h"
 #include <sstream>
+#include <ordered_thread_pool.h>
 
 
 namespace bblib
@@ -57,17 +58,19 @@ namespace bblib
     public:
     
         // Resolver and socket require an io_context
-        explicit WsSession(net::io_context& ioc, std::shared_ptr<ssl::context> ctx, const WsCallback&& callback, net::thread_pool& threadPool)
+        explicit WsSession(net::io_context& ioc, std::shared_ptr<ssl::context> ctx, const WsCallback&& callback)
             :   resolver_(net::make_strand(ioc)),
                 ws_(net::make_strand(ioc), *ctx),
                 callback_(std::move(callback)),
-                threadPool_(threadPool),
                 sslContext_(ctx)
         {
+            handlersPool_ = std::make_unique<OrderedThreadPool<void, WsResult>> (4,4);
         }
 
         ~WsSession()
         {
+            //stopping_.store(true);
+
             // we don't want to use close() because thats mixing sync with async calls.
             // we don't do an async_close() because shared_from_this() will refer to this object after being destructed
             // we let beast handle it
@@ -80,6 +83,9 @@ namespace bblib
         {
             host_ = host;
             path_ = path;
+
+            //parent_ = taskflow_.emplace([self = shared_from_this()](){ return self->stopping_.load() == true; }).name("Parent"); 
+            //executor_.run(taskflow_);
 
             // Look up the domain name
             resolver_.async_resolve(host, port, beast::bind_front_handler(&WsSession::on_resolve,shared_from_this()));
@@ -168,17 +174,17 @@ namespace bblib
             if (ec)
                 return fail(ec, "read");
 
-            json::error_code jsonEc;
-            if (auto value = json::parse(beast::buffers_to_string(buffer_.cdata()), jsonEc); jsonEc)
+            if (callback_)
             {
-                fail(jsonEc, "json read");
-            }
-            else
-            {   
-                if (callback_)
+                json::error_code jsonEc;
+                if (auto jsonValue = json::parse(beast::buffers_to_string(buffer_.cdata()), jsonEc); jsonEc)
                 {
-                    WsResult result {std::move(value)};
-                    net::post(threadPool_, boost::bind(callback_, std::move(result)));
+                    fail(jsonEc, "json read", callback_);
+                }
+                else
+                {
+                    WsResult result {std::move(jsonValue)};
+                    handlersPool_->Do(callback_, std::move(result));
                 }
             }
             
@@ -194,8 +200,8 @@ namespace bblib
         std::string host_;
         std::string path_;
         WsCallback callback_;
-        net::thread_pool& threadPool_;
         std::shared_ptr<ssl::context> sslContext_;
+        std::unique_ptr<OrderedThreadPool<void, WsResult>> handlersPool_;
     };
 }
 

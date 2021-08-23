@@ -60,7 +60,7 @@ namespace bblib
 
         void createWsSession (const string& host, const std::string& path, WsCallback&& wc)
         {
-            std::shared_ptr<WsSession> session = std::make_shared<WsSession>(m_wsIoc, m_wsCtx, std::move(wc), m_wsThreadPool);
+            std::shared_ptr<WsSession> session = std::make_shared<WsSession>(m_wsIoc, m_wsCtx, std::move(wc));
             
             session->run(host, "443", path);
         }
@@ -72,11 +72,11 @@ namespace bblib
 
             if (createStrand)
             {
-                session = std::make_shared<RestSession>(net::make_strand(m_restIoc), m_restCtx, m_config.keys, std::move(rc), m_restThreadPool);
+                session = std::make_shared<RestSession>(net::make_strand(m_restIoc), m_restCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
             }
             else
             {
-                session = std::make_shared<RestSession>(m_restIoc.get_executor(), m_restCtx, m_config.keys, std::move(rc), m_restThreadPool);
+                session = std::make_shared<RestSession>(m_restIoc.get_executor(), m_restCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
             }
 
             // we don't need to worry about the session's lifetime because RestSession::run() passes the session's shared_ptr
@@ -256,7 +256,7 @@ namespace bblib
         std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> m_restWorkGuard;
         std::shared_ptr<ssl::context> m_restCtx;
         std::unique_ptr<std::thread> m_restIocThread;
-        net::thread_pool m_restThreadPool;  // The users's callback functions are called from this pool rather than using the io_context's thread
+        net::thread_pool m_restCallersThreadPool;  // The users's callback functions are called from this pool rather than using the io_context's thread
 
 
         // WebSockets
@@ -264,7 +264,6 @@ namespace bblib
         std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> m_wsWorkGuard;
         std::shared_ptr<ssl::context> m_wsCtx;          // TODO do we need different ssl contexts for Rest and WS?
         std::unique_ptr<std::thread> m_wsIocThread;     // TODO think about a thread_pool of these, distributing work as roundrobin 
-        net::thread_pool m_wsThreadPool;
     };
 
 }   // namespace BinanceBeast

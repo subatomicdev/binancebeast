@@ -4,6 +4,7 @@ project (bbtest C CXX)
 
 include_directories("../../vcpkg/installed/x64-linux/include")
 include_directories("../bblib/include")
+include_directories("../../ordered_thread_pool")
 
 LINK_DIRECTORIES("../../vcpkg/installed/x64-linux/lib")
 

@@ -5,6 +5,7 @@ project (bblib C CXX)
 
 include_directories("../../../vcpkg/installed/x64-linux/include")
 include_directories("../include")
+include_directories("../../../ordered_thread_pool")
 
 
 add_library(binancebeast STATIC "BinanceBeast.cpp")

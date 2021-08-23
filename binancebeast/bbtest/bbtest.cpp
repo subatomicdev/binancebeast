@@ -87,7 +87,7 @@ void onMonitorMarkPriceSymbol(WsResult result)
 
     if (!handleError(result))
     {
-        std::cout << result.json.as_object() << "\n";
+        std::cout << result.json/*.as_object()*/ << "\n";
     }
 }
 
@@ -228,10 +228,10 @@ int main (int argc, char ** argv)
     //bb.exchangeInfo(onExchangeInfo);
     //bb.serverTime(onServerTime);
     //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
-    bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
+    //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
 
     //bb.monitorMarkPrice(onMonitorMarkPriceAll, "!markPrice@arr@1s");
-    //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
+    bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
     //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "ethusdt@markPrice@1s");
     //bb.monitorKline(onMonitorKline, "btcusdt@kline_15m");
     //bb.monitorIndividualSymbolMiniTicker(onSymbolMiniTicker, "btcusdt");
