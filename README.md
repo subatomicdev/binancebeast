@@ -24,19 +24,21 @@ int main (int argc, char ** argv)
     config.keys.secret  = "YOUR SECRET KEY";
 
     std::condition_variable cvHaveReply;
-    std::mutex mux;
 
     BinanceBeast bb;
 
-    bb.start(config);
-    bb.allOrders(   [&](RestResult result)
+    bb.start(config);   // must always call this once to start the networking processing loop
+
+    bb.allOrders(   [&](RestResult result)      // this is called when the reply is received or an error
                     {  
                         std::cout << result.json.as_array() << "\n";
                         cvHaveReply.notify_one();
                     },
-                    RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
+                    RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});      // params for REST call
 
+    std::mutex mux;
     std::unique_lock lck(mux);
+
     cvHaveReply.wait(lck);
 
     return 0;
