@@ -30,7 +30,7 @@ echo
 echo Building
 echo
 
-cd build/bbtest
+cd bbtest
 
 
 echo
