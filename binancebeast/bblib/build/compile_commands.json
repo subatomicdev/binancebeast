@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/callum/repos/subatomicdev/binancebeast/bblib/build/src",
-  "command": "/bin/x86_64-linux-gnu-g++-10  -I/home/callum/repos/subatomicdev/binancebeast/bblib/src/../../vcpkg/installed/x64-linux/include -I/home/callum/repos/subatomicdev/binancebeast/bblib/src/../include -g -std=gnu++17 -o CMakeFiles/binancebeast.dir/BinanceBeast.cpp.o -c /home/callum/repos/subatomicdev/binancebeast/bblib/src/BinanceBeast.cpp",
-  "file": "/home/callum/repos/subatomicdev/binancebeast/bblib/src/BinanceBeast.cpp"
-}
-]
