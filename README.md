@@ -1,4 +1,4 @@
-# Binance Beast
+git clone --recurse-submodules -j8# Binance Beast
 
 ---
 ## NOTE: this is in the early stages and is subject to breaking changes
@@ -81,11 +81,12 @@ TODO incomplete
 
 You must have Git installed and a development environment installed (i.e. gcc, cmake). It has been developed with GCC 10.3.0.
 
-1. `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
-2. `cd binancebeast`
-3. `./build_linux_x64_release.sh`
-  * Uses `vcpkg` to install the required libraries. This installs cmake and ninja but it's local to vcpkg so will not affect existing installations
+* `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
+* `cd binancebeast`
+* `./build_linux_x64_release.sh`
+  *  Uses `vcpkg` to install the required libraries. This installs cmake and ninja but it's local to vcpkg so will not affect existing installations
   * Confgiure and build
+  
 
 
 
