@@ -85,7 +85,8 @@ You must have Git installed and a development environment installed (i.e. gcc, c
 * `cd binancebeast`
 * `./build_linux_x64_release.sh`
   *  Uses `vcpkg` to install the required libraries. This installs cmake and ninja but it's local to vcpkg so will not affect existing installations
-  * Confgiure and build
+  * Configure and build
+* The `bblib` is in `bbtest` app is b
   
 
 
