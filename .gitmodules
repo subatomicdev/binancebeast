@@ -1,3 +1,6 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg.git
+[submodule "ordered_thread_pool"]
+	path = ordered_thread_pool
+	url = https://github.com/subatomicdev/ordered_thread_pool.git
