@@ -74,9 +74,6 @@ int main (int argc, char ** argv)
 TODO
 
 ## Build
-
-TODO incomplete
-
 You must have Git installed and a development environment installed (i.e. gcc, cmake). It has been developed with GCC 10.3.0.
 
 * `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
