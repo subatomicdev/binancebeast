@@ -5,3 +5,4 @@ project (binancebeast C CXX)
 
 add_subdirectory("bblib")
 add_subdirectory("bbtest")
+add_subdirectory("tests")

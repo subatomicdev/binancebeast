@@ -207,52 +207,7 @@ void onCloseUserData(WsResult result)
 
 int main (int argc, char ** argv)
 {
-    if (argc == 2 && std::string_view{argv[1]} == "postbuildtest")
-    {
-        std::cout << "\n\nTest REST API\n\n";
-
-        BinanceBeast bb;
-
-        auto config = ConnectionConfig::MakeTestNetConfig();
-        bb.start(config);
-
-
-        std::condition_variable cvHaveReply;
-
-        bb.exchangeInfo([&cvHaveReply](RestResult result)
-        {
-            if (!handleError(result))
-            {
-                std::cout << result.json.as_object() << "\n";
-            }
-
-            cvHaveReply.notify_one();
-        });
-
-        
-        // wait for REST reply
-        std::mutex mux;
-        std::unique_lock lck(mux);
-        cvHaveReply.wait(lck);
-
-
-        std::cout << "\n\nTest Websockets API\n\n";
-
-        bb.monitorMarkPrice([](WsResult result)
-        {
-            if (!handleError(result))
-            {
-                std::cout << result.json << "\n";
-            }
-
-        }, "btcusdt@markPrice@1s");
-        
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(5s);
-    }
-    else
-    {
-        auto cmdFut = std::async(std::launch::async, []
+    auto cmdFut = std::async(std::launch::async, []
         {
             bool done = false;
             while (!done)
@@ -298,38 +253,7 @@ int main (int argc, char ** argv)
         
 
         cmdFut.wait();
-    }
     
 
     return 0;
 }
-
-
-/*
-int main (int argc, char ** argv)
-{
-    auto config = ConnectionConfig::MakeTestNetConfig();
-    config.keys.api     = "e40fd4783309eed8285e5f00d60e19aa712ce0ecb4d449f015f8702ab1794abf";
-    config.keys.secret  = "6c3d765d9223d2cdf6fe7a16340721d58689e26d10e6a22903dd76e1d01969f0";
-
-    std::condition_variable cvHaveReply;
-
-    BinanceBeast bb;
-
-    bb.start(config);   // must always call this once to start the networking processing loop
-
-    bb.allOrders(   [&](RestResult result)      // this is called when the reply is received or an error
-                    {  
-                        std::cout << result.json.as_array() << "\n";
-                        cvHaveReply.notify_one();
-                    },
-                    RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});      // params for REST call
-
-    std::mutex mux;
-    std::unique_lock lck(mux);
-
-    cvHaveReply.wait(lck);
-
-    return 0;
-}
-*/

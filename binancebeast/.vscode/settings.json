@@ -68,6 +68,9 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "forward_list": "cpp",
+        "unordered_set": "cpp",
+        "fstream": "cpp"
     }
 }
