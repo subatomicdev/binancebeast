@@ -60,6 +60,9 @@ namespace bblib
 
         void createWsSession (const string& host, const std::string& path, WsCallback&& wc)
         {
+            if (wc == nullptr)
+                throw std::runtime_error("callback is null");
+
             std::shared_ptr<WsSession> session = std::make_shared<WsSession>(m_wsIoc, m_wsCtx, std::move(wc));
             
             session->run(host, "443", path);
@@ -68,16 +71,15 @@ namespace bblib
 
         void createRestSession(const string& host, const string& path, const bool createStrand, RestCallback&& rc,  const bool sign = false, RestParams params = RestParams{})
         {
+            if (rc == nullptr)
+                throw std::runtime_error("callback is null");
+
             std::shared_ptr<RestSession> session;
 
             if (createStrand)
-            {
                 session = std::make_shared<RestSession>(net::make_strand(m_restIoc), m_restCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
-            }
             else
-            {
                 session = std::make_shared<RestSession>(m_restIoc.get_executor(), m_restCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
-            }
 
             // we don't need to worry about the session's lifetime because RestSession::run() passes the session's shared_ptr
             // by value into the io_context. The session will be destroyed when there are no more io operations pending.
@@ -88,8 +90,8 @@ namespace bblib
 
                 if (sign)
                 {
-                    // signature requires the timestamp and the signature params.
-                    // the signature value is a SHA256 of the query params:
+                    // signature requires the timestamp and the value is a SHA256 of the query params:
+                    // 
                     //  https://fapi.binance.com/fapi/v1/allOrders?symbol=ABCDEF&recvWindow=5000&timestamp=123454
                     //                                             ^                                            ^
                     //                                          from here                                    to here   

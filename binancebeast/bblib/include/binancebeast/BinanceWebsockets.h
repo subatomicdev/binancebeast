@@ -51,7 +51,9 @@ namespace bblib
     using WsCallback = std::function<void(WsResult)>;
     
 
-    // Manages a websocket client session, from initial connection until disconnect.
+    /// Manages a websocket client session, from initial connection until disconnect.
+    /// The websocket data (json) is sent via a WsResult object to the supplied callback handler.
+    /// The handler is called from a thread pool, implemented so handlers are called in-order.
     class WsSession : public std::enable_shared_from_this<WsSession>
     {
 
@@ -59,108 +61,103 @@ namespace bblib
     
         // Resolver and socket require an io_context
         explicit WsSession(net::io_context& ioc, std::shared_ptr<ssl::context> ctx, const WsCallback&& callback)
-            :   resolver_(net::make_strand(ioc)),
-                ws_(net::make_strand(ioc), *ctx),
-                callback_(std::move(callback)),
-                sslContext_(ctx)
+            :   m_resolver(net::make_strand(ioc)),
+                m_ws(net::make_strand(ioc), *ctx),
+                m_callback(std::move(callback)),
+                m_sslContext(ctx)
         {
-            handlersPool_ = std::make_unique<OrderedThreadPool<void, WsResult>> (4,4);
+            m_handlersPool = std::make_unique<OrderedThreadPool<WsResult>> (4,4); // 4 threads and allow 4 queued functions before blocking
         }
+
 
         ~WsSession()
         {
-            //stopping_.store(true);
-
             // we don't want to use close() because thats mixing sync with async calls.
             // we don't do an async_close() because shared_from_this() will refer to this object after being destructed
             // we let beast handle it
         }
 
 
-
-        // Start the asynchronous operation
+        /// Start the websocket session:
+        ///     - resolve the address
+        ///     - connect
+        ///     - ssl handshake
+        ///     - read until stream closed by the server or object destruction
         void run(const string& host, const string& port, const string& path)
         {
-            host_ = host;
-            path_ = path;
-
-            //parent_ = taskflow_.emplace([self = shared_from_this()](){ return self->stopping_.load() == true; }).name("Parent"); 
-            //executor_.run(taskflow_);
+            m_host = host;
+            m_path = path;
 
             // Look up the domain name
-            resolver_.async_resolve(host, port, beast::bind_front_handler(&WsSession::on_resolve,shared_from_this()));
+            m_resolver.async_resolve(host, port, beast::bind_front_handler(&WsSession::on_resolve,shared_from_this()));
         }
 
 
         void on_resolve(beast::error_code ec, tcp::resolver::results_type results)
         {
             if(ec)
-                return fail(ec, "resolve");
+                return fail(ec, "resolve", m_callback);
 
             // Set a timeout on the operation
-            beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(30));
+            beast::get_lowest_layer(m_ws).expires_after(std::chrono::seconds(30));
 
             // Make the connection on the IP address we get from a lookup
-            beast::get_lowest_layer(ws_).async_connect(results,beast::bind_front_handler(&WsSession::on_connect, shared_from_this()));
+            beast::get_lowest_layer(m_ws).async_connect(results,beast::bind_front_handler(&WsSession::on_connect, shared_from_this()));
         }
 
 
         void on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type ep)
         {
             if(ec)
-                return fail(ec, "connect");
+                return fail(ec, "connect", m_callback);
 
-            // Update the host_ string. This will provide the value of the
-            // Host HTTP header during the WebSocket handshake.
+            // Update the m_host string. This will provide the value of the host HTTP header during the WebSocket handshake.
             // See https://tools.ietf.org/html/rfc7230#section-5.4
-            host_ += ':' + std::to_string(ep.port());
+            m_host += ':' + std::to_string(ep.port());
 
-            // Set a timeout on the operation
-            beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(30));
+            beast::get_lowest_layer(m_ws).expires_after(std::chrono::seconds(10));
 
-            // Set SNI Hostname (many hosts need this to handshake successfully)
-            if(! SSL_set_tlsext_host_name(ws_.next_layer().native_handle(),host_.c_str()))
+            // SNI Hostname (many hosts need this to handshake successfully)
+            if(!SSL_set_tlsext_host_name(m_ws.next_layer().native_handle(),m_host.c_str()))
             {
                 ec = beast::error_code(static_cast<int>(::ERR_get_error()),net::error::get_ssl_category());
-                return fail(ec, "connect");
+                return fail(ec, "connect", m_callback);
             }
 
-            // Perform the SSL handshake
-            ws_.next_layer().async_handshake(ssl::stream_base::client,beast::bind_front_handler(&WsSession::on_ssl_handshake,shared_from_this()));
+            // perform the SSL handshake
+            m_ws.next_layer().async_handshake(ssl::stream_base::client,beast::bind_front_handler(&WsSession::on_ssl_handshake,shared_from_this()));
         }
 
 
         void on_ssl_handshake(beast::error_code ec)
         {
             if(ec)
-                return fail(ec, "ssl_handshake");
+                return fail(ec, "ssl handshake", m_callback);
 
-            // Turn off the timeout on the tcp_stream, because
-            // the websocket stream has its own timeout system.
-            beast::get_lowest_layer(ws_).expires_never();
+            // disable the timeout on the underlying tcp_stream because the websocket stream has its own timeout system
+            beast::get_lowest_layer(m_ws).expires_never();
 
-            // Set suggested timeout settings for the websocket
-            ws_.set_option(websocket::stream_base::timeout::suggested(beast::role_type::client));
+            // set the websocket stream timeouts 
+            m_ws.set_option(websocket::stream_base::timeout::suggested(beast::role_type::client));
 
-            // Set a decorator to change the User-Agent of the handshake
-            ws_.set_option(websocket::stream_base::decorator(
+            // set a decorator to change the User-Agent of the handshake
+            m_ws.set_option(websocket::stream_base::decorator(
             [](websocket::request_type& req)
             {
                 req.set(http::field::user_agent, BINANCEBEAST_USER_AGENT);
             }));
 
-            // Perform the websocket handshake
-            ws_.async_handshake(host_, path_, beast::bind_front_handler(&WsSession::on_handshake,shared_from_this()));
+            m_ws.async_handshake(m_host, m_path, beast::bind_front_handler(&WsSession::on_handshake,shared_from_this()));
         }
 
 
         void on_handshake(beast::error_code ec)
         {
             if(ec)
-                return fail(ec, "handshake");
+                return fail(ec, "handshake", m_callback);
 
-            // Read a message into our buffer
-            ws_.async_read(buffer_, beast::bind_front_handler(&WsSession::on_read,shared_from_this()));
+            // begin reading. called repeatedly
+            m_ws.async_read(m_buffer, beast::bind_front_handler(&WsSession::on_read,shared_from_this()));
         }
 
 
@@ -172,36 +169,33 @@ namespace bblib
                 return ;
 
             if (ec)
-                return fail(ec, "read");
+                return fail(ec, "read", m_callback);
 
-            if (callback_)
+            json::error_code jsonEc;
+            if (auto jsonValue = json::parse(beast::buffers_to_string(m_buffer.cdata()), jsonEc); jsonEc)
             {
-                json::error_code jsonEc;
-                if (auto jsonValue = json::parse(beast::buffers_to_string(buffer_.cdata()), jsonEc); jsonEc)
-                {
-                    fail(jsonEc, "json read", callback_);
-                }
-                else
-                {
-                    WsResult result {std::move(jsonValue)};
-                    handlersPool_->Do(callback_, std::move(result));
-                }
+                fail(jsonEc, "json read", m_callback);
+            }
+            else
+            {
+                WsResult result {std::move(jsonValue)};
+                m_handlersPool->Do(m_callback, std::move(result));
             }
             
-            buffer_.clear();
-            ws_.async_read(buffer_, beast::bind_front_handler(&WsSession::on_read,shared_from_this()));
+            m_buffer.clear();
+            m_ws.async_read(m_buffer, beast::bind_front_handler(&WsSession::on_read,shared_from_this()));
         }
         
 
     private:
-        tcp::resolver resolver_;
-        websocket::stream<beast::ssl_stream<beast::tcp_stream>> ws_;
-        beast::flat_buffer buffer_;
-        std::string host_;
-        std::string path_;
-        WsCallback callback_;
-        std::shared_ptr<ssl::context> sslContext_;
-        std::unique_ptr<OrderedThreadPool<void, WsResult>> handlersPool_;
+        tcp::resolver m_resolver;
+        websocket::stream<beast::ssl_stream<beast::tcp_stream>> m_ws;
+        beast::flat_buffer m_buffer;
+        std::string m_host;
+        std::string m_path;
+        WsCallback m_callback;
+        std::shared_ptr<ssl::context> m_sslContext;
+        std::unique_ptr<OrderedThreadPool<WsResult>> m_handlersPool;
     };
 }
 

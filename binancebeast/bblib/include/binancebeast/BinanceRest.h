@@ -82,35 +82,35 @@ namespace bblib
 
     public:
         explicit RestSession(net::any_io_executor ex, std::shared_ptr<ssl::context> ctx, const ConnectionConfig::ConnectionKeys& keys, const RestCallback&& callback, net::thread_pool& threadPool) :
-            resolver_(ex),
-            stream_(ex, *ctx),
-            apiKeys_(keys),
-            callback_(callback),
-            threadPool_(threadPool)
+            m_resolver(ex),
+            m_stream(ex, *ctx),
+            m_apiKeys(keys),
+            m_callback(callback),
+            m_threadPool(threadPool)
         {
         }
 
 
         void run(const string& host, const string& port, const string& target, const int version)
         {
-            // Set SNI Hostname (many hosts need this to handshake successfully)
-            if (!SSL_set_tlsext_host_name(stream_.native_handle(), host.c_str()))
+            // set SNI Hostname (many hosts need this to handshake successfully)
+            if (!SSL_set_tlsext_host_name(m_stream.native_handle(), host.c_str()))
             {
                 beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
-                fail(ec, "SNI hostname", threadPool_, callback_);
+                fail(ec, "SNI hostname", m_threadPool, m_callback);
             }
             else
             {
                 // Set up an HTTP GET request message
-                req_.version(version);
-                req_.method(http::verb::get);
-                req_.target(target);
-                req_.set(http::field::host, host);
-                req_.set(http::field::user_agent, BINANCEBEAST_USER_AGENT);
-                req_.insert("X-MBX-APIKEY", apiKeys_.api);
+                m_req.version(version);
+                m_req.method(http::verb::get);
+                m_req.target(target);
+                m_req.set(http::field::host, host);
+                m_req.set(http::field::user_agent, BINANCEBEAST_USER_AGENT);
+                m_req.insert("X-MBX-APIKEY", m_apiKeys.api);
                 
-                // Look up the domain name
-                resolver_.async_resolve(host, port, beast::bind_front_handler(&RestSession::on_resolve,shared_from_this()));
+                // look up the domain name
+                m_resolver.async_resolve(host, port, beast::bind_front_handler(&RestSession::on_resolve,shared_from_this()));
             }
         }
 
@@ -118,14 +118,12 @@ namespace bblib
         void on_resolve(beast::error_code ec, tcp::resolver::results_type results)
         {
             if (ec)
-                fail(ec, "resolve", threadPool_, callback_);
+                fail(ec, "resolve", m_threadPool, m_callback);
             else
             {
-                // Set a timeout on the operation
-                beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
+                beast::get_lowest_layer(m_stream).expires_after(std::chrono::seconds(10));   // TODO is this ok
 
-                // Make the connection on the IP address we get from a lookup
-                beast::get_lowest_layer(stream_).async_connect(results, beast::bind_front_handler(&RestSession::on_connect,shared_from_this()));    
+                beast::get_lowest_layer(m_stream).async_connect(results, beast::bind_front_handler(&RestSession::on_connect,shared_from_this()));    
             }
         }
 
@@ -134,12 +132,12 @@ namespace bblib
         {
             if (ec)
             {
-                fail(ec, "connect", threadPool_, callback_);
+                fail(ec, "connect", m_threadPool, m_callback);
             } 
             else
             {
                 // Perform the SSL handshake
-                stream_.async_handshake( ssl::stream_base::client, beast::bind_front_handler(&RestSession::on_handshake, shared_from_this()));
+                m_stream.async_handshake( ssl::stream_base::client, beast::bind_front_handler(&RestSession::on_handshake, shared_from_this()));
             }            
         }
 
@@ -148,15 +146,15 @@ namespace bblib
         {        
             if (ec)
             {
-                fail(ec, "handshake", threadPool_, callback_);
+                fail(ec, "handshake", m_threadPool, m_callback);
             } 
             else
             {
                 // Set a timeout on the operation
-                beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
+                beast::get_lowest_layer(m_stream).expires_after(std::chrono::seconds(10));
 
                 // Send the HTTP request to the remote host
-                http::async_write(stream_, req_, beast::bind_front_handler(&RestSession::on_write, shared_from_this()));
+                http::async_write(m_stream, m_req, beast::bind_front_handler(&RestSession::on_write, shared_from_this()));
             }
             
         }
@@ -166,10 +164,14 @@ namespace bblib
         {
             boost::ignore_unused(bytes_transferred);
 
+            // connected and handshaked, so can begin reading websocket data
+
+            beast::get_lowest_layer(m_stream).expires_after(std::chrono::seconds(30));   
+
             if (ec)
-                fail(ec, "write", threadPool_, callback_);
-            else // Receive the HTTP response
-                http::async_read(stream_, buffer_, res_, beast::bind_front_handler(&RestSession::on_read, shared_from_this()));
+                fail(ec, "write", m_threadPool, m_callback);
+            else 
+                http::async_read(m_stream, m_buffer, m_res, beast::bind_front_handler(&RestSession::on_read, shared_from_this()));
         }
 
 
@@ -179,31 +181,23 @@ namespace bblib
 
             if (ec)
             {
-                return fail(ec, "read", threadPool_, callback_);
+                return fail(ec, "read", m_threadPool, m_callback);
             }
 
-            if (res_[http::field::content_type] == "application/json")
+            if (m_res[http::field::content_type] == "application/json")
             {
                 json::error_code ec;
 
-                if (auto value = json::parse(res_.body(), ec); ec)
+                if (auto value = json::parse(m_res.body(), ec); ec)
                 {
-                    fail(ec, "json read", threadPool_, callback_);
+                    fail(ec, "json read", m_threadPool, m_callback);
                 }
                 else
-                {                
-                    if (callback_)
-                    {
-                        RestResult result {std::move(value)};
-                        net::post(threadPool_, boost::bind(callback_, std::move(result)));
-                    }
+                {   
+                    RestResult result {std::move(value)};
+                    net::post(m_threadPool, boost::bind(m_callback, std::move(result)));
                 }            
             }
-
-            // Set a timeout on the operation
-            //beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
-            // Gracefully close the stream
-            //stream_.async_shutdown(beast::bind_front_handler(&RestSession::on_shutdown,shared_from_this()));
         }
 
 
@@ -217,21 +211,21 @@ namespace bblib
             }
 
             if (ec)
-                return fail(ec, "shutdown", threadPool_, callback_);
+                return fail(ec, "shutdown", m_threadPool, m_callback);
 
             // If we get here then the connection is closed gracefully
         }
 
 
     private:
-        tcp::resolver resolver_;
-        beast::ssl_stream<beast::tcp_stream> stream_;
-        beast::flat_buffer buffer_;     // must persist between reads
-        http::request<http::string_body> req_;
-        http::response<http::string_body> res_;
-        ConnectionConfig::ConnectionKeys apiKeys_;
-        RestCallback callback_;
-        net::thread_pool& threadPool_;
+        tcp::resolver m_resolver;
+        beast::ssl_stream<beast::tcp_stream> m_stream;
+        beast::flat_buffer m_buffer;
+        http::request<http::string_body> m_req;
+        http::response<http::string_body> m_res;
+        ConnectionConfig::ConnectionKeys m_apiKeys;
+        RestCallback m_callback;
+        net::thread_pool& m_threadPool;
     };
 }
 
