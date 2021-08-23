@@ -1,5 +1,3 @@
-git clone --recurse-submodules -j8# Binance Beast
-
 ---
 ## NOTE: this is in the early stages and is subject to breaking changes
 ---
