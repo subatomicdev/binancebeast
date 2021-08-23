@@ -86,7 +86,8 @@ You must have Git installed and a development environment installed (i.e. gcc, c
 * `./build_linux_x64_release.sh`
   *  Uses `vcpkg` to install the required libraries. This installs cmake and ninja but it's local to vcpkg so will not affect existing installations
   * Configure and build
-* The `bblib` is in `bbtest` app is b
+* After the build a short test runs (which doesn't require an API key)
+* The library and test binary are in the lib and bin directories
   
 
 
