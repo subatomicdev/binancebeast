@@ -7,7 +7,7 @@ echo
 
 cd vcpkg
 
-./bootstrap.sh
+./bootstrap-vcpkg.sh
 
 
 echo
