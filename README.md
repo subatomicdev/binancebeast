@@ -10,10 +10,10 @@ NOTE: the library has only been tested on Ubuntu. It *should* work on Windows bu
 An example is below:
 
 * Uses an REST call to get all orders for BTCUSDT
-* This uses a mutex and cv because it's a short example, you would not normally do this
+* I use a mutex and cv to wait for the async `allOrders()` to return
 * The call to `allOrders()`
-  * an std::function (a lambda here, for demo purposes) which is the result handler, called when there is an error or the reply is received
-  * the params which are appended to the REST query
+  * An std::function which is the result handler, called when there is an error or the reply is received
+  * The params which are appended to the REST query
 
 
 ```cpp
