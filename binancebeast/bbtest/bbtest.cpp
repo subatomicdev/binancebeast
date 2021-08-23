@@ -32,7 +32,7 @@ void onExchangeInfo (RestResult result)
 
     if (!handleError(result))
     {
-        std::cout << result.json.as_object()["rateLimits"].as_array()[0].as_object()["interval"] << "\n";
+        std::cout << result.json.as_object() << "\n";
     }
 }
 
@@ -43,7 +43,7 @@ void onServerTime (RestResult result)
 
     if (!handleError(result))
     {
-        std::cout << result.json.as_object()["serverTime"] << "\n";
+        std::cout << result.json.as_object() << "\n";
     }
 }
 
@@ -54,7 +54,7 @@ void onOrderBook (RestResult result)
 
     if (!handleError(result))
     {
-        std::cout << result.json.as_object()["bids"].as_array() << "\n";
+        std::cout << result.json.as_object() << "\n";
     }
 }
 
@@ -203,7 +203,7 @@ void onCloseUserData(WsResult result)
 }
 
 
-/*int main (int argc, char ** argv)
+int main (int argc, char ** argv)
 {
     auto cmdFut = std::async(std::launch::async, []
     {
@@ -228,7 +228,7 @@ void onCloseUserData(WsResult result)
     //bb.exchangeInfo(onExchangeInfo);
     //bb.serverTime(onServerTime);
     //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
-    //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
+    bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
 
     //bb.monitorMarkPrice(onMonitorMarkPriceAll, "!markPrice@arr@1s");
     //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
@@ -240,22 +240,23 @@ void onCloseUserData(WsResult result)
     //bb.monitorSymbolBookTicker(onSymbolBookTicker, "btcusdt");
     //bb.monitorAllBookTicker(onAllBookTickers);
     
-    bb.monitorUserData(onUserData);
+    //bb.monitorUserData(onUserData);
 
     {
-        bb.renewListenKey(onRenewListenKey);
-        bb.closeUserData(onCloseUserData);
-        bb.monitorUserData(onUserData);
+        //bb.monitorUserData(onUserData);
+        //bb.renewListenKey(onRenewListenKey);
+        //bb.closeUserData(onCloseUserData);
+        //bb.monitorUserData(onUserData);
     }
     
 
     cmdFut.wait();
 
     return 0;
-}*/
+}
 
 
-
+/*
 int main (int argc, char ** argv)
 {
     auto config = ConnectionConfig::MakeTestNetConfig();
@@ -263,21 +264,23 @@ int main (int argc, char ** argv)
     config.keys.secret  = "6c3d765d9223d2cdf6fe7a16340721d58689e26d10e6a22903dd76e1d01969f0";
 
     std::condition_variable cvHaveReply;
-    std::mutex mux;
-
 
     BinanceBeast bb;
 
-    bb.start(config);
-    bb.allOrders(   [&](RestResult result)
+    bb.start(config);   // must always call this once to start the networking processing loop
+
+    bb.allOrders(   [&](RestResult result)      // this is called when the reply is received or an error
                     {  
                         std::cout << result.json.as_array() << "\n";
                         cvHaveReply.notify_one();
                     },
-                    RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
+                    RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});      // params for REST call
 
+    std::mutex mux;
     std::unique_lock lck(mux);
+
     cvHaveReply.wait(lck);
 
     return 0;
 }
+*/
