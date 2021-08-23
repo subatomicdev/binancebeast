@@ -30,14 +30,14 @@ echo
 echo Building
 echo
 
-cd bbtest
-
 
 echo
 echo Running Test
 echo 
 
+pwd 
 
+cd bin
 ./bbtest postbuildtest
 
 
