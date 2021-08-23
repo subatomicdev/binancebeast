@@ -1,1 +1,0 @@
-/bin/x86_64-linux-gnu-g++-10 -O3 -DNDEBUG CMakeFiles/bbtest.dir/bbtest.cpp.o -o bbtest   -L/home/callum/repos/subatomicdev/binancebeast/binancebeast/bbtest/../../vcpkg/installed/x64-linux/lib  -Wl,-rpath,/home/callum/repos/subatomicdev/binancebeast/binancebeast/bbtest/../../vcpkg/installed/x64-linux/lib ../bblib/src/libbinancebeast.a -lssl -lboost_json -lcrypto -lpthread -ldl 
