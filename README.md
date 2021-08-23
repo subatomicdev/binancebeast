@@ -81,8 +81,9 @@ TODO incomplete
 
 You must have Git installed and a development environment installed (i.e. gcc, cmake). It has been developed with GCC 10.3.0.
 
-* Clone repo
-* Run script
+1. `git clone https://github.com/subatomicdev/binancebeast.git binancebeast`
+2. `cd binancebeast`
+3. `./build_linux_x64_release.sh`
   * Uses `vcpkg` to install the required libraries
   * Builds with `cmake`
 
