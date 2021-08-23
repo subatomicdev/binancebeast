@@ -1,4 +1,4 @@
-#include "BinanceBeast.h"
+#include <binancebeast/BinanceBeast.h>
 #include <future>
 
 

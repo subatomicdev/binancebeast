@@ -1,5 +1,5 @@
-#include "BinanceBeast.h"
-#include "SslCertificates.h"
+#include <binancebeast/BinanceBeast.h>
+#include <binancebeast/SslCertificates.h>
 
 #include <functional>
 
