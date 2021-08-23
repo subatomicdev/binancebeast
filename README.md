@@ -1,5 +1,9 @@
 # Binance Beast
 
+---
+## NOTE: this is in the early stages and is subject to breaking changes
+---
+
 A C++ library for the Binance Futures exchange, using Boost's Beast and JSON libraries for networking (http/websockets) and json respectively. 
 
 
