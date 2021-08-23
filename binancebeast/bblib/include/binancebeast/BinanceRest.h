@@ -81,9 +81,9 @@ namespace bblib
     {
 
     public:
-        explicit RestSession(net::any_io_executor ex, ssl::context& ctx, const ConnectionConfig::ConnectionKeys& keys, const RestCallback&& callback, net::thread_pool& threadPool) :
+        explicit RestSession(net::any_io_executor ex, std::shared_ptr<ssl::context> ctx, const ConnectionConfig::ConnectionKeys& keys, const RestCallback&& callback, net::thread_pool& threadPool) :
             resolver_(ex),
-            stream_(ex, ctx),
+            stream_(ex, *ctx),
             apiKeys_(keys),
             callback_(callback),
             threadPool_(threadPool)

@@ -30,7 +30,7 @@ namespace bblib
 
     void BinanceBeast::start (const ConnectionConfig& config)
     {  
-        m_restCtx = std::make_unique<ssl::context> (ssl::context::tlsv12_client);
+        m_restCtx = std::make_shared<ssl::context> (ssl::context::tlsv12_client);
         m_wsCtx = std::make_shared<ssl::context> (ssl::context::tlsv12_client);
 
         boost::system::error_code ec;

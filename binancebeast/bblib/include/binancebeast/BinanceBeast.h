@@ -72,11 +72,11 @@ namespace bblib
 
             if (createStrand)
             {
-                session = std::make_shared<RestSession>(net::make_strand(m_restIoc), *m_restCtx, m_config.keys, std::move(rc), m_restThreadPool);
+                session = std::make_shared<RestSession>(net::make_strand(m_restIoc), m_restCtx, m_config.keys, std::move(rc), m_restThreadPool);
             }
             else
             {
-                session = std::make_shared<RestSession>(m_restIoc.get_executor(), *m_restCtx, m_config.keys, std::move(rc), m_restThreadPool);
+                session = std::make_shared<RestSession>(m_restIoc.get_executor(), m_restCtx, m_config.keys, std::move(rc), m_restThreadPool);
             }
 
             // we don't need to worry about the session's lifetime because RestSession::run() passes the session's shared_ptr
@@ -254,7 +254,7 @@ namespace bblib
         // REST
         net::io_context m_restIoc;  // single io context for REST calls
         std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> m_restWorkGuard;
-        std::unique_ptr<ssl::context> m_restCtx;
+        std::shared_ptr<ssl::context> m_restCtx;
         std::unique_ptr<std::thread> m_restIocThread;
         net::thread_pool m_restThreadPool;  // The users's callback functions are called from this pool rather than using the io_context's thread
 
