@@ -35,10 +35,9 @@ echo
 echo Running Test
 echo 
 
-pwd 
 
 cd bin
-./bbtest postbuildtest
+./firstbuildtest
 
 
 echo
