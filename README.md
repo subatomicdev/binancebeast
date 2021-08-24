@@ -21,7 +21,7 @@ An example is below:
 ```cpp
 int main (int argc, char ** argv)
 {
-    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig() when you're feeling brave
+    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
     config.keys.api     = "YOUR API KEY";
     config.keys.secret  = "YOUR SECRET KEY";
 
@@ -82,7 +82,65 @@ The general usage is:
 
 
 ### Rest Calls
-TODO
+#### All Orders Example
+```cpp
+int main (int argc, char ** argv)
+{
+    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
+    config.keys.api     = "YOUR API KEY";
+    config.keys.secret  = "YOUR SECRET KEY";
+
+    std::condition_variable cvHaveReply;
+
+    BinanceBeast bb;
+
+    bb.start(config);   // must always call this once to start the networking processing loop
+
+    bb.allOrders(   [&](RestResult result)      // this is called when the reply is received or an error
+                    {  
+                        std::cout << result.json << "\n";
+                        cvHaveReply.notify_one();
+                    },
+                    RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});      // params for REST call
+
+    std::mutex mux;
+    std::unique_lock lck(mux);
+
+    cvHaveReply.wait(lck);
+
+    return 0;
+}
+
+```
+
+### Websockets
+#### Mark Price Symbol
+Receive Mark Price for ETHUSDT for 10 seconds:
+
+```cpp
+int main (int argc, char ** argv)
+{
+    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
+    config.keys.api     = "YOUR API KEY";
+    config.keys.secret  = "YOUR SECRET KEY";
+
+    std::condition_variable cvHaveReply;
+
+    BinanceBeast bb;
+
+    bb.start(config);   // must always call this once to start the networking processing loop
+
+    bb.monitorMarkPrice([&](WsResult result)      // this is called for each message or error
+                        {  
+                            std::cout << result.json << "\n";
+                        }, "ethusdt@markPrice@1s");      // params for Websocket call
+
+    using namespace std::chrono_literals;    
+    std::this_thread::sleep_for(10s);
+
+    return 0;
+}
+```
 
 ## Build
 You must have Git installed and a development environment installed (i.e. gcc, cmake). It has been developed with GCC 10.3.0.
