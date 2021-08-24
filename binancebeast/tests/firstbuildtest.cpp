@@ -7,50 +7,32 @@
 
 
 using namespace bblib;
-
+using namespace bblib_test;
 
 int main (int argc, char ** argv)
 {
-    std::cout << "\n\nTest REST API\n\n";
+    std::cout << "\n\nFirst Build Test\n\n";
 
-        BinanceBeast bb;
+    BinanceBeast bb;
 
-        auto config = ConnectionConfig::MakeTestNetConfig();
-        bb.start(config);
+    auto config = ConnectionConfig::MakeTestNetConfig();
+    bb.start(config);
 
 
-        std::condition_variable cvHaveReply;
+    std::condition_variable cvHaveReply;
 
-        bb.exchangeInfo([&cvHaveReply](RestResult result)
+    bb.exchangeInfo([&cvHaveReply](RestResult result)
+    {
+        if (!bblib_test::handleError(BB_FUNCTION, result))
         {
-            if (!bblib_test::handleError(result))
-            {
-                std::cout << result.json.as_object() << "\n";
-            }
+            std::cout << result.json.as_object() << "\n";
+        }
 
-            cvHaveReply.notify_one();
-        });
+        cvHaveReply.notify_one();
+    });
 
-        
-        // wait for REST reply
-        std::mutex mux;
-        std::unique_lock lck(mux);
-        cvHaveReply.wait(lck);
+    waitReply(cvHaveReply, "exchangeInfo");
 
-
-        std::cout << "\n\nTest Websockets API\n\n";
-
-        bb.monitorMarkPrice([](WsResult result)
-        {
-            if (!bblib_test::handleError(result))
-            {
-                std::cout << result.json << "\n";
-            }
-
-        }, "btcusdt@markPrice@1s");
-        
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(5s);
 
     return 0;
 }
