@@ -40,8 +40,10 @@ binancebeast/build/
 binancebeast/bblib/build/
 binancebeast/bblib/CMakeFiles
 binancebeast/bblib/src/CMakeFiles
+binancebeast/bblib/CMakeCache.txt
 
 binancebeast/bbtest/build/
 
+Makefile
 
-binancebeast/bblib/CMakeCache.txt
+
