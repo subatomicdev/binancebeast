@@ -140,7 +140,7 @@ int main (int argc, char ** argv)
         if (result.hasErrorCode())
         {
             std::cout << "\nError code: " << std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"]))
-                        << "\nError msg: " << json::value_to<std::string>(result.json.as_object()["msg"]) << "\n";
+                      << "\nError msg: " << json::value_to<std::string>(result.json.as_object()["msg"]) << "\n";
         }
         else
         {
