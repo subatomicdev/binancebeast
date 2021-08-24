@@ -69,6 +69,15 @@ int main (int argc, char ** argv)
 
 *NOTE: All API functions are asychronous.*
 
+The general usage is:
+
+- Create the config with `ConnectionConfig::MakeTestNetConfig()` or `ConnectionConfig::MakeLiveConfig()` 
+- Instatiate a `BinanceBeast` object then call `start()`
+- Call a Rest or websocket function, all of which are asynchronous, supplied with a callback function (`RestCallback` or `WsCallback`)
+- A websocket stream is closed when the `BinanceBeast` object is destructed
+  - There is no close monitor function, this may be added later
+
+
 
 ### Rest Calls
 TODO
