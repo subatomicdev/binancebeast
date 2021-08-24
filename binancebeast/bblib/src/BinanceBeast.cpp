@@ -6,7 +6,7 @@
 
 namespace bblib
 {
-    BinanceBeast::BinanceBeast()
+    BinanceBeast::BinanceBeast() : m_nextIoContext(0)
     {
 
     }
@@ -28,7 +28,7 @@ namespace bblib
     }
 
 
-    void BinanceBeast::start (const ConnectionConfig& config)
+    void BinanceBeast::start (const ConnectionConfig& config, const size_t nWebsockIoContexts)
     {  
         m_restCtx = std::make_shared<ssl::context> (ssl::context::tlsv12_client);
         m_wsCtx = std::make_shared<ssl::context> (ssl::context::tlsv12_client);
@@ -62,6 +62,26 @@ namespace bblib
 
         m_wsWorkGuard = std::make_unique<net::executor_work_guard<net::io_context::executor_type>> (m_wsIoc.get_executor());
         m_wsIocThread = std::make_unique<std::thread> (std::function { [this]() { m_wsIoc.run(); } });
+
+
+        m_nextIoContext.store(0);
+
+        m_wsIocThreads.resize(std::max<size_t>(0, std::min<size_t>(nWebsockIoContexts, 24)));   // clamp for sanity
+        for (auto& ioc : m_wsIocThreads)
+            ioc.start();
+    }
+
+
+    net::io_context& BinanceBeast::getIoContext()
+    {
+        size_t curr = m_nextIoContext.load();
+        size_t next = curr + 1 < m_wsIocThreads.size() ? curr + 1 : 0;
+
+        m_nextIoContext.store(next);
+
+        std::cout << "\nAssigned io context: " << curr << "\n";
+
+        return *m_wsIocThreads[curr].ioc;
     }
 
 

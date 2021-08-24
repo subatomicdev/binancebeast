@@ -204,7 +204,7 @@ void onCloseUserData(WsResult result)
     std::cout << "\nUser data close success(true) or fail(false): " << std::boolalpha << (result.state == WsResult::State::Success) << "\n";
 }
 
-/*
+
 int main (int argc, char ** argv)
 {
     auto cmdFut = std::async(std::launch::async, []
@@ -233,8 +233,7 @@ int main (int argc, char ** argv)
     //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
 
     //bb.monitorMarkPrice(onMonitorMarkPriceAll, "!markPrice@arr@1s");
-    //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
-    //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "ethusdt@markPrice@1s");
+    bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
     //bb.monitorKline(onMonitorKline, "btcusdt@kline_15m");
     //bb.monitorIndividualSymbolMiniTicker(onSymbolMiniTicker, "btcusdt");
     //bb.monitorAllMarketMiniTickers(onAllMarketMiniTickers);
@@ -252,45 +251,19 @@ int main (int argc, char ** argv)
     }
     
 
+    {   // testing number of websocket io contexts
+        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
+        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "ethusdt@markPrice@1s");
+        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "blzusdt@markPrice@1s");
+        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "adausdt@markPrice@1s");
+        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "xrpusdt@markPrice@1s");        
+    }
+
+    
     cmdFut.wait();
     
 
     return 0;
 }
-*/
 
 
-
-int main (int argc, char ** argv)
-{
-    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
-    config.keys.api     = "YOUR API KEY";
-    config.keys.secret  = "YOUR SECRET KEY";
-
-    std::condition_variable cvHaveReply;
-
-    BinanceBeast bb;
-
-    bb.start(config);   // must always call this once to start the networking processing loop
-
-    bb.monitorMarkPrice([&](WsResult result)      // this is called for each message or error
-    {  
-        std::cout << result.json << "\n\n";
-
-        if (result.hasErrorCode())
-        {
-            std::cout << "\nError code: " << std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"]))
-                      << "\nError msg: " << json::value_to<std::string>(result.json.as_object()["msg"]) << "\n";
-        }
-        else
-        {
-            std::cout << "\n" << result.json.as_object()["s"] << " = " << result.json.as_object()["p"] << "\n";
-        }
-
-    }, "ethusdt@markPrice@1s");      // params for Websocket call
-
-    using namespace std::chrono_literals;    
-    std::this_thread::sleep_for(10s);
-
-    return 0;
-}

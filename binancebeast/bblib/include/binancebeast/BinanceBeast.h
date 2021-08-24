@@ -18,11 +18,43 @@ namespace bblib
 {
     class BinanceBeast
     {
+    private:
+        struct IoContext
+        {
+            IoContext () = default;
+            IoContext(IoContext&&) = default;
+
+            IoContext(const IoContext&) = delete;
+            IoContext& operator=(const IoContext&) = delete;
+
+            ~IoContext()
+            {
+                ioc->stop();
+                iocThread.join();
+            }
+
+            void start()
+            {
+                ioc = std::make_unique<net::io_context>();
+                guard = std::make_unique<net::executor_work_guard<net::io_context::executor_type>> (ioc->get_executor());
+                iocThread = std::move(std::thread([this]() { ioc->run(); }));
+            }
+            
+            std::unique_ptr<net::io_context> ioc;
+            std::thread iocThread;
+            std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> guard;
+        };
+
     public:
         BinanceBeast() ;
         ~BinanceBeast();
 
-        void start(const ConnectionConfig& config);
+
+        /// Start the networking event processing.
+        /// If you're only REST calls and it's not a call that requires an API key, you can leave the api and secret keys in the config empty.
+        /// config - the config, created by ConnectionConfig::MakeTestNetConfig() or ConnectionConfig::MakeLiveConfig().
+        /// nWebsockIoContexts - how many asio::io_context to handle websockets. Leave as default if unsure.
+        void start(const ConnectionConfig& config, const size_t nWebsockIoContexts = 4);
         
 
         // REST calls
@@ -73,7 +105,7 @@ namespace bblib
             if (wc == nullptr)
                 throw std::runtime_error("callback is null");
 
-            std::shared_ptr<WsSession> session = std::make_shared<WsSession>(m_wsIoc, m_wsCtx, std::move(wc));
+            std::shared_ptr<WsSession> session = std::make_shared<WsSession>(getIoContext(), m_wsCtx, std::move(wc));
             
             session->run(host, "443", path);
         }
@@ -135,6 +167,9 @@ namespace bblib
                 session->run(host, "443", path, 11); 
             }
         }
+
+
+        net::io_context& getIoContext();
 
     
         inline string b2a_hex(char* byte_arr, int n)
@@ -259,6 +294,7 @@ namespace bblib
         }
 
     private:
+
         ConnectionConfig m_config;
         string m_listenKey;
 
@@ -276,6 +312,9 @@ namespace bblib
         std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> m_wsWorkGuard;
         std::shared_ptr<ssl::context> m_wsCtx;          // TODO do we need different ssl contexts for Rest and WS?
         std::unique_ptr<std::thread> m_wsIocThread;     // TODO think about a thread_pool of these, distributing work as roundrobin 
+
+        std::vector<IoContext> m_wsIocThreads;
+        std::atomic_size_t m_nextIoContext;
     };
 
 }   // namespace BinanceBeast
