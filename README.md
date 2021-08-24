@@ -9,7 +9,6 @@ NOTE: the library has only been tested on Ubuntu. It *should* work on Windows bu
 
 
 ## Example
-An example is below:
 
 * Uses an REST call to get all orders for BTCUSDT
 * I use a mutex and cv to wait for the async `allOrders()` to return
@@ -56,13 +55,6 @@ int main (int argc, char ** argv)
 
 ---
 
-## Aims
-- Performance: handle many Rest requests and websocket sessions
-- Configurable: provide configuration on how io_context are used, particularly if issuing many Rest calls
-- Usability: easy to build and use
-- Documentation: provide tests/examples on how to use and best practises
-
-
 ## Quick Guide
 
 *NOTE: If you are calling a Rest function often, use the equivalent Websocket function instead*
@@ -84,8 +76,7 @@ The general usage is:
 
 
 
-### Rest Calls
-#### All Orders Example
+### REST
 ```cpp
 int main (int argc, char ** argv)
 {
@@ -116,8 +107,7 @@ int main (int argc, char ** argv)
 
 ```
 
-### Websockets
-#### Mark Price Symbol
+### WebSockets
 Receive Mark Price for ETHUSDT for 10 seconds:
 
 ```cpp
