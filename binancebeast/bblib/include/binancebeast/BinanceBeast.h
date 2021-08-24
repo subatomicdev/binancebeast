@@ -77,6 +77,25 @@ namespace bblib
 
         void markPrice(RestCallback rr, RestParams params);
 
+        void fundingRate(RestCallback rr, RestParams params);
+
+        void tickerPriceChange24hr(RestCallback rr, RestParams params);
+        void symbolPriceTicker(RestCallback rr, RestParams params);
+        void symbolBookTicker(RestCallback rr, RestParams params);
+
+        void openInterest(RestCallback rr, RestParams params);
+        void openInterestStats(RestCallback rr, RestParams params);
+
+        void topTraderLongShortRatioAccounts(RestCallback rr, RestParams params);
+        void topTraderLongShortRatioPositions(RestCallback rr, RestParams params);
+
+        void longShortRatio(RestCallback rr, RestParams params);
+        void takerBuySellVolume(RestCallback rr, RestParams params);
+
+        void historicalBlvtNavKlines(RestCallback rr, RestParams params);
+        void compositeIndexSymbolInfo(RestCallback rr, RestParams params);
+
+
         // WebSockets: market data
         void monitorMarkPrice (WsCallback wc, string params);
         void monitorKline (WsCallback wc, string params);

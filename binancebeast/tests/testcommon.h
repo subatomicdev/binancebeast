@@ -13,7 +13,7 @@ namespace bblib_test
 
     void testFail (std::string_view test, std::string_view reason = "timeout")
     {
-        std::cout << test << " FAIL: " << reason << "\n";
+        std::cout << reason <<  " ";
     }
 
 
@@ -39,7 +39,7 @@ namespace bblib_test
     }
 
         
-    bool waitReply (std::condition_variable& cvHaveReply, const std::string_view test, const std::chrono::milliseconds timeout = 3s)
+    bool waitReply (std::condition_variable& cvHaveReply, const std::string_view test, const std::chrono::milliseconds timeout = 5s)
     {
         std::mutex mux;
 

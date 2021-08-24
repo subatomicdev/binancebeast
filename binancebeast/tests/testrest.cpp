@@ -81,6 +81,7 @@ int main (int argc, char ** argv)
     bb.start(config);
 
     
+    
     runTest(bb, &BinanceBeast::exchangeInfo, "exchangeInfo");
 
     runTest(bb, &BinanceBeast::serverTime, "serverTime");
@@ -104,5 +105,28 @@ int main (int argc, char ** argv)
     runTest(bb, &BinanceBeast::markPriceKlines, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"interval","15m"}}}, "mark price klines");
     
     runTest(bb, &BinanceBeast::markPrice, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "mark price");
+
+    runTest(bb, &BinanceBeast::fundingRate, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "fundingRate");
+
+    runTest(bb, &BinanceBeast::tickerPriceChange24hr, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "24hrTickerPriceChange");
     
+    runTest(bb, &BinanceBeast::symbolPriceTicker, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "symbolPriceTicker");
+
+    runTest(bb, &BinanceBeast::symbolBookTicker, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "symbolBookTicker");
+        
+    runTest(bb, &BinanceBeast::openInterest, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "openInterest");
+
+    runTest(bb, &BinanceBeast::openInterestStats, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "openInterestStats");
+
+    runTest(bb, &BinanceBeast::topTraderLongShortRatioAccounts, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "topTraderLongShortRatioAccounts");
+
+    runTest(bb, &BinanceBeast::topTraderLongShortRatioPositions, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "topTraderLongShortRatioPositions");
+    
+    runTest(bb, &BinanceBeast::longShortRatio, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "longShortRatio");
+
+    runTest(bb, &BinanceBeast::takerBuySellVolume, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "takerBuySellVolume");
+    
+    runTest(bb, &BinanceBeast::historicalBlvtNavKlines, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "historicalBlvtNavKlines");
+
+    runTest(bb, &BinanceBeast::compositeIndexSymbolInfo, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "compositeIndexSymbolInfo");
 }

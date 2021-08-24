@@ -145,6 +145,67 @@ namespace bblib
         createRestSession(m_config.restApiUri, "/fapi/v1/premiumIndex", false, std::move(rr), true, std::move(params));
     }
 
+    void BinanceBeast::fundingRate(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/fundingRate", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::tickerPriceChange24hr(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/ticker/24hr", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::symbolPriceTicker(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/ticker/price", false, std::move(rr), true, std::move(params));
+    }
+    
+    void BinanceBeast::symbolBookTicker(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/ticker/bookTicker", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::openInterest(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/openInterest", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::openInterestStats(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/futures/data/openInterestHist", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::topTraderLongShortRatioAccounts(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/futures/data/topLongShortAccountRatio", false, std::move(rr), true, std::move(params));
+    }
+    
+    void BinanceBeast::topTraderLongShortRatioPositions(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/futures/data/topLongShortPositionRatio", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::longShortRatio(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/futures/data/globalLongShortAccountRatio", false, std::move(rr), true, std::move(params));
+    }
+    
+    void BinanceBeast::takerBuySellVolume(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/futures/data/takerlongshortRatio", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::historicalBlvtNavKlines(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/futures/v1/lvtKlines", false, std::move(rr), true, std::move(params));
+    }
+    
+    void BinanceBeast::compositeIndexSymbolInfo(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/futures/v1/indexInfo", false, std::move(rr), true, std::move(params));
+    }
+
+
     //// WebSockets
 
     void BinanceBeast::monitorMarkPrice (WsCallback wc, string params)
