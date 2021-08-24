@@ -16,6 +16,11 @@
 
 namespace bblib
 {
+    /// 
+    /// REST API docs:  https://binance-docs.github.io/apidocs/futures/en/#market-data-endpoints, 
+    ///                 https://binance-docs.github.io/apidocs/futures/en/#account-trades-endpoints
+    ///
+    /// WebSockets API docs: https://binance-docs.github.io/apidocs/futures/en/#websocket-market-streams
     class BinanceBeast
     {
     private:
@@ -54,49 +59,40 @@ namespace bblib
         /// Start the networking event processing.
         /// If you're only REST calls and it's not a call that requires an API key, you can leave the api and secret keys in the config empty.
         /// config - the config, created by ConnectionConfig::MakeTestNetConfig() or ConnectionConfig::MakeLiveConfig().
+        /// nRestIoContexts - how many asio::io_context to handle REST calls. Leave as default if unsure.
         /// nWebsockIoContexts - how many asio::io_context to handle websockets. Leave as default if unsure.
-        void start(const ConnectionConfig& config, const size_t nWebsockIoContexts = 4);
+        void start(const ConnectionConfig& config, const size_t nRestIoContexts = 4, const size_t nWebsockIoContexts = 6);
         
 
         // REST calls
         void ping ();
         void exchangeInfo(RestCallback rr);
         void serverTime(RestCallback rr);
-
         void orderBook(RestCallback rr, RestParams params);
-        void allOrders(RestCallback rr, RestParams params);
-        
+        void allOrders(RestCallback rr, RestParams params);        
         void recentTradesList(RestCallback rr, RestParams params);
         void historicTrades(RestCallback rr, RestParams params);
-        void aggregateTradesList(RestCallback rr, RestParams params);
-        
+        void aggregateTradesList(RestCallback rr, RestParams params);        
         void klines(RestCallback rr, RestParams params);
         void contractKlines(RestCallback rr, RestParams params);
         void indexPriceKlines(RestCallback rr, RestParams params);
         void markPriceKlines(RestCallback rr, RestParams params);
-
         void markPrice(RestCallback rr, RestParams params);
-
         void fundingRate(RestCallback rr, RestParams params);
-
         void tickerPriceChange24hr(RestCallback rr, RestParams params);
         void symbolPriceTicker(RestCallback rr, RestParams params);
         void symbolBookTicker(RestCallback rr, RestParams params);
-
         void openInterest(RestCallback rr, RestParams params);
         void openInterestStats(RestCallback rr, RestParams params);
-
         void topTraderLongShortRatioAccounts(RestCallback rr, RestParams params);
         void topTraderLongShortRatioPositions(RestCallback rr, RestParams params);
-
         void longShortRatio(RestCallback rr, RestParams params);
         void takerBuySellVolume(RestCallback rr, RestParams params);
-
         void historicalBlvtNavKlines(RestCallback rr, RestParams params);
         void compositeIndexSymbolInfo(RestCallback rr, RestParams params);
 
 
-        // WebSockets: market data
+        // WebSockets
         void monitorMarkPrice (WsCallback wc, string params);
         void monitorKline (WsCallback wc, string params);
         void monitorIndividualSymbolMiniTicker (WsCallback wc, string symbol);
@@ -104,8 +100,6 @@ namespace bblib
         void monitorIndividualSymbolTicker(WsCallback wc, string symbol);
         void monitorSymbolBookTicker(WsCallback wc, string symbol);
         void monitorAllBookTicker(WsCallback wc);
-        
-        // WebSockets: user data
         void monitorUserData(WsCallback wc);
 
 
@@ -125,7 +119,7 @@ namespace bblib
             if (wc == nullptr)
                 throw std::runtime_error("callback is null");
 
-            std::shared_ptr<WsSession> session = std::make_shared<WsSession>(getIoContext(), m_wsCtx, std::move(wc));
+            std::shared_ptr<WsSession> session = std::make_shared<WsSession>(getWsIoContext(), m_wsCtx, std::move(wc));
             
             session->run(host, "443", path);
         }
@@ -139,9 +133,9 @@ namespace bblib
             std::shared_ptr<RestSession> session;
 
             if (createStrand)
-                session = std::make_shared<RestSession>(net::make_strand(m_restIoc), m_restCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
+                session = std::make_shared<RestSession>(net::make_strand(getRestIoContext()), m_restCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
             else
-                session = std::make_shared<RestSession>(m_restIoc.get_executor(), m_restCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
+                session = std::make_shared<RestSession>(getRestIoContext().get_executor(), m_restCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
 
             // we don't need to worry about the session's lifetime because RestSession::run() passes the session's shared_ptr
             // by value into the io_context. The session will be destroyed when there are no more io operations pending.
@@ -189,7 +183,9 @@ namespace bblib
         }
 
 
-        net::io_context& getIoContext();
+        net::io_context& getWsIoContext();
+
+        net::io_context& getRestIoContext();
 
     
         inline string b2a_hex(char* byte_arr, int n)
@@ -320,17 +316,15 @@ namespace bblib
 
 
         // REST
-        net::io_context m_restIoc;  // single io context for REST calls
-        std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> m_restWorkGuard;
         std::shared_ptr<ssl::context> m_restCtx;
-        std::unique_ptr<std::thread> m_restIocThread;
         net::thread_pool m_restCallersThreadPool;  // The users's callback functions are called from this pool rather than using the io_context's thread
-
+        std::vector<IoContext> m_restIocThreads;
+        std::atomic_size_t m_nextRestIoContext;
 
         // WebSockets
         std::shared_ptr<ssl::context> m_wsCtx;          // TODO do we need different ssl contexts for Rest and WS?
         std::vector<IoContext> m_wsIocThreads;
-        std::atomic_size_t m_nextIoContext;
+        std::atomic_size_t m_nextWsIoContext;
     };
 
 }   // namespace BinanceBeast

@@ -79,7 +79,6 @@ int main (int argc, char ** argv)
     auto config = ConnectionConfig::MakeTestNetConfig(argc == 2 ? argv[1] : "");
 
     bb.start(config);
-
     
     
     runTest(bb, &BinanceBeast::exchangeInfo, "exchangeInfo");

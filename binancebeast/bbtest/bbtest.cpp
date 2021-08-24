@@ -221,17 +221,20 @@ int main (int argc, char ** argv)
 
     auto config = ConnectionConfig::MakeTestNetConfig(argc == 2 ? argv[1] : "");
 
+
+
     BinanceBeast bb;
 
     bb.start(config);
     
     bb.exchangeInfo(onExchangeInfo);
-    //bb.serverTime(onServerTime);
-    //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
+    bb.serverTime(onServerTime);
+    bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
     //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
 
+
     //bb.monitorMarkPrice(onMonitorMarkPriceAll, "!markPrice@arr@1s");
-    //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
+    bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
     //bb.monitorKline(onMonitorKline, "btcusdt@kline_15m");
     //bb.monitorIndividualSymbolMiniTicker(onSymbolMiniTicker, "btcusdt");
     //bb.monitorAllMarketMiniTickers(onAllMarketMiniTickers);
@@ -247,7 +250,7 @@ int main (int argc, char ** argv)
         //bb.closeUserData(onCloseUserData);
         //bb.monitorUserData(onUserData);
     }
-    
+
 
     {   // testing number of websocket io contexts
         //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
@@ -256,7 +259,6 @@ int main (int argc, char ** argv)
         //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "adausdt@markPrice@1s");
         //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "xrpusdt@markPrice@1s");        
     }
-
 
     cmdFut.wait();
     
