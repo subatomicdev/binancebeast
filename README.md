@@ -50,7 +50,7 @@ int main (int argc, char ** argv)
 * The REST handlers are called from a boost::thread_pool
 * The WebSocket handlers are called from a thread pool which gaurantees the order is maintained
 * If your handler takes time to process, it doesn't affect the networking processing thread(s)
-* There are multiple `boost::asio::io_context` for Rest and Websockets calls which can be changed at run time with `BinanceBeast::start()`
+* There are multiple `boost::asio::io_context` for Rest and Websockets calls which are set with `BinanceBeast::start()`
   * Rest default is 4
   * Websockets default is 6
 * Work is distributed evenly with a simple round-robin
