@@ -65,12 +65,14 @@ int main (int argc, char ** argv)
 
 ## Quick Guide
 
-*NOTE: If you want frequent symbol information you should use the Websockets rather than Rest*
+*NOTE: If you are calling a Rest function often, use the equivalent Websocket function instead*
 
 *NOTE: All API functions are asychronous.*
 
 The general usage is:
 
+- Create an account with Binance, verify your account and create an API key
+  - There are separate registration and keys for the live and test exchanges
 - Create the config with `ConnectionConfig::MakeTestNetConfig()` or `ConnectionConfig::MakeLiveConfig()` 
 - Instatiate a `BinanceBeast` object then call `start()`
 - Call a Rest or websocket function, all of which are asynchronous, supplied with a callback function (`RestCallback` or `WsCallback`)
