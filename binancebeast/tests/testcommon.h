@@ -17,22 +17,22 @@ namespace bblib_test
     }
 
 
-    bool handleError(std::string_view test, bblib::RestResult& result)
+    bool hasError(std::string_view test, bblib::RestResult& result)
     {
         if (result.hasErrorCode())
         {
-            testFail(test, json::value_to<std::string>(result.json.as_object()["code"]) + std::string{" : "} + json::value_to<std::string>(result.json.as_object()["msg"]));
+            testFail(test, std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"])) + std::string{" : "} + json::value_to<std::string>(result.json.as_object()["msg"]));
             return true;
         }
         return false;
     }
 
 
-    bool handleError(std::string_view test, bblib::WsResult& result)
+    bool hasError(std::string_view test, bblib::WsResult& result)
     {
         if (result.hasErrorCode())
         {
-            testFail(test, json::value_to<std::string>(result.json.as_object()["code"]) + std::string{" : "} + json::value_to<std::string>(result.json.as_object()["msg"]));
+            testFail(test, std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"])) + std::string{" : "} + json::value_to<std::string>(result.json.as_object()["msg"]));
             return true;
         }
         return false;

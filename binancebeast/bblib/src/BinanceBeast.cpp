@@ -94,6 +94,45 @@ namespace bblib
         createRestSession(m_config.restApiUri, "/fapi/v1/allOrders", false, std::move(rr), true, std::move(params));
     }
 
+    void BinanceBeast::recentTradesList(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/trades", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::historicTrades(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/historicalTrades", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::aggregateTradesList(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/aggTrades", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::klines(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/klines", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::contractKlines(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/continuousKlines", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::indexPriceKlines(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/indexPriceKlines", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::markPriceKlines(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/markPriceKlines", false, std::move(rr), true, std::move(params));
+    }
+
+    void BinanceBeast::markPrice(RestCallback rr, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, "/fapi/v1/premiumIndex", false, std::move(rr), true, std::move(params));
+    }
 
     //// WebSockets
 

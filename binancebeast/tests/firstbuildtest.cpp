@@ -23,10 +23,9 @@ int main (int argc, char ** argv)
 
     bb.exchangeInfo([&cvHaveReply](RestResult result)
     {
-        if (!bblib_test::handleError(BB_FUNCTION, result))
-        {
-            std::cout << result.json.as_object() << "\n";
-        }
+        std::cout << result.json.as_object() << "\n";
+
+        std::cout << "success = " << !bblib_test::hasError(BB_FUNCTION, result);
 
         cvHaveReply.notify_one();
     });

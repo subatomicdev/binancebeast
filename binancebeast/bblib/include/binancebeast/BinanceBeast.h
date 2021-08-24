@@ -32,7 +32,17 @@ namespace bblib
 
         void orderBook(RestCallback rr, RestParams params);
         void allOrders(RestCallback rr, RestParams params);
+        
+        void recentTradesList(RestCallback rr, RestParams params);
+        void historicTrades(RestCallback rr, RestParams params);
+        void aggregateTradesList(RestCallback rr, RestParams params);
+        
+        void klines(RestCallback rr, RestParams params);
+        void contractKlines(RestCallback rr, RestParams params);
+        void indexPriceKlines(RestCallback rr, RestParams params);
+        void markPriceKlines(RestCallback rr, RestParams params);
 
+        void markPrice(RestCallback rr, RestParams params);
 
         // WebSockets: market data
         void monitorMarkPrice (WsCallback wc, string params);

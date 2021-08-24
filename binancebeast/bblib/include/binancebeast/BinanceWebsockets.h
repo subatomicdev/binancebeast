@@ -33,7 +33,7 @@ namespace bblib
             try
             {
                 if (json.is_object())
-                    error = json.as_object().if_contains("code");
+                    error = json.as_object().if_contains("code") || json.as_object().if_contains("error");
             }
             catch(...)
             {            
