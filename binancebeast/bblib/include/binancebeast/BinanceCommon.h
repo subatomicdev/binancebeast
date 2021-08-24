@@ -11,6 +11,9 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/json.hpp>
+#include <filesystem>
+#include <fstream>
+#include <tuple>
 
 
 namespace bblib
@@ -37,20 +40,63 @@ namespace bblib
 
     struct ConnectionConfig
     {    
-        static ConnectionConfig MakeTestNetConfig ()
+        static std::tuple<string, string> readKeyFile (const std::filesystem::path& p, const bool isLive)
+        {
+            if (!std::filesystem::exists(p))
+            {
+                throw std::runtime_error("key file path does not exist");
+            }
+            else if (std::filesystem::file_size(p) > 140)
+			{
+				throw std::runtime_error("key file invalid format. Should be 3 lines:\nLine 1: <test | live>\nLine 2: api key\nLine 3: secret key");
+			}
+			else
+			{
+				string line, api, secret;
+									
+				std::ifstream fileStream(p.c_str());
+				std::getline(fileStream, line);
+
+				if ((line == "live" && !isLive) || (line == "test" && isLive))
+				{
+                    throw std::runtime_error("key file is for " + line + " but not being configured for " + line);
+				}
+                else
+                {
+                    std::getline(fileStream, api);
+					std::getline(fileStream, secret);
+
+                    return std::make_tuple(api, secret);
+                }
+			}
+        }
+
+        static ConnectionConfig MakeTestNetConfig (const std::filesystem::path& keyFile = std::filesystem::path{}) 
         {
             static std::string DefaultFuturesTestnetWsUri {"stream.binancefuture.com"};
             static std::string DefaultUsdFuturesTestnetRestUri {"testnet.binancefuture.com"};
-
-            return ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultFuturesTestnetWsUri, false};
+            
+            if (!std::filesystem::path(keyFile).empty())
+            {
+                auto keys = readKeyFile(keyFile, false);
+                return ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultFuturesTestnetWsUri, false, ConnectionKeys{std::get<0>(keys), std::get<1>(keys)}};
+            }
+            else
+                return ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultFuturesTestnetWsUri, false};
         }
 
-        static ConnectionConfig MakeLiveConfig ()
+        static ConnectionConfig MakeLiveConfig (const std::filesystem::path& keyFile = std::filesystem::path{})
         {
             static std::string DefaultFuturesWsUri {"fstream.binance.com"};
             static std::string DefaultUsdFuturesRestUri {"fapi.binance.com"};
 
-            return ConnectionConfig {DefaultUsdFuturesRestUri, DefaultFuturesWsUri, true};
+            if (!std::filesystem::path(keyFile).empty())
+            {
+                auto keys = readKeyFile(keyFile, true);
+                return ConnectionConfig {DefaultUsdFuturesRestUri, DefaultFuturesWsUri, false, ConnectionKeys{std::get<0>(keys), std::get<1>(keys)}};
+            }
+            else
+                return ConnectionConfig {DefaultUsdFuturesRestUri, DefaultFuturesWsUri, true};
         }
 
         struct ConnectionKeys

@@ -76,12 +76,9 @@ int main (int argc, char ** argv)
 
     BinanceBeast bb;
 
-    auto config = ConnectionConfig::MakeTestNetConfig();
-    config.keys.api     = "e40fd4783309eed8285e5f00d60e19aa712ce0ecb4d449f015f8702ab1794abf";
-    config.keys.secret  = "6c3d765d9223d2cdf6fe7a16340721d58689e26d10e6a22903dd76e1d01969f0";
+    auto config = ConnectionConfig::MakeTestNetConfig(argc == 2 ? argv[1] : "");
 
     bb.start(config);
-    
 
     
     runTest(bb, &BinanceBeast::exchangeInfo, "exchangeInfo");

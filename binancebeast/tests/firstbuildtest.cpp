@@ -25,7 +25,7 @@ int main (int argc, char ** argv)
     {
         std::cout << result.json.as_object() << "\n";
 
-        std::cout << "success = " << !bblib_test::hasError(BB_FUNCTION, result);
+        std::cout << "success = " << !bblib_test::hasError("exchangeInfo", result) << "\n";
 
         cvHaveReply.notify_one();
     });
