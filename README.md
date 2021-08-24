@@ -134,20 +134,20 @@ int main (int argc, char ** argv)
     bb.start(config);   // must always call this once to start the networking processing loop
 
     bb.monitorMarkPrice([&](WsResult result)      // this is called for each message or error
-                        {  
-                            std::cout << result.json << "\n\n";
+    {  
+        std::cout << result.json << "\n\n";
 
-                            if (result.hasErrorCode())
-                            {
-                                std::cout << "\nError code: " << std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"]))
-                                          << "\nError msg: " << json::value_to<std::string>(result.json.as_object()["msg"]) << "\n";
-                            }
-                            else
-                            {
-                                std::cout << "\n" << result.json.as_object()["s"] << " = " << result.json.as_object()["p"] << "\n";
-                            }
+        if (result.hasErrorCode())
+        {
+            std::cout << "\nError code: " << std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"]))
+                        << "\nError msg: " << json::value_to<std::string>(result.json.as_object()["msg"]) << "\n";
+        }
+        else
+        {
+            std::cout << "\n" << result.json.as_object()["s"] << " = " << result.json.as_object()["p"] << "\n";
+        }
 
-                        }, "ethusdt@markPrice@1s");      // params for Websocket call
+    }, "ethusdt@markPrice@1s");      // params for Websocket call
 
     using namespace std::chrono_literals;    
     std::this_thread::sleep_for(10s);
