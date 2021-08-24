@@ -10,8 +10,8 @@ NOTE: the library has only been tested on Ubuntu. It *should* work on Windows bu
 
 ## Example
 
-* Uses an REST call to get all orders for BTCUSDT
-* I use a mutex and cv to wait for the async `allOrders()` to return
+* Use a REST call to get all orders for BTCUSDT
+* I use a mutex and cv to wait for the _async_ `allOrders()` to return
 * The call to `allOrders()`
   * An std::function which is the result handler, called when there is an error or the reply is received
   * The params which are appended to the REST query
@@ -48,10 +48,12 @@ int main (int argc, char ** argv)
 
 ### Notes
 * The REST handlers are called from a boost::thread_pool
-* The WebSocket handlers is called from a thread pool which gaurantees the order is maintained
+* The WebSocket handlers are called from a thread pool which gaurantees the order is maintained
 * If your handler takes time to process, it doesn't affect the networking processing thread(s)
-* The are two instatiations of `boost::asio::io_context` , one for Rest calls and the other for Websockets
-* I am considering creating a pool of `boost::asio::io_context` for the Websockets and distributing work evenly
+* There is a single `boost::asio::io_context` for Rest calls
+* There are multiple `boost::asio::io_context`for Websockets, default of 4, which can be changed at run time with `BinanceBeast::start()`
+ * Work is distributed evenly with a simple round-robin
+
 
 ---
 
@@ -116,8 +118,6 @@ int main (int argc, char ** argv)
     auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
     config.keys.api     = "YOUR API KEY";
     config.keys.secret  = "YOUR SECRET KEY";
-
-    std::condition_variable cvHaveReply;
 
     BinanceBeast bb;
 
