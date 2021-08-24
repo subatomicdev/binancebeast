@@ -76,8 +76,11 @@ The general usage is:
 - Create the config with `ConnectionConfig::MakeTestNetConfig()` or `ConnectionConfig::MakeLiveConfig()` 
 - Instatiate a `BinanceBeast` object then call `start()`
 - Call a Rest or websocket function, all of which are asynchronous, supplied with a callback function (`RestCallback` or `WsCallback`)
-- A websocket stream is closed when the `BinanceBeast` object is destructed
+  - A websocket stream is closed when the `BinanceBeast` object is destructed
   - There is no close monitor function, this may be added later
+- In the handler, use the `hasErrorCode()` function
+  - if so access `code` and `msg` to find information
+- The JSON is stored in a boost::json::value, so if there's no error, use the `as_object()` or `as_array()` 
 
 
 
@@ -132,7 +135,18 @@ int main (int argc, char ** argv)
 
     bb.monitorMarkPrice([&](WsResult result)      // this is called for each message or error
                         {  
-                            std::cout << result.json << "\n";
+                            std::cout << result.json << "\n\n";
+
+                            if (result.hasErrorCode())
+                            {
+                                std::cout << "\nError code: " << std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"]))
+                                          << "\nError msg: " << json::value_to<std::string>(result.json.as_object()["msg"]) << "\n";
+                            }
+                            else
+                            {
+                                std::cout << "\n" << result.json.as_object()["s"] << " = " << result.json.as_object()["p"] << "\n";
+                            }
+
                         }, "ethusdt@markPrice@1s");      // params for Websocket call
 
     using namespace std::chrono_literals;    
