@@ -4,8 +4,12 @@
 
 A C++ library for the Binance Futures exchange, using Boost's Beast and JSON libraries for networking (http/websockets) and json respectively. 
 
+The library has only been tested on Ubuntu. It *should* work on Windows but I can't confirm.
 
-NOTE: the library has only been tested on Ubuntu. It *should* work on Windows but I can't confirm.
+
+## Status
+- Rest: all market endpoints, 50% of account/trade endpoints
+- WebSockets: 50%
 
 
 ## Example
