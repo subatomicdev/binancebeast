@@ -15,16 +15,11 @@ namespace bblib
     BinanceBeast::~BinanceBeast()
     {
         m_restWorkGuard.reset();
-        m_wsWorkGuard.reset();
 
         if (!m_restIoc.stopped())
             m_restIoc.stop();
 
-        if (!m_wsIoc.stopped())
-            m_wsIoc.stop();
-
         m_restIocThread->join();
-        m_wsIocThread->join();
     }
 
 
@@ -59,10 +54,6 @@ namespace bblib
 
         m_restWorkGuard = std::make_unique<net::executor_work_guard<net::io_context::executor_type>> (m_restIoc.get_executor());
         m_restIocThread = std::make_unique<std::thread> (std::function { [this]() { m_restIoc.run(); } });
-
-        m_wsWorkGuard = std::make_unique<net::executor_work_guard<net::io_context::executor_type>> (m_wsIoc.get_executor());
-        m_wsIocThread = std::make_unique<std::thread> (std::function { [this]() { m_wsIoc.run(); } });
-
 
         m_nextIoContext.store(0);
 

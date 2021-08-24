@@ -29,6 +29,7 @@ namespace bblib
 
             ~IoContext()
             {
+                guard.reset();
                 ioc->stop();
                 iocThread.join();
             }
@@ -308,11 +309,7 @@ namespace bblib
 
 
         // WebSockets
-        net::io_context m_wsIoc; 
-        std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> m_wsWorkGuard;
         std::shared_ptr<ssl::context> m_wsCtx;          // TODO do we need different ssl contexts for Rest and WS?
-        std::unique_ptr<std::thread> m_wsIocThread;     // TODO think about a thread_pool of these, distributing work as roundrobin 
-
         std::vector<IoContext> m_wsIocThreads;
         std::atomic_size_t m_nextIoContext;
     };

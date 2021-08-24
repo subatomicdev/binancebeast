@@ -227,13 +227,13 @@ int main (int argc, char ** argv)
 
     bb.start(config);
     
-    //bb.exchangeInfo(onExchangeInfo);
+    bb.exchangeInfo(onExchangeInfo);
     //bb.serverTime(onServerTime);
     //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
     //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
 
     //bb.monitorMarkPrice(onMonitorMarkPriceAll, "!markPrice@arr@1s");
-    bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
+    //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
     //bb.monitorKline(onMonitorKline, "btcusdt@kline_15m");
     //bb.monitorIndividualSymbolMiniTicker(onSymbolMiniTicker, "btcusdt");
     //bb.monitorAllMarketMiniTickers(onAllMarketMiniTickers);
@@ -259,7 +259,7 @@ int main (int argc, char ** argv)
         //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "xrpusdt@markPrice@1s");        
     }
 
-    
+
     cmdFut.wait();
     
 
