@@ -10,6 +10,7 @@ The library has only been tested on Ubuntu. It *should* work on Windows but I ca
 ## Status
 - Rest: all market endpoints, 50% of account/trade endpoints
 - WebSockets: 50%
+- User Data: all
 
 
 ## Example
@@ -150,6 +151,46 @@ int main (int argc, char ** argv)
     return 0;
 }
 ```
+
+## User Data
+Use the `BinanceBeast::monitorUserData()`, it's a standard websocket session.
+
+* User data has a key, "e", which is the eventType
+* Listen keys expire after 60 minutes
+* You should use `BinanceBeast::renewListenKey()` to extend the key
+* If the key expires you should call `BinanceBeast::monitorUserData()` to create a new key
+  * When a key expires it does not close the websocket connection
+
+
+```cpp
+void onUserData(WsResult result)
+{
+    auto topLevel = result.json.as_object();
+    const auto eventType = json::value_to<string>(topLevel["e"]);
+
+    if (eventType == "listenKeyExpired")
+    {
+        std::cout << "listen key expired, renew with BinanceBeast::renewListenKey()\n";
+    }
+    else if (eventType == "MARGIN_CALL")
+    {
+        std::cout << "margin call\n";
+    }
+    else if (eventType == "ACCOUNT_UPDATE")
+    {
+        std::cout << "account update\n";
+    }
+    else if (eventType == "ORDER_TRADE_UPDATE")
+    {
+        std::cout << "order trade update\n";
+    }
+    else if (eventType == "ACCOUNT_CONFIG_UPDATE")
+    {
+        std::cout << "account config update\n";
+    }
+}
+```
+
 
 ## Build
 You must have Git installed and a development environment installed (i.e. gcc, cmake). It has been developed with GCC 10.3.0.
