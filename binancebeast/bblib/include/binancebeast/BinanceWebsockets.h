@@ -27,12 +27,13 @@ namespace bblib
 
         }
 
-        bool hasErrorCode()
+        /// Check if there's an error in the response
+        bool hasErrorCode(bool isNullAllowed = false)
         {
             bool error = false;
             try
             {
-                if (json.is_null())
+                if (!isNullAllowed && json.is_null())
                     error = "null";
                 else if (json.is_object())
                     error = json.as_object().if_contains("code") || json.as_object().if_contains("error");

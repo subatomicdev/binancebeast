@@ -7,6 +7,7 @@
 using namespace bblib;
 
 
+
 bool handleError(RestResult& result)
 {
     if (result.hasErrorCode())
@@ -190,7 +191,6 @@ void onBltv(WsResult result)
 }
 
 
-
 void onUserData(WsResult result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
@@ -244,6 +244,58 @@ void onCloseUserData(WsResult result)
 }
 
 
+
+class ListenKeyExtender
+{
+public:
+    ListenKeyExtender(BinanceBeast& bb) : m_bb(bb)
+    {
+        m_guard = std::make_unique<boost::asio::executor_work_guard<net::io_context::executor_type>> (m_ioc.get_executor());
+
+        m_timer = std::make_unique<boost::asio::steady_timer> (m_ioc, boost::asio::chrono::minutes(59));
+        m_timer->async_wait(std::bind(&ListenKeyExtender::onTimerExpire, this, std::placeholders::_1));
+
+        m_thread = std::move(std::thread([this]{m_ioc.run();}));
+    }
+
+    ~ListenKeyExtender()
+    {
+        m_timer->cancel();
+        m_guard.reset();
+        m_ioc.stop();
+        m_thread.join();
+    }
+
+    void onTimerExpire(const boost::system::error_code)
+    {
+        std::cout << "Sending listen key extend request\n";
+        m_bb.renewListenKey(std::bind(&ListenKeyExtender::onListenKeyRenew, this, std::placeholders::_1));
+    }
+
+    void onListenKeyRenew(WsResult result)
+    {
+        // call with 'true': the call to renew the listen key returns empty (null) json
+        if (result.hasErrorCode(true))
+        {
+            std::cout << "Listen key renewal/extend fail: " << result.json << "\n";
+        }
+        else
+        {
+            std::cout << "Listen key renewal/extend success\n";
+        }   
+
+        m_timer->expires_after(boost::asio::chrono::minutes(59));    
+        m_timer->async_wait(std::bind(&ListenKeyExtender::onTimerExpire, this, std::placeholders::_1));         
+    }
+
+    BinanceBeast& m_bb;
+    boost::asio::io_context m_ioc;
+    std::unique_ptr<boost::asio::steady_timer> m_timer;
+    std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> m_guard;
+    std::thread m_thread;
+};
+
+
 int main (int argc, char ** argv)
 {
     auto cmdFut = std::async(std::launch::async, []
@@ -260,12 +312,13 @@ int main (int argc, char ** argv)
 
     auto config = ConnectionConfig::MakeTestNetConfig(argc == 2 ? argv[1] : "");
 
-
-
     BinanceBeast bb;
-
     bb.start(config);
     
+    
+    ListenKeyExtender listenKeyExtender{bb};
+
+
     bb.exchangeInfo(onExchangeInfo);
     //bb.serverTime(onServerTime);
     //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
@@ -289,7 +342,9 @@ int main (int argc, char ** argv)
     //bb.monitorBlvtNavKlines(onBltv, "TRXDOWN", "1m");
     //bb.monitorCompositeIndexSymbolInfo(onBltv, "btcusdt");
     
+        
     //bb.monitorUserData(onUserData);
+   
 
     {
         //bb.monitorUserData(onUserData);

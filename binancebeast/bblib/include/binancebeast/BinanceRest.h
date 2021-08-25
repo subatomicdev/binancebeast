@@ -34,18 +34,26 @@ namespace bblib
 
         }
 
-        bool hasErrorCode() const
+        /// Check if there is an error in the result.
+        /// Some calls may return an empty result, such as Listen Key keepalive and close.
+        bool hasErrorCode(bool isNullAllowed = false)
         {
             bool error = false;
             try
             {
-                if (json.is_object())
-                    error = json.as_object().if_contains("code");
+                if (!isNullAllowed && json.is_null())
+                    error = "null";
+                else if (json.is_object())
+                    error = json.as_object().if_contains("code") || json.as_object().if_contains("error");
             }
             catch(...)
-            {            
+            {        
+                error = true;    
             }
             
+            if (error)
+                state = State::Fail;
+
             return error;
         }
 
