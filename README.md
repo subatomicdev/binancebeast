@@ -10,9 +10,11 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 ## Status
 
 ### USD-M Futures
-- Rest: all market endpoints, 50% of account/trade endpoints
-- WebSockets: 50%
-- User Data: all
+- Rest
+  - Market: all
+  - Account/trade: 50%
+- WebSockets: All
+- User Data: All
 
 
 ## Example
