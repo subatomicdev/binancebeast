@@ -157,6 +157,40 @@ void onAllBookTickers(WsResult result)
 }
 
 
+void onLiquidationOrder(WsResult result)
+{
+    std::cout << BB_FUNCTION_ENTER << "\n";
+
+    if (!handleError(result))
+    {
+        std::cout << result.json << "\n";
+    }
+}
+
+
+void onBookDepth(WsResult result)
+{
+    std::cout << BB_FUNCTION_ENTER << "\n";
+
+    if (!handleError(result))
+    {
+        std::cout << result.json << "\n";
+    }
+}
+
+
+void onBltv(WsResult result)
+{
+    std::cout << BB_FUNCTION_ENTER << "\n";
+
+    if (!handleError(result))
+    {
+        std::cout << result.json << "\n";
+    }
+}
+
+
+
 void onUserData(WsResult result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
@@ -233,7 +267,7 @@ int main (int argc, char ** argv)
     bb.start(config);
     
     bb.exchangeInfo(onExchangeInfo);
-    bb.serverTime(onServerTime);
+    //bb.serverTime(onServerTime);
     //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
     //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
 
@@ -246,6 +280,14 @@ int main (int argc, char ** argv)
     //bb.monitorIndividualSymbolTicker(onIndividualSymbolTicker, "btcusdt");
     //bb.monitorSymbolBookTicker(onSymbolBookTicker, "btcusdt");
     //bb.monitorAllBookTicker(onAllBookTickers);
+    //bb.monitorLiquidationOrder(onLiquidationOrder, "btcusdt");
+    //bb.monitorAllMarketLiduiqdationOrder(onLiquidationOrder);
+    //bb.monitorPartialBookDepth(onBookDepth, "btcusdt", "20", "100ms");
+    //bb.monitorDiffBookDepth(onBookDepth, "btcusdt", "100ms");
+
+    //bb.monitorBlvtInfo(onBltv, "TRXDOWN");
+    //bb.monitorBlvtNavKlines(onBltv, "TRXDOWN", "1m");
+    //bb.monitorCompositeIndexSymbolInfo(onBltv, "btcusdt");
     
     //bb.monitorUserData(onUserData);
 

@@ -100,8 +100,14 @@ namespace bblib
         void monitorIndividualSymbolTicker(WsCallback wc, string symbol);
         void monitorSymbolBookTicker(WsCallback wc, string symbol);
         void monitorAllBookTicker(WsCallback wc);
+        void monitorLiquidationOrder(WsCallback wc, string symbol);
+        void monitorAllMarketLiduiqdationOrder(WsCallback wc);
+        void monitorPartialBookDepth(WsCallback wc, string symbol, string levels, string updateSpeed = "250ms");
+        void monitorDiffBookDepth(WsCallback wc, string symbol, string updateSpeed = "250ms");
+        void monitorBlvtInfo(WsCallback wc, string tokenName);
+        void monitorBlvtNavKlines(WsCallback wc, string tokenName, string interval);
+        void monitorCompositeIndexSymbolInfo(WsCallback wc, string symbol);
         void monitorUserData(WsCallback wc);
-
 
         // Listen Key
 

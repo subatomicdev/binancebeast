@@ -66,7 +66,7 @@ namespace bblib
     public:
     
         // Resolver and socket require an io_context
-        explicit WsSession(net::io_context& ioc, std::shared_ptr<ssl::context> ctx, const WsCallback&& callback)
+        explicit WsSession(net::io_context& ioc, std::shared_ptr<ssl::context> ctx, WsCallback&& callback)
             :   m_resolver(net::make_strand(ioc)),
                 m_ws(net::make_strand(ioc), *ctx),
                 m_callback(std::move(callback)),

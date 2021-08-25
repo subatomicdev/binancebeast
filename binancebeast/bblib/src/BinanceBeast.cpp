@@ -251,6 +251,41 @@ namespace bblib
         createWsSession(m_config.wsApiUri, std::move("/ws/!bookTicker"), std::move(wc));
     }
 
+    void BinanceBeast::monitorLiquidationOrder(WsCallback wc, string symbol)
+    {
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+symbol+"@forceOrder"), std::move(wc));
+    }
+
+    void BinanceBeast::monitorAllMarketLiduiqdationOrder(WsCallback wc)
+    {
+        createWsSession(m_config.wsApiUri, std::move("/ws/!forceOrder@arr"), std::move(wc));
+    }
+
+    void BinanceBeast::monitorPartialBookDepth(WsCallback wc, string symbol, string levels, string updateSpeed)
+    {
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+symbol+"@depth"+levels+(updateSpeed.empty() ? "" : "@"+updateSpeed)), std::move(wc));
+    }
+
+    void BinanceBeast::monitorDiffBookDepth(WsCallback wc, string symbol, string updateSpeed)
+    {
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+symbol+"@depth"+(updateSpeed.empty() ? "" : "@"+updateSpeed)), std::move(wc));
+    }
+
+    void BinanceBeast::monitorBlvtInfo(WsCallback wc, string tokenName)
+    {
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+tokenName+"@tokenNav"), std::move(wc));
+    }
+
+    void BinanceBeast::monitorBlvtNavKlines(WsCallback wc, string tokenName, string interval)
+    {
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+tokenName+"@nav_Kline_"+interval), std::move(wc));
+    }
+
+    void BinanceBeast::monitorCompositeIndexSymbolInfo(WsCallback wc, string symbol)
+    {
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+symbol+"@compositeIndex"), std::move(wc));
+    }
+
     void BinanceBeast::monitorUserData(WsCallback wc)
     {
         if (amendUserDataListenKey(wc, UserDataStreamMode::Create))
