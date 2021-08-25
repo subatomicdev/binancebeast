@@ -153,13 +153,15 @@ int main (int argc, char ** argv)
 ```
 
 ## User Data
-Use the `BinanceBeast::monitorUserData()`, it's a standard websocket session.
+Use the `BinanceBeast::monitorUserData()`, it's a standard websocket session. 
 
 * User data has a key, "e", which is the eventType
 * Listen keys expire after 60 minutes
 * You should use `BinanceBeast::renewListenKey()` to extend the key within 60 minutes
 * If the key expires you should call `BinanceBeast::monitorUserData()` to create a new key
   * When a key expires it does not close the websocket connection
+
+NOTE: because user data relates to positions and orders, you won't receive anything unless positions are opened/closed or orders are filled.
 
 
 ```cpp
