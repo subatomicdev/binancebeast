@@ -167,28 +167,35 @@ NOTE: because user data relates to positions and orders, you won't receive anyth
 ```cpp
 void onUserData(WsResult result)
 {
-    auto topLevel = result.json.as_object();
-    const auto eventType = json::value_to<string>(topLevel["e"]);
+    if (result.hasErrorCode())
+    {
+        std::cout << result.failMessage << "\n";
+    }
+    else
+    {
+        auto topLevel = result.json.as_object();
+        const auto eventType = json::value_to<string>(topLevel["e"]);
 
-    if (eventType == "listenKeyExpired")
-    {
-        std::cout << "listen key expired, renew with BinanceBeast::renewListenKey()\n";
-    }
-    else if (eventType == "MARGIN_CALL")
-    {
-        std::cout << "margin call\n";
-    }
-    else if (eventType == "ACCOUNT_UPDATE")
-    {
-        std::cout << "account update\n";
-    }
-    else if (eventType == "ORDER_TRADE_UPDATE")
-    {
-        std::cout << "order trade update\n";
-    }
-    else if (eventType == "ACCOUNT_CONFIG_UPDATE")
-    {
-        std::cout << "account config update\n";
+        if (eventType == "listenKeyExpired")
+        {
+            std::cout << "listen key expired, renew with BinanceBeast::renewListenKey()\n";
+        }
+        else if (eventType == "MARGIN_CALL")
+        {
+            std::cout << "margin call\n";
+        }
+        else if (eventType == "ACCOUNT_UPDATE")
+        {
+            std::cout << "account update\n";
+        }
+        else if (eventType == "ORDER_TRADE_UPDATE")
+        {
+            std::cout << "order trade update\n";
+        }
+        else if (eventType == "ACCOUNT_CONFIG_UPDATE")
+        {
+            std::cout << "account config update\n";
+        }
     }
 }
 ```
