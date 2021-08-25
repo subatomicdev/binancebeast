@@ -9,6 +9,11 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 
 ## Status
 
+NOTE: the monitor functions have been deprecated and will be removed, except for `monitorUserData()` which has been renamed `startUserData()`. Instead use `startWebSocket()`.
+
+See `tests/testwebsockets.cpp`.
+
+
 ### USD-M Futures
 - Rest
   - Market: all
@@ -113,7 +118,6 @@ int main (int argc, char ** argv)
     std::unique_lock lck(mux);
 
     cvHaveReply.wait(lck);
-
     return 0;
 }
 
