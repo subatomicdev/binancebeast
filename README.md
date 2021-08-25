@@ -9,9 +9,9 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 
 ## Status
 
-NOTE: the monitor functions have been deprecated and will be removed, except for `monitorUserData()` which has been renamed `startUserData()`. Instead use `startWebSocket()`.
-
-See `tests/testwebsockets.cpp`.
+**NOTE BREAKING CHANGES**
+- The monitor functions have been deprecated and will be removed. Use `startWebSocket()`. See `tests/testwebsockets.cpp`.
+- For user data, `monitorUserData()` which has been renamed `startUserData()`.
 
 
 ### USD-M Futures
