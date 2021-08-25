@@ -157,7 +157,7 @@ Use the `BinanceBeast::monitorUserData()`, it's a standard websocket session.
 
 * User data has a key, "e", which is the eventType
 * Listen keys expire after 60 minutes
-* You should use `BinanceBeast::renewListenKey()` to extend the key
+* You should use `BinanceBeast::renewListenKey()` to extend the key within 60 minutes
 * If the key expires you should call `BinanceBeast::monitorUserData()` to create a new key
   * When a key expires it does not close the websocket connection
 
