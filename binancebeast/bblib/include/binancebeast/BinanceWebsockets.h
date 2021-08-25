@@ -17,7 +17,7 @@ namespace bblib
 
         }
 
-        WsResult (string failReason) : state(State::Fail), failMessage(failReason)
+        WsResult (std::string_view failReason) : state(State::Fail), failMessage(failReason)
         {
 
         }
@@ -27,18 +27,24 @@ namespace bblib
 
         }
 
-        bool hasErrorCode() const
+        bool hasErrorCode()
         {
             bool error = false;
             try
             {
-                if (json.is_object())
+                if (json.is_null())
+                    error = "null";
+                else if (json.is_object())
                     error = json.as_object().if_contains("code") || json.as_object().if_contains("error");
             }
             catch(...)
-            {            
+            {        
+                error = true;    
             }
             
+            if (error)
+                state = State::Fail;
+
             return error;
         }
 

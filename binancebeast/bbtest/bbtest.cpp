@@ -160,31 +160,36 @@ void onAllBookTickers(WsResult result)
 void onUserData(WsResult result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
+    
+    if (result.hasErrorCode())
+    {
+        std::cout << result.failMessage << "\n";
+    }
+    else
+    {
+        auto topLevel = result.json.as_object();
+        const auto eventType = json::value_to<string>(topLevel["e"]);
 
-    auto topLevel = result.json.as_object();
-    const auto eventType = json::value_to<string>(topLevel["e"]);
-
-    std::cout << eventType << "\n";
-
-    if (eventType == "listenKeyExpired")
-    {
-        std::cout << "listen key expires, renew with BinanceBeast::renewListenKey()\n"; // TODO !
-    }
-    else if (eventType == "MARGIN_CALL")
-    {
-        std::cout << "margin call\n";
-    }
-    else if (eventType == "ACCOUNT_UPDATE")
-    {
-        std::cout << "account update\n";
-    }
-    else if (eventType == "ORDER_TRADE_UPDATE")
-    {
-        std::cout << "order trade update\n";
-    }
-    else if (eventType == "ACCOUNT_CONFIG_UPDATE")
-    {
-        std::cout << "account config update\n";
+        if (eventType == "listenKeyExpired")
+        {
+            std::cout << "listen key expired, renew with BinanceBeast::renewListenKey()\n";
+        }
+        else if (eventType == "MARGIN_CALL")
+        {
+            std::cout << "margin call\n";
+        }
+        else if (eventType == "ACCOUNT_UPDATE")
+        {
+            std::cout << "account update\n";
+        }
+        else if (eventType == "ORDER_TRADE_UPDATE")
+        {
+            std::cout << "order trade update\n";
+        }
+        else if (eventType == "ACCOUNT_CONFIG_UPDATE")
+        {
+            std::cout << "account config update\n";
+        }
     }
 }
 
@@ -229,12 +234,12 @@ int main (int argc, char ** argv)
     
     bb.exchangeInfo(onExchangeInfo);
     bb.serverTime(onServerTime);
-    bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
+    //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
     //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
 
 
     //bb.monitorMarkPrice(onMonitorMarkPriceAll, "!markPrice@arr@1s");
-    bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
+    //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
     //bb.monitorKline(onMonitorKline, "btcusdt@kline_15m");
     //bb.monitorIndividualSymbolMiniTicker(onSymbolMiniTicker, "btcusdt");
     //bb.monitorAllMarketMiniTickers(onAllMarketMiniTickers);
