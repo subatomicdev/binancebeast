@@ -73,123 +73,6 @@ void onAllOrders (RestResult result)
 }
 
 
-void onMonitorMarkPriceAll(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json << "\n";
-    }
-}
-
-
-void onMonitorMarkPriceSymbol(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json << "\n";
-    }
-}
-
-
-void onMonitorKline(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json.as_object() << "\n";
-    }
-}
-
-
-void onSymbolMiniTicker(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json.as_object() << "\n";
-    }
-}
-
-void onAllMarketMiniTickers(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json.as_array() << "\n";
-    }
-}
-
-void onIndividualSymbolTicker(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json.as_object() << "\n";
-    }
-}
-
-void onSymbolBookTicker(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json.as_object() << "\n";
-    }
-}
-
-
-void onAllBookTickers(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json.as_object() << "\n";
-    }
-}
-
-
-void onLiquidationOrder(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json << "\n";
-    }
-}
-
-
-void onBookDepth(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json << "\n";
-    }
-}
-
-
-void onBltv(WsResult result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json << "\n";
-    }
-}
-
 
 void onUserData(WsResult result)
 {
@@ -244,6 +127,14 @@ void onCloseUserData(WsResult result)
 }
 
 
+void onWsResponse(WsResult result)
+{
+    if (result.hasErrorCode())
+        std::cout << "\nFAIL: " << result.failMessage << "\n";
+    else
+        std::cout << "\n" << result.json << "\n";
+}
+
 
 class ListenKeyExtender
 {
@@ -295,7 +186,7 @@ public:
     std::thread m_thread;
 };
 
-
+/*
 int main (int argc, char ** argv)
 {
     auto cmdFut = std::async(std::launch::async, []
@@ -313,59 +204,65 @@ int main (int argc, char ** argv)
     auto config = ConnectionConfig::MakeTestNetConfig(argc == 2 ? argv[1] : "");
 
     BinanceBeast bb;
-    bb.start(config);
+    bb.start(config,4, 8);
     
     
     ListenKeyExtender listenKeyExtender{bb};
 
 
-    bb.exchangeInfo(onExchangeInfo);
+    //bb.exchangeInfo(onExchangeInfo);
     //bb.serverTime(onServerTime);
     //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
     //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
 
+    bb.startWebSocket(onWsResponse, "btcusdt@markPrice@1s");
 
-    //bb.monitorMarkPrice(onMonitorMarkPriceAll, "!markPrice@arr@1s");
-    //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
-    //bb.monitorKline(onMonitorKline, "btcusdt@kline_15m");
-    //bb.monitorIndividualSymbolMiniTicker(onSymbolMiniTicker, "btcusdt");
-    //bb.monitorAllMarketMiniTickers(onAllMarketMiniTickers);
-    //bb.monitorIndividualSymbolTicker(onIndividualSymbolTicker, "btcusdt");
-    //bb.monitorSymbolBookTicker(onSymbolBookTicker, "btcusdt");
-    //bb.monitorAllBookTicker(onAllBookTickers);
-    //bb.monitorLiquidationOrder(onLiquidationOrder, "btcusdt");
-    //bb.monitorAllMarketLiduiqdationOrder(onLiquidationOrder);
-    //bb.monitorPartialBookDepth(onBookDepth, "btcusdt", "20", "100ms");
-    //bb.monitorDiffBookDepth(onBookDepth, "btcusdt", "100ms");
-
-    //bb.monitorBlvtInfo(onBltv, "TRXDOWN");
-    //bb.monitorBlvtNavKlines(onBltv, "TRXDOWN", "1m");
-    //bb.monitorCompositeIndexSymbolInfo(onBltv, "btcusdt");
-    
-        
-    //bb.monitorUserData(onUserData);
+    //bb.startUserData(onUserData);
    
 
     {
-        //bb.monitorUserData(onUserData);
+        //bb.startUserData(onUserData);
         //bb.renewListenKey(onRenewListenKey);
         //bb.closeUserData(onCloseUserData);
-        //bb.monitorUserData(onUserData);
+        //bb.startUserData(onUserData);
     }
 
-
-    {   // testing number of websocket io contexts
-        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "btcusdt@markPrice@1s");
-        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "ethusdt@markPrice@1s");
-        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "blzusdt@markPrice@1s");
-        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "adausdt@markPrice@1s");
-        //bb.monitorMarkPrice(onMonitorMarkPriceSymbol, "xrpusdt@markPrice@1s");        
-    }
 
     cmdFut.wait();
     
 
     return 0;
 }
+*/
 
+int main (int argc, char ** argv)
+{
+    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
+    // you don't need API or secret keys for mark price
+
+    BinanceBeast bb;
+
+    bb.start(config);   // must always call this once to start the networking processing loop
+
+    bb.startWebSocket([&](WsResult result)      // this is called for each message or error
+    {  
+        std::cout << result.json << "\n\n";
+
+        if (result.hasErrorCode())
+        {
+            std::cout << "\nError code: " << std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"]))
+                      << "\nError msg: " << json::value_to<std::string>(result.json.as_object()["msg"]) << "\n";
+        }
+        else
+        {
+            std::cout << "\n" << result.json.as_object()["s"] << " = " << result.json.as_object()["p"] << "\n";
+        }
+
+    }, "ethusdt@markPrice@1s");      // params for Websocket call
+
+    using namespace std::chrono_literals;    
+    std::this_thread::sleep_for(10s);
+
+    return 0;
+}
 

@@ -14,6 +14,8 @@
 #include <filesystem>
 #include <fstream>
 #include <tuple>
+#include <string>
+#include <string_view>
 
 
 namespace bblib
@@ -37,6 +39,7 @@ namespace bblib
     using std::string;
     const std::string BINANCEBEAST_USER_AGENT = "binancebeast";
 
+    using std::string_view;
 
     struct ConnectionConfig
     {    

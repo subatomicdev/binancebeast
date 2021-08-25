@@ -21,6 +21,16 @@ namespace bblib
     ///                 https://binance-docs.github.io/apidocs/futures/en/#account-trades-endpoints
     ///
     /// WebSockets API docs: https://binance-docs.github.io/apidocs/futures/en/#websocket-market-streams
+    ///
+    /// All websockets are started with startWebSocket() , except user data which is startUserData().
+    /// 
+    /// startWebSocket() requires a result handler and the stream name, which is on the Binance docs.
+    ///
+    /// for mark price:  
+    ///     binanceBeast.startWebSocket(onWsResponse, "btcusdt@markPrice@1s");
+    ///
+    /// where binanceBeast is a BinanceBeast object and onWsResponse is the result handler.
+    ///
     class BinanceBeast
     {
     private:
@@ -63,6 +73,8 @@ namespace bblib
         /// nWebsockIoContexts - how many asio::io_context to handle websockets. Leave as default if unsure.
         void start(const ConnectionConfig& config, const size_t nRestIoContexts = 4, const size_t nWebsockIoContexts = 6);
         
+        void startWebSocket (WsCallback wc, string stream);
+        void startUserData(WsCallback wc);
 
         // REST calls
         void ping ();
@@ -93,22 +105,32 @@ namespace bblib
 
 
         // WebSockets
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorMarkPrice (WsCallback wc, string params);
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorKline (WsCallback wc, string params);
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorIndividualSymbolMiniTicker (WsCallback wc, string symbol);
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorAllMarketMiniTickers (WsCallback wc);
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorIndividualSymbolTicker(WsCallback wc, string symbol);
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorSymbolBookTicker(WsCallback wc, string symbol);
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorAllBookTicker(WsCallback wc);
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorLiquidationOrder(WsCallback wc, string symbol);
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorAllMarketLiduiqdationOrder(WsCallback wc);
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorPartialBookDepth(WsCallback wc, string symbol, string levels, string updateSpeed = "250ms");
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorDiffBookDepth(WsCallback wc, string symbol, string updateSpeed = "250ms");
-        void monitorBlvtInfo(WsCallback wc, string tokenName);
-        void monitorBlvtNavKlines(WsCallback wc, string tokenName, string interval);
+        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorCompositeIndexSymbolInfo(WsCallback wc, string symbol);
-        void monitorUserData(WsCallback wc);
 
+        
         // Listen Key
 
         /// You should call this every 60 minutes to extend your listen key, otherwise your user data stream will become invalid/closed by Binance.
@@ -119,6 +141,8 @@ namespace bblib
         void closeUserData (WsCallback wc);
 
     private:
+        void stop();
+
 
         void createWsSession (const string& host, const std::string& path, WsCallback&& wc)
         {

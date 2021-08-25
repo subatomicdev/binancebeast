@@ -13,6 +13,7 @@ LINK_DIRECTORIES("../../vcpkg/installed/x64-linux/lib")
 
 add_executable (firstbuildtest "firstbuildtest.cpp")
 add_executable (testrest "testrest.cpp")
+add_executable (testws "testwebsockets.cpp")
 
 
 set_target_properties(firstbuildtest PROPERTIES CXX_STANDARD 17)
@@ -20,3 +21,6 @@ target_link_libraries(firstbuildtest binancebeast -lssl -lboost_json -lcrypto -l
 
 set_target_properties(testrest PROPERTIES CXX_STANDARD 17)
 target_link_libraries(testrest binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl)
+
+set_target_properties(testws PROPERTIES CXX_STANDARD 17)
+target_link_libraries(testws binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl)

@@ -14,12 +14,23 @@ namespace bblib
 
     BinanceBeast::~BinanceBeast()
     {
-        
+        stop();
+    }
+
+
+    void BinanceBeast::stop()
+    {
+        // this will stop all io_context processing
+        m_wsIocThreads.clear();
+        m_restIocThreads.clear();
     }
 
 
     void BinanceBeast::start (const ConnectionConfig& config, const size_t nRestIoContexts, const size_t nWebsockIoContexts)
     {  
+        m_nextWsIoContext = 0;
+        m_nextRestIoContext = 0;
+
         m_restCtx = std::make_shared<ssl::context> (ssl::context::tlsv12_client);
         m_wsCtx = std::make_shared<ssl::context> (ssl::context::tlsv12_client);
 
@@ -86,11 +97,11 @@ namespace bblib
 
     //// REST
 
+
     void BinanceBeast::ping ()
     { 
         createRestSession(m_config.restApiUri, "/fapi/v1/ping", false, nullptr);
     }
-
 
     void BinanceBeast::exchangeInfo(RestCallback rr)
     {
@@ -101,7 +112,6 @@ namespace bblib
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/time", false, std::move(rr));
     }
-
 
     void BinanceBeast::orderBook(RestCallback rr, RestParams params)
     {
@@ -216,11 +226,19 @@ namespace bblib
 
     //// WebSockets
 
-    void BinanceBeast::monitorMarkPrice (WsCallback wc, string params)
+    void BinanceBeast::startWebSocket (WsCallback wc, string streamName)
     {
-        createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(params)), std::move(wc));
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(streamName)), std::move(wc));
     }
 
+
+   
+    void BinanceBeast::monitorMarkPrice (WsCallback wc, string params)
+    {
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(params)), std::move(wc));        
+    }
+
+    
     void BinanceBeast::monitorKline (WsCallback wc, string params)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(params)), std::move(wc));
@@ -253,7 +271,7 @@ namespace bblib
 
     void BinanceBeast::monitorLiquidationOrder(WsCallback wc, string symbol)
     {
-        createWsSession(m_config.wsApiUri, std::move("/ws/"+symbol+"@forceOrder"), std::move(wc));
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol)+"@forceOrder"), std::move(wc));
     }
 
     void BinanceBeast::monitorAllMarketLiduiqdationOrder(WsCallback wc)
@@ -263,30 +281,20 @@ namespace bblib
 
     void BinanceBeast::monitorPartialBookDepth(WsCallback wc, string symbol, string levels, string updateSpeed)
     {
-        createWsSession(m_config.wsApiUri, std::move("/ws/"+symbol+"@depth"+levels+(updateSpeed.empty() ? "" : "@"+updateSpeed)), std::move(wc));
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol)+"@depth"+levels+(updateSpeed.empty() ? "" : "@"+updateSpeed)), std::move(wc));
     }
 
     void BinanceBeast::monitorDiffBookDepth(WsCallback wc, string symbol, string updateSpeed)
     {
-        createWsSession(m_config.wsApiUri, std::move("/ws/"+symbol+"@depth"+(updateSpeed.empty() ? "" : "@"+updateSpeed)), std::move(wc));
-    }
-
-    void BinanceBeast::monitorBlvtInfo(WsCallback wc, string tokenName)
-    {
-        createWsSession(m_config.wsApiUri, std::move("/ws/"+tokenName+"@tokenNav"), std::move(wc));
-    }
-
-    void BinanceBeast::monitorBlvtNavKlines(WsCallback wc, string tokenName, string interval)
-    {
-        createWsSession(m_config.wsApiUri, std::move("/ws/"+tokenName+"@nav_Kline_"+interval), std::move(wc));
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol)+"@depth"+(updateSpeed.empty() ? "" : "@"+updateSpeed)), std::move(wc));
     }
 
     void BinanceBeast::monitorCompositeIndexSymbolInfo(WsCallback wc, string symbol)
     {
-        createWsSession(m_config.wsApiUri, std::move("/ws/"+symbol+"@compositeIndex"), std::move(wc));
+        createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol)+"@compositeIndex"), std::move(wc));
     }
 
-    void BinanceBeast::monitorUserData(WsCallback wc)
+    void BinanceBeast::startUserData(WsCallback wc)
     {
         if (amendUserDataListenKey(wc, UserDataStreamMode::Create))
         {
