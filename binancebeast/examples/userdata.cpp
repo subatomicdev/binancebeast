@@ -86,7 +86,7 @@ int main (int argc, char ** argv)
     // start the network processing
     bb.start(config);
 
-    // receive mark price for ETHUSDT for 10 seconds
+    // receive user data 
     bb.startUserData([&](WsResult result)      // this is called for each message or error
     {  
         std::cout << result.json << "\n\n";
@@ -120,8 +120,8 @@ int main (int argc, char ** argv)
     std::cout << "Running. Create or close orders on the Binance Futures TestNet to see user data\n";
 
     using namespace std::chrono_literals;    
-    //std::this_thread::sleep_for(30s);
-    std::this_thread::sleep_for(std::chrono::minutes(120));
+    std::this_thread::sleep_for(30s);
+    //std::this_thread::sleep_for(std::chrono::minutes(120));
 
 
     return 0;
