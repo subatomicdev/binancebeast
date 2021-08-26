@@ -72,7 +72,7 @@ namespace bblib
     
     using QueryParams = std::unordered_map<string, string>;
     
-    using RestCallback = std::function<void(RestResult)>;   // "Use RestResponseHandler. This will be removed"
+    using RestCallback = std::function<void(RestResult)>;   // // DO NOT USE, will be removed. Use RestResponseHandler
     using RestResponseHandler = std::function<void(RestResult)>;
 
 

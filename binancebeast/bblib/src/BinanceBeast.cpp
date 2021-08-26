@@ -231,75 +231,75 @@ namespace bblib
 
     //// WebSockets
 
-    void BinanceBeast::startWebSocket (WsCallback wc, string streamName)
+    void BinanceBeast::startWebSocket (WebSocketResponseHandler wc, string streamName)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(streamName)), std::move(wc));
     }
 
 
    
-    void BinanceBeast::monitorMarkPrice (WsCallback wc, string params)
+    void BinanceBeast::monitorMarkPrice (WebSocketResponseHandler wc, string params)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(params)), std::move(wc));        
     }
 
     
-    void BinanceBeast::monitorKline (WsCallback wc, string params)
+    void BinanceBeast::monitorKline (WebSocketResponseHandler wc, string params)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(params)), std::move(wc));
     }
 
-    void BinanceBeast::monitorIndividualSymbolMiniTicker (WsCallback wc, string symbol)
+    void BinanceBeast::monitorIndividualSymbolMiniTicker (WebSocketResponseHandler wc, string symbol)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol)+"@miniTicker"), std::move(wc));
     }
 
-    void BinanceBeast::monitorAllMarketMiniTickers (WsCallback wc)
+    void BinanceBeast::monitorAllMarketMiniTickers (WebSocketResponseHandler wc)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/!miniTicker@arr"), std::move(wc));
     }
 
-    void BinanceBeast::monitorIndividualSymbolTicker(WsCallback wc, string symbol)
+    void BinanceBeast::monitorIndividualSymbolTicker(WebSocketResponseHandler wc, string symbol)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol) + "@ticker"), std::move(wc));
     }
 
-    void BinanceBeast::monitorSymbolBookTicker(WsCallback wc, string symbol)
+    void BinanceBeast::monitorSymbolBookTicker(WebSocketResponseHandler wc, string symbol)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol) + "@bookTicker"), std::move(wc));
     }
 
-    void BinanceBeast::monitorAllBookTicker(WsCallback wc)
+    void BinanceBeast::monitorAllBookTicker(WebSocketResponseHandler wc)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/!bookTicker"), std::move(wc));
     }
 
-    void BinanceBeast::monitorLiquidationOrder(WsCallback wc, string symbol)
+    void BinanceBeast::monitorLiquidationOrder(WebSocketResponseHandler wc, string symbol)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol)+"@forceOrder"), std::move(wc));
     }
 
-    void BinanceBeast::monitorAllMarketLiduiqdationOrder(WsCallback wc)
+    void BinanceBeast::monitorAllMarketLiduiqdationOrder(WebSocketResponseHandler wc)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/!forceOrder@arr"), std::move(wc));
     }
 
-    void BinanceBeast::monitorPartialBookDepth(WsCallback wc, string symbol, string levels, string updateSpeed)
+    void BinanceBeast::monitorPartialBookDepth(WebSocketResponseHandler wc, string symbol, string levels, string updateSpeed)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol)+"@depth"+levels+(updateSpeed.empty() ? "" : "@"+updateSpeed)), std::move(wc));
     }
 
-    void BinanceBeast::monitorDiffBookDepth(WsCallback wc, string symbol, string updateSpeed)
+    void BinanceBeast::monitorDiffBookDepth(WebSocketResponseHandler wc, string symbol, string updateSpeed)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol)+"@depth"+(updateSpeed.empty() ? "" : "@"+updateSpeed)), std::move(wc));
     }
 
-    void BinanceBeast::monitorCompositeIndexSymbolInfo(WsCallback wc, string symbol)
+    void BinanceBeast::monitorCompositeIndexSymbolInfo(WebSocketResponseHandler wc, string symbol)
     {
         createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(symbol)+"@compositeIndex"), std::move(wc));
     }
 
-    void BinanceBeast::startUserData(WsCallback wc)
+    void BinanceBeast::startUserData(WebSocketResponseHandler wc)
     {
         if (amendUserDataListenKey(wc, UserDataStreamMode::Create))
         {
@@ -307,7 +307,7 @@ namespace bblib
         }
     }    
 
-    void BinanceBeast::renewListenKey(WsCallback wc)
+    void BinanceBeast::renewListenKey(WebSocketResponseHandler wc)
     {
         if (amendUserDataListenKey(wc, UserDataStreamMode::Extend))
         {
@@ -315,7 +315,7 @@ namespace bblib
         }
     }
 
-    void BinanceBeast::closeUserData (WsCallback wc)
+    void BinanceBeast::closeUserData (WebSocketResponseHandler wc)
     {
         if (amendUserDataListenKey(wc, UserDataStreamMode::Close))
         {

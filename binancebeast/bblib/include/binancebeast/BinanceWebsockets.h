@@ -36,15 +36,22 @@ namespace bblib
                 if (!isNullAllowed && json.is_null())
                     error = "null";
                 else if (json.is_object())
-                    error = json.as_object().if_contains("code") || json.as_object().if_contains("error");
+                {
+                    auto jsonObj = json.as_object();
+                    error = jsonObj.if_contains("code") || jsonObj.if_contains("error");
+                    
+                    if (jsonObj.if_contains("code"))
+                    {
+                        failMessage = (jsonObj.if_contains("msg") ? json::value_to<string>(jsonObj["msg"]) : "");
+                    }
+                }
             }
             catch(...)
             {        
                 error = true;    
             }
             
-            if (error)
-                state = State::Fail;
+            state = error ? State::Fail : State::Success;
 
             return error;
         }
@@ -55,7 +62,8 @@ namespace bblib
     };
 
 
-    using WsCallback = std::function<void(WsResult)>;
+    using WsCallback = std::function<void(WsResult)>;   // DO NOT USE, will be removed. Use WebSocketResponseHandler
+    using WebSocketResponseHandler = std::function<void(WsResult)>;
     
 
     /// Manages a websocket client session, from initial connection until disconnect.
@@ -67,7 +75,7 @@ namespace bblib
     public:
     
         // Resolver and socket require an io_context
-        explicit WsSession(net::io_context& ioc, std::shared_ptr<ssl::context> ctx, WsCallback&& callback)
+        explicit WsSession(net::io_context& ioc, std::shared_ptr<ssl::context> ctx, WebSocketResponseHandler&& callback)
             :   m_resolver(net::make_strand(ioc)),
                 m_ws(net::make_strand(ioc), *ctx),
                 m_callback(std::move(callback)),
@@ -200,7 +208,7 @@ namespace bblib
         beast::flat_buffer m_buffer;
         std::string m_host;
         std::string m_path;
-        WsCallback m_callback;
+        WebSocketResponseHandler m_callback;
         std::shared_ptr<ssl::context> m_sslContext;
         std::unique_ptr<OrderedThreadPool<WsResult>> m_handlersPool;
     };

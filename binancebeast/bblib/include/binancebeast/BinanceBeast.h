@@ -88,17 +88,17 @@ namespace bblib
         /// Start a new websocket session, for all websocket endpoints except user data (use startUserData() for that).
         /// The supplied callback handler will be called for each response, which may include an error.
         /// 'stream' is the "streamName" as defined on the Binance API docs.
-        void startWebSocket (WsCallback wc, string stream);
+        void startWebSocket (WebSocketResponseHandler wc, string stream);
 
         /// Start a user data websocket session.
-        void startUserData(WsCallback wc);
+        void startUserData(WebSocketResponseHandler wc);
 
         /// You should call this every 60 minutes to extend your listen key, otherwise your user data stream will become invalid/closed by Binance.
         /// You must first call monitorUserData() to create (or reuse exiting) listen key, there after calll this function every ~ 60 minutes.
-        void renewListenKey(WsCallback wc);
+        void renewListenKey(WebSocketResponseHandler wc);
 
         /// This will invalidate your key, so you will no longer receive user data updates. Only call if you intend to shutdown.
-        void closeUserData (WsCallback wc);
+        void closeUserData (WebSocketResponseHandler wc);
 
 
         // REST calls
@@ -156,36 +156,36 @@ namespace bblib
 
         // WebSockets
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorMarkPrice (WsCallback wc, string params);
+        void monitorMarkPrice (WebSocketResponseHandler wc, string params);
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorKline (WsCallback wc, string params);
+        void monitorKline (WebSocketResponseHandler wc, string params);
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorIndividualSymbolMiniTicker (WsCallback wc, string symbol);
+        void monitorIndividualSymbolMiniTicker (WebSocketResponseHandler wc, string symbol);
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorAllMarketMiniTickers (WsCallback wc);
+        void monitorAllMarketMiniTickers (WebSocketResponseHandler wc);
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorIndividualSymbolTicker(WsCallback wc, string symbol);
+        void monitorIndividualSymbolTicker(WebSocketResponseHandler wc, string symbol);
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorSymbolBookTicker(WsCallback wc, string symbol);
+        void monitorSymbolBookTicker(WebSocketResponseHandler wc, string symbol);
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorAllBookTicker(WsCallback wc);
+        void monitorAllBookTicker(WebSocketResponseHandler wc);
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorLiquidationOrder(WsCallback wc, string symbol);
+        void monitorLiquidationOrder(WebSocketResponseHandler wc, string symbol);
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorAllMarketLiduiqdationOrder(WsCallback wc);
+        void monitorAllMarketLiduiqdationOrder(WebSocketResponseHandler wc);
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorPartialBookDepth(WsCallback wc, string symbol, string levels, string updateSpeed = "250ms");
+        void monitorPartialBookDepth(WebSocketResponseHandler wc, string symbol, string levels, string updateSpeed = "250ms");
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorDiffBookDepth(WsCallback wc, string symbol, string updateSpeed = "250ms");
+        void monitorDiffBookDepth(WebSocketResponseHandler wc, string symbol, string updateSpeed = "250ms");
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorCompositeIndexSymbolInfo(WsCallback wc, string symbol);
+        void monitorCompositeIndexSymbolInfo(WebSocketResponseHandler wc, string symbol);
         
 
     private:
         void stop();
 
 
-        void createWsSession (const string& host, const std::string& path, WsCallback&& wc)
+        void createWsSession (const string& host, const std::string& path, WebSocketResponseHandler&& wc)
         {
             if (wc == nullptr)
                 throw std::runtime_error("callback is null");
@@ -289,7 +289,7 @@ namespace bblib
     private:
         enum class UserDataStreamMode { Create, Extend, Close };
 
-        bool amendUserDataListenKey (WsCallback wc, const UserDataStreamMode mode)
+        bool amendUserDataListenKey (WebSocketResponseHandler wc, const UserDataStreamMode mode)
         {
             net::io_context ioc;
 
