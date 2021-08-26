@@ -21,8 +21,8 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 
 ### USD-M Futures
 - Rest
-  - Market: All
-  - Account/trade: All
+  - Market: All 
+  - Account/trade: All GET request. Adding POST soon (i.e. for New Order)
 - WebSockets: All
 - User Data: All
 
