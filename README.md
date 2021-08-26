@@ -11,12 +11,12 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 
 26th August 
 **BREAKING CHANGES**
-- The REST functions have been deprecated and will be removed. Use `sendRequest()` instead. See docs and `tests/testrest.cpp`.
+- The REST functions have been deprecated and will be removed. Use `sendRequest()` instead. See docs and `examples/rest.cpp`.
 
 25th August 
 **BREAKING CHANGES**
-- The monitor functions have been deprecated and will be removed. Use `startWebSocket()`. See `tests/testwebsockets.cpp`.
-- For user data, `monitorUserData()` which has been renamed `startUserData()`.
+- The monitor functions have been deprecated and will be removed. Use `startWebSocket()`. 
+- For user data, `monitorUserData()` which has been renamed `startUserData()`.See `examples/userdata.cpp`.
 
 
 ### USD-M Futures
@@ -28,6 +28,8 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 
 
 ## Example
+
+See `examples` directory for code.
 
 * Use a REST call to get all orders for BTCUSDT
 * I use a mutex and cv to wait for the _async_ `allOrders()` to return
