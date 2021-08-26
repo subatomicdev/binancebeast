@@ -1,7 +1,7 @@
 #ifndef BINANCEBEAST_REST_H
 #define BINANCEBEAST_REST_H
 
-#include <boost/asio/executor_work_guard.hpp>
+
 #include <boost/asio/thread_pool.hpp>
 #include <boost/bind/bind.hpp>
 
@@ -44,15 +44,22 @@ namespace bblib
                 if (!isNullAllowed && json.is_null())
                     error = "null";
                 else if (json.is_object())
-                    error = json.as_object().if_contains("code") || json.as_object().if_contains("error");
+                {
+                    auto jsonObj = json.as_object();
+                    error = jsonObj.if_contains("code") || jsonObj.if_contains("error");
+                    
+                    if (jsonObj.if_contains("code"))
+                    {
+                        failMessage = (jsonObj.if_contains("msg") ? json::value_to<string>(jsonObj["msg"]) : "");
+                    }
+                }
             }
             catch(...)
             {        
                 error = true;    
             }
             
-            if (error)
-                state = State::Fail;
+            state = error ? State::Fail : State::Success;
 
             return error;
         }
@@ -62,10 +69,15 @@ namespace bblib
         string failMessage;
     };
 
+    
+    using QueryParams = std::unordered_map<string, string>;
+    
+    using RestCallback = std::function<void(RestResult)>;   // "Use RestResponseHandler. This will be removed"
+    using RestResponseHandler = std::function<void(RestResult)>;
+
+
     struct RestParams
     {
-        using QueryParams = std::unordered_map<string, string>;
-
         RestParams () = default;
         
         RestParams (QueryParams&& params) : queryParams(std::move(params))
@@ -76,12 +88,10 @@ namespace bblib
         {
         }
 
-
         QueryParams queryParams;
     };
 
-
-    using RestCallback = std::function<void(RestResult)>;
+    
 
 
 
@@ -89,7 +99,7 @@ namespace bblib
     {
 
     public:
-        explicit RestSession(net::any_io_executor ex, std::shared_ptr<ssl::context> ctx, const ConnectionConfig::ConnectionKeys& keys, const RestCallback&& callback, net::thread_pool& threadPool) :
+        explicit RestSession(net::any_io_executor ex, std::shared_ptr<ssl::context> ctx, const ConnectionConfig::ConnectionKeys& keys, const RestResponseHandler&& callback, net::thread_pool& threadPool) :
             m_resolver(ex),
             m_stream(ex, *ctx),
             m_apiKeys(keys),
@@ -232,7 +242,7 @@ namespace bblib
         http::request<http::string_body> m_req;
         http::response<http::string_body> m_res;
         ConnectionConfig::ConnectionKeys m_apiKeys;
-        RestCallback m_callback;
+        RestResponseHandler m_callback;
         net::thread_pool& m_threadPool;
     };
 }

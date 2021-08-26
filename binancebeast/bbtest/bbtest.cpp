@@ -135,6 +135,14 @@ void onWsResponse(WsResult result)
         std::cout << "\n" << result.json << "\n";
 }
 
+void onRestResponse(RestResult result)
+{
+    if (result.hasErrorCode())
+        std::cout << "\nFAIL: " << result.failMessage << "\n";
+    else
+        std::cout << "\n" << result.json << "\n";
+}
+
 
 class ListenKeyExtender
 {
@@ -186,7 +194,8 @@ public:
     std::thread m_thread;
 };
 
-/*
+
+
 int main (int argc, char ** argv)
 {
     auto cmdFut = std::async(std::launch::async, []
@@ -207,18 +216,15 @@ int main (int argc, char ** argv)
     bb.start(config,4, 8);
     
     
-    ListenKeyExtender listenKeyExtender{bb};
+    //ListenKeyExtender listenKeyExtender{bb};
 
+    //bb.sendRestRequest(onRestResponse, "/fapi/v1/exchangeInfo", RestSign::Unsigned);
+    //bb.sendRestRequest(onRestResponse, "/fapi/v1/allOrders", RestSign::HMAC_SHA256, RestParams{{{"symbol", "BTCUSDT"}}});
+    //bb.sendRestRequest(onRestResponse, "/fapi/v1/depth", RestSign::Unsigned, RestParams{{{"symbol", "BTCUSDT"}}});
 
-    //bb.exchangeInfo(onExchangeInfo);
-    //bb.serverTime(onServerTime);
-    //bb.orderBook(onOrderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
-    //bb.allOrders(onAllOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});
-
-    bb.startWebSocket(onWsResponse, "btcusdt@markPrice@1s");
+    //bb.startWebSocket(onWsResponse, "btcusdt@markPrice@1s");
 
     //bb.startUserData(onUserData);
-   
 
     {
         //bb.startUserData(onUserData);
@@ -227,14 +233,13 @@ int main (int argc, char ** argv)
         //bb.startUserData(onUserData);
     }
 
-
     cmdFut.wait();
-    
 
     return 0;
 }
-*/
 
+
+/*
 int main (int argc, char ** argv)
 {
     auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
@@ -265,4 +270,4 @@ int main (int argc, char ** argv)
 
     return 0;
 }
-
+*/

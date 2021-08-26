@@ -21,14 +21,16 @@ int main (int argc, char ** argv)
 
     std::condition_variable cvHaveReply;
 
-    bb.exchangeInfo([&cvHaveReply](RestResult result)
+    bb.sendRestRequest([&cvHaveReply](RestResult result)
     {
-        std::cout << result.json.as_object() << "\n";
-
-        std::cout << "success = " << !bblib_test::hasError("exchangeInfo", result) << "\n";
+        if (result.hasErrorCode())
+            std::cout << "FAIL: " << result.failMessage << "\n";
+        else
+            std::cout << "OK:\n" << result.json << "\n";
 
         cvHaveReply.notify_one();
-    });
+
+    }, "/fapi/v1/exchangeInfo", RestSign::Unsigned);
 
     waitReply(cvHaveReply, "exchangeInfo");
 

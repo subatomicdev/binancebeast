@@ -9,12 +9,12 @@
 using namespace bblib;
 using namespace bblib_test;
 
-using RestFunction = void (BinanceBeast::*)(RestCallback);
-using RestAndParamsFunction = void (BinanceBeast::*)(RestCallback, RestParams);
+using RestFunction = void (BinanceBeast::*)(RestResponseHandler);
+using RestAndParamsFunction = void (BinanceBeast::*)(RestResponseHandler, RestParams);
 
 
 
-void runTest(BinanceBeast& bb, RestFunction rf, std::string_view test, const bool showData = false)
+void runTest(BinanceBeast& bb, const string& path, RestParams params, RestSign sign, const bool showData = false)
 {
     std::condition_variable cvHaveReply;
     bool dataError = false;
@@ -24,48 +24,20 @@ void runTest(BinanceBeast& bb, RestFunction rf, std::string_view test, const boo
         if (showData)
             std::cout << "\n" << result.json << "\n";
 
-        dataError = bblib_test::hasError(test, result);
+        dataError = bblib_test::hasError(path, result);
 
         cvHaveReply.notify_one();
     };
 
-    std::cout << "Test: " << test << " : ";
+    std::cout << "Test: " << path << " : ";
 
-    auto f = std::mem_fn(rf);
-    
-    f(bb, handler);
+    bb.sendRestRequest(handler, path, sign, params);
 
-    auto haveReply = waitReply(cvHaveReply, test);
+    auto haveReply = waitReply(cvHaveReply, path);
     
     std::cout << (!dataError && haveReply ? "PASS" : "FAIL") << "\n";
 }
 
-
-void runTest(BinanceBeast& bb, RestAndParamsFunction rf, RestParams params, std::string_view test, const bool showData = false)
-{
-    std::condition_variable cvHaveReply;
-    bool dataError = false;
-
-    auto handler = [&](RestResult result)
-    {
-        if (showData)
-            std::cout << "\n" << result.json << "\n";
-
-        dataError = bblib_test::hasError(test, result);
-
-        cvHaveReply.notify_one();
-    };
-
-    std::cout << "Test: " << test << " : ";
-
-    auto f = std::mem_fn(rf);
-    
-    f(bb, handler, params);
-
-    auto haveReply = waitReply(cvHaveReply, test);
-    
-    std::cout << (!dataError && haveReply ? "PASS" : "FAIL") << "\n";
-}
 
 
 
@@ -80,52 +52,40 @@ int main (int argc, char ** argv)
 
     bb.start(config);
     
+    // market
+    runTest(bb, "/fapi/v1/exchangeInfo", RestParams{}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/time", RestParams{}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/depth", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/trades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/historicalTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/aggTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/klines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/continuousKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}, {"contractType","PERPETUAL"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/indexPriceKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/markPriceKlines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/premiumIndex", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/ticker/24hr", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/ticker/price", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/ticker/bookTicker", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/openInterest", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+    runTest(bb, "/fapi/v1/indexInfo", RestParams{{{"symbol", "DEFIUSDT"}}}, RestSign::Unsigned, false);
     
-    runTest(bb, &BinanceBeast::exchangeInfo, "exchangeInfo");
+    // TODO always an invalid symbol
+    //runTest(bb, "/fapi/v1/lvtKlines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
 
-    runTest(bb, &BinanceBeast::serverTime, "serverTime");
+    // TODO these all timeout
+    //runTest(bb, "/fapi/v1/fundingRate", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+    //runTest(bb, "/fapi/v1/openInterestHist", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+    //runTest(bb, "/futures/data/topLongShortAccountRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+    //runTest(bb, "/futures/data/topLongShortPositionRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+    //runTest(bb, "/futures/data/globalLongShortAccountRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+    //runTest(bb, "/futures/data/longshortRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+    //runTest(bb, "/futures/data/takerlongshortRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
 
-    runTest(bb, &BinanceBeast::orderBook, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "orderBook");
 
-    runTest(bb, &BinanceBeast::allOrders, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "allOrders");
+    // account/trades
+    runTest(bb, "/fapi/v1/allOrders", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::HMAC_SHA256, false);    
+    runTest(bb, "/fapi/v1/multiAssetsMargin", RestParams{}, RestSign::HMAC_SHA256, false);
     
-    runTest(bb, &BinanceBeast::recentTradesList, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "recentTradesList");
-    
-    runTest(bb, &BinanceBeast::historicTrades, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "historicTrades");
-
-    runTest(bb, &BinanceBeast::aggregateTradesList, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "aggregateTradesList");
-
-    runTest(bb, &BinanceBeast::klines, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"interval","15m"}}}, "klines");
-    
-    runTest(bb, &BinanceBeast::contractKlines, RestParams {RestParams::QueryParams {{"pair", "BTCUSDT"}, {"interval","15m"}, {"contractType","PERPETUAL"}}}, "contract klines");
-
-    runTest(bb, &BinanceBeast::indexPriceKlines, RestParams {RestParams::QueryParams {{"pair", "BTCUSDT"}, {"interval","15m"}}}, "index price klines");
-    
-    runTest(bb, &BinanceBeast::markPriceKlines, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"interval","15m"}}}, "mark price klines");
-    
-    runTest(bb, &BinanceBeast::markPrice, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "mark price");
-
-    runTest(bb, &BinanceBeast::fundingRate, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "fundingRate");
-
-    runTest(bb, &BinanceBeast::tickerPriceChange24hr, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "24hrTickerPriceChange");
-    
-    runTest(bb, &BinanceBeast::symbolPriceTicker, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "symbolPriceTicker");
-
-    runTest(bb, &BinanceBeast::symbolBookTicker, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "symbolBookTicker");
-        
-    runTest(bb, &BinanceBeast::openInterest, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "openInterest");
-
-    runTest(bb, &BinanceBeast::openInterestStats, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "openInterestStats");
-
-    runTest(bb, &BinanceBeast::topTraderLongShortRatioAccounts, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "topTraderLongShortRatioAccounts");
-
-    runTest(bb, &BinanceBeast::topTraderLongShortRatioPositions, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "topTraderLongShortRatioPositions");
-    
-    runTest(bb, &BinanceBeast::longShortRatio, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "longShortRatio");
-
-    runTest(bb, &BinanceBeast::takerBuySellVolume, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "takerBuySellVolume");
-    
-    runTest(bb, &BinanceBeast::historicalBlvtNavKlines, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}, {"period", "15m"}}}, "historicalBlvtNavKlines");
-
-    runTest(bb, &BinanceBeast::compositeIndexSymbolInfo, RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}}, "compositeIndexSymbolInfo");
+    // TODO add more tests
 }

@@ -96,6 +96,10 @@ namespace bblib
 
 
     //// REST
+    void BinanceBeast::sendRestRequest(RestResponseHandler rc, const string& path, const RestSign sign, RestParams params)
+    {
+        createRestSession(m_config.restApiUri, path, false, std::move(rc), sign == RestSign::HMAC_SHA256, std::move(params));
+    }
 
 
     void BinanceBeast::ping ()
@@ -103,122 +107,123 @@ namespace bblib
         createRestSession(m_config.restApiUri, "/fapi/v1/ping", false, nullptr);
     }
 
-    void BinanceBeast::exchangeInfo(RestCallback rr)
+
+    void BinanceBeast::exchangeInfo(RestResponseHandler rr)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/exchangeInfo", false, std::move(rr));
     }
 
-    void BinanceBeast::serverTime(RestCallback rr)
+    void BinanceBeast::serverTime(RestResponseHandler rr)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/time", false, std::move(rr));
     }
 
-    void BinanceBeast::orderBook(RestCallback rr, RestParams params)
+    void BinanceBeast::orderBook(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/depth", false, std::move(rr), false, std::move(params));
     }
 
-    void BinanceBeast::allOrders(RestCallback rr, RestParams params)
+    void BinanceBeast::allOrders(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/allOrders", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::recentTradesList(RestCallback rr, RestParams params)
+    void BinanceBeast::recentTradesList(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/trades", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::historicTrades(RestCallback rr, RestParams params)
+    void BinanceBeast::historicTrades(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/historicalTrades", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::aggregateTradesList(RestCallback rr, RestParams params)
+    void BinanceBeast::aggregateTradesList(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/aggTrades", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::klines(RestCallback rr, RestParams params)
+    void BinanceBeast::klines(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/klines", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::contractKlines(RestCallback rr, RestParams params)
+    void BinanceBeast::contractKlines(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/continuousKlines", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::indexPriceKlines(RestCallback rr, RestParams params)
+    void BinanceBeast::indexPriceKlines(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/indexPriceKlines", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::markPriceKlines(RestCallback rr, RestParams params)
+    void BinanceBeast::markPriceKlines(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/markPriceKlines", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::markPrice(RestCallback rr, RestParams params)
+    void BinanceBeast::markPrice(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/premiumIndex", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::fundingRate(RestCallback rr, RestParams params)
+    void BinanceBeast::fundingRate(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/fundingRate", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::tickerPriceChange24hr(RestCallback rr, RestParams params)
+    void BinanceBeast::tickerPriceChange24hr(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/ticker/24hr", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::symbolPriceTicker(RestCallback rr, RestParams params)
+    void BinanceBeast::symbolPriceTicker(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/ticker/price", false, std::move(rr), true, std::move(params));
     }
     
-    void BinanceBeast::symbolBookTicker(RestCallback rr, RestParams params)
+    void BinanceBeast::symbolBookTicker(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/ticker/bookTicker", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::openInterest(RestCallback rr, RestParams params)
+    void BinanceBeast::openInterest(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/fapi/v1/openInterest", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::openInterestStats(RestCallback rr, RestParams params)
+    void BinanceBeast::openInterestStats(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/futures/data/openInterestHist", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::topTraderLongShortRatioAccounts(RestCallback rr, RestParams params)
+    void BinanceBeast::topTraderLongShortRatioAccounts(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/futures/data/topLongShortAccountRatio", false, std::move(rr), true, std::move(params));
     }
     
-    void BinanceBeast::topTraderLongShortRatioPositions(RestCallback rr, RestParams params)
+    void BinanceBeast::topTraderLongShortRatioPositions(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/futures/data/topLongShortPositionRatio", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::longShortRatio(RestCallback rr, RestParams params)
+    void BinanceBeast::longShortRatio(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/futures/data/globalLongShortAccountRatio", false, std::move(rr), true, std::move(params));
     }
     
-    void BinanceBeast::takerBuySellVolume(RestCallback rr, RestParams params)
+    void BinanceBeast::takerBuySellVolume(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/futures/data/takerlongshortRatio", false, std::move(rr), true, std::move(params));
     }
 
-    void BinanceBeast::historicalBlvtNavKlines(RestCallback rr, RestParams params)
+    void BinanceBeast::historicalBlvtNavKlines(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/futures/v1/lvtKlines", false, std::move(rr), true, std::move(params));
     }
     
-    void BinanceBeast::compositeIndexSymbolInfo(RestCallback rr, RestParams params)
+    void BinanceBeast::compositeIndexSymbolInfo(RestResponseHandler rr, RestParams params)
     {
         createRestSession(m_config.restApiUri, "/futures/v1/indexInfo", false, std::move(rr), true, std::move(params));
     }

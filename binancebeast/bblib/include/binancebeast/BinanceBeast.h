@@ -16,6 +16,12 @@
 
 namespace bblib
 {
+    enum class RestSign
+    {
+        Unsigned,
+        HMAC_SHA256
+    };
+
     /// 
     /// REST API docs:  https://binance-docs.github.io/apidocs/futures/en/#market-data-endpoints, 
     ///                 https://binance-docs.github.io/apidocs/futures/en/#account-trades-endpoints
@@ -73,35 +79,79 @@ namespace bblib
         /// nWebsockIoContexts - how many asio::io_context to handle websockets. Leave as default if unsure.
         void start(const ConnectionConfig& config, const size_t nRestIoContexts = 4, const size_t nWebsockIoContexts = 6);
         
+        /// Send a request to a REST endpoint.
+        /// Some requests require a signature, the Binance API docs will say "HMAC SHA256" if so.
+        /// For unsigned requests: set 'sign' to RestSign::Unsigned.
+        /// For signed rqeuests:   set 'sign' to RestSign::HMAC_SHA256 but DO NOT include a 'timestamp' in the params, BinanceBeast will do that.
+        void sendRestRequest(RestResponseHandler rc, const string& path, const RestSign sign, RestParams params = RestParams {});
+        
+        /// Start a new websocket session, for all websocket endpoints except user data (use startUserData() for that).
+        /// The supplied callback handler will be called for each response, which may include an error.
+        /// 'stream' is the "streamName" as defined on the Binance API docs.
         void startWebSocket (WsCallback wc, string stream);
+
+        /// Start a user data websocket session.
         void startUserData(WsCallback wc);
 
+        /// You should call this every 60 minutes to extend your listen key, otherwise your user data stream will become invalid/closed by Binance.
+        /// You must first call monitorUserData() to create (or reuse exiting) listen key, there after calll this function every ~ 60 minutes.
+        void renewListenKey(WsCallback wc);
+
+        /// This will invalidate your key, so you will no longer receive user data updates. Only call if you intend to shutdown.
+        void closeUserData (WsCallback wc);
+
+
         // REST calls
+        [[deprecated("use sendRestRequest() instead")]]
         void ping ();
-        void exchangeInfo(RestCallback rr);
-        void serverTime(RestCallback rr);
-        void orderBook(RestCallback rr, RestParams params);
-        void allOrders(RestCallback rr, RestParams params);        
-        void recentTradesList(RestCallback rr, RestParams params);
-        void historicTrades(RestCallback rr, RestParams params);
-        void aggregateTradesList(RestCallback rr, RestParams params);        
-        void klines(RestCallback rr, RestParams params);
-        void contractKlines(RestCallback rr, RestParams params);
-        void indexPriceKlines(RestCallback rr, RestParams params);
-        void markPriceKlines(RestCallback rr, RestParams params);
-        void markPrice(RestCallback rr, RestParams params);
-        void fundingRate(RestCallback rr, RestParams params);
-        void tickerPriceChange24hr(RestCallback rr, RestParams params);
-        void symbolPriceTicker(RestCallback rr, RestParams params);
-        void symbolBookTicker(RestCallback rr, RestParams params);
-        void openInterest(RestCallback rr, RestParams params);
-        void openInterestStats(RestCallback rr, RestParams params);
-        void topTraderLongShortRatioAccounts(RestCallback rr, RestParams params);
-        void topTraderLongShortRatioPositions(RestCallback rr, RestParams params);
-        void longShortRatio(RestCallback rr, RestParams params);
-        void takerBuySellVolume(RestCallback rr, RestParams params);
-        void historicalBlvtNavKlines(RestCallback rr, RestParams params);
-        void compositeIndexSymbolInfo(RestCallback rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void exchangeInfo(RestResponseHandler rr);
+        [[deprecated("use sendRestRequest() instead")]]
+        void serverTime(RestResponseHandler rr);
+        [[deprecated("use sendRestRequest() instead")]]
+        void orderBook(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void allOrders(RestResponseHandler rr, RestParams params);       
+        [[deprecated("use sendRestRequest() instead")]] 
+        void recentTradesList(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void historicTrades(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void aggregateTradesList(RestResponseHandler rr, RestParams params);        
+        [[deprecated("use sendRestRequest() instead")]]
+        void klines(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void contractKlines(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void indexPriceKlines(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void markPriceKlines(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void markPrice(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void fundingRate(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void tickerPriceChange24hr(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void symbolPriceTicker(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void symbolBookTicker(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void openInterest(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void openInterestStats(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void topTraderLongShortRatioAccounts(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void topTraderLongShortRatioPositions(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void longShortRatio(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void takerBuySellVolume(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void historicalBlvtNavKlines(RestResponseHandler rr, RestParams params);
+        [[deprecated("use sendRestRequest() instead")]]
+        void compositeIndexSymbolInfo(RestResponseHandler rr, RestParams params);
 
 
         // WebSockets
@@ -129,16 +179,7 @@ namespace bblib
         void monitorDiffBookDepth(WsCallback wc, string symbol, string updateSpeed = "250ms");
         [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
         void monitorCompositeIndexSymbolInfo(WsCallback wc, string symbol);
-
         
-        // Listen Key
-
-        /// You should call this every 60 minutes to extend your listen key, otherwise your user data stream will become invalid/closed by Binance.
-        /// You must first call monitorUserData() to create (or reuse exiting) listen key, there after calll this function every ~ 60 minutes.
-        void renewListenKey(WsCallback wc);
-
-        /// This will invalidate your key, so you will no longer receive user data updates. Only call if you intend to shutdown.
-        void closeUserData (WsCallback wc);
 
     private:
         void stop();
@@ -155,7 +196,7 @@ namespace bblib
         }
 
 
-        void createRestSession(const string& host, const string& path, const bool createStrand, RestCallback&& rc,  const bool sign = false, RestParams params = RestParams{})
+        void createRestSession(const string& host, const string& path, const bool createStrand, RestResponseHandler&& rc,  const bool sign = false, RestParams params = RestParams{})
         {
             if (rc == nullptr)
                 throw std::runtime_error("callback is null");
