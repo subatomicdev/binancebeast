@@ -60,7 +60,7 @@ public:
 
 
 /// Start the user data stream.
-/// We only do so for 30 seconds so the listen key will never expire but code is an example.
+/// We only do so for 30 seconds so the listen key will never expire but code is an example, but it has been tested with a long timeout.
 /// To see output from the user data, you'll need to create/close orders on the Binance TestNet while the app is running.
 int main (int argc, char ** argv)
 {
@@ -86,8 +86,8 @@ int main (int argc, char ** argv)
     // start the network processing
     bb.start(config);
 
-    // receive mark price for ETHUSDT for 10 seconds
-    bb.startUserData([&](WsResult result)      // this is called for each message or error
+    // start the user data, supplying the WebSocketResponseHandler which is called on every event
+    bb.startUserData([&](WsResult result)               
     {  
         std::cout << result.json << "\n\n";
 
@@ -120,9 +120,7 @@ int main (int argc, char ** argv)
     std::cout << "Running. Create or close orders on the Binance Futures TestNet to see user data\n";
 
     using namespace std::chrono_literals;    
-    //std::this_thread::sleep_for(30s);
-    std::this_thread::sleep_for(std::chrono::minutes(120));
-
+    std::this_thread::sleep_for(30s);
 
     return 0;
 }

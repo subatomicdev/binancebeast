@@ -45,7 +45,8 @@ int main (int argc, char ** argv)
     },
     "/fapi/v1/allOrders",                                               // the stream path
     RestSign::HMAC_SHA256,                                              // this calls requires a signature
-    RestParams{{{"symbol", "BTCUSDT"}}});                               // rest parameters
+    RestParams{{{"symbol", "BTCUSDT"}}},                                // rest parameters
+    RequestType::Get);                                                  // this is a GET request
 
 
     std::mutex mux;

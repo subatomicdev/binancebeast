@@ -30,7 +30,7 @@ int main (int argc, char ** argv)
 
         cvHaveReply.notify_one();
 
-    }, "/fapi/v1/exchangeInfo", RestSign::Unsigned);
+    }, "/fapi/v1/exchangeInfo", RestSign::Unsigned, RestParams{}, RequestType::Get);
 
     waitReply(cvHaveReply, "exchangeInfo");
 

@@ -20,6 +20,14 @@
 
 namespace bblib
 {
+    enum class RequestType
+    {
+        Get,
+        Post,
+        Delete,
+        Put
+    };
+
     struct RestResult
     {
         enum class State { Fail, Success };
@@ -97,9 +105,20 @@ namespace bblib
 
     class RestSession : public std::enable_shared_from_this<RestSession>
     {
-
+    
     public:
-        explicit RestSession(net::any_io_executor ex, std::shared_ptr<ssl::context> ctx, const ConnectionConfig::ConnectionKeys& keys, const RestResponseHandler&& callback, net::thread_pool& threadPool) :
+        const std::unordered_map<RequestType, http::verb> RequestToVerb =
+        {
+            {RequestType::Get, http::verb::get},
+            {RequestType::Post, http::verb::post},
+            {RequestType::Put, http::verb::put},
+            {RequestType::Delete, http::verb::delete_}
+        };
+
+        explicit RestSession(net::any_io_executor ex, std::shared_ptr<ssl::context> ctx,
+                            const ConnectionConfig::ConnectionKeys& keys,
+                            const RestResponseHandler&& callback,
+                            net::thread_pool& threadPool) :
             m_resolver(ex),
             m_stream(ex, *ctx),
             m_apiKeys(keys),
@@ -109,7 +128,7 @@ namespace bblib
         }
 
 
-        void run(const string& host, const string& port, const string& target, const int version)
+        void run(const string& host, const string& port, const string& target, const int version, const RequestType type)
         {
             // set SNI Hostname (many hosts need this to handshake successfully)
             if (!SSL_set_tlsext_host_name(m_stream.native_handle(), host.c_str()))
@@ -121,7 +140,7 @@ namespace bblib
             {
                 // Set up an HTTP GET request message
                 m_req.version(version);
-                m_req.method(http::verb::get);
+                m_req.method(RequestToVerb.at(type));
                 m_req.target(target);
                 m_req.set(http::field::host, host);
                 m_req.set(http::field::user_agent, BINANCEBEAST_USER_AGENT);

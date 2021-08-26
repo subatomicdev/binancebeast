@@ -31,7 +31,7 @@ void runTest(BinanceBeast& bb, const string& path, RestParams params, RestSign s
 
     std::cout << "Test: " << path << " : ";
 
-    bb.sendRestRequest(handler, path, sign, params);
+    bb.sendRestRequest(handler, path, sign, params, RequestType::Get);
 
     auto haveReply = waitReply(cvHaveReply, path);
     
@@ -91,7 +91,7 @@ int main (int argc, char ** argv)
 
     // account/trades
     runTest(bb, "/fapi/v1/allOrders", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::HMAC_SHA256, false);    
-    runTest(bb, "/fapi/v1/multiAssetsMargin", RestParams{}, RestSign::HMAC_SHA256, false);
+    runTest(bb, "/fapi/v1/multiAssetsMargin", RestParams{{{"multiAssetsMargin", "false"}}}, RestSign::HMAC_SHA256, false);
     
     // TODO add more tests
 }

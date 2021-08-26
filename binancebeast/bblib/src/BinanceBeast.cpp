@@ -96,26 +96,26 @@ namespace bblib
 
 
     //// REST
-    void BinanceBeast::sendRestRequest(RestResponseHandler rc, const string& path, const RestSign sign, RestParams params)
+    void BinanceBeast::sendRestRequest(RestResponseHandler rc, const string& path, const RestSign sign, RestParams params, const RequestType type)
     {
-        createRestSession(m_config.restApiUri, path, false, std::move(rc), sign == RestSign::HMAC_SHA256, std::move(params));
+        createRestSession(m_config.restApiUri, path, true, std::move(rc), sign == RestSign::HMAC_SHA256, std::move(params), type);
     }
 
 
-    void BinanceBeast::ping ()
+    void BinanceBeast::ping (RestResponseHandler rr)
     { 
-        createRestSession(m_config.restApiUri, "/fapi/v1/ping", false, nullptr);
+        createRestSession(m_config.restApiUri, "/fapi/v1/ping", false,  std::move(rr), false, RestParams{});
     }
 
 
     void BinanceBeast::exchangeInfo(RestResponseHandler rr)
     {
-        createRestSession(m_config.restApiUri, "/fapi/v1/exchangeInfo", false, std::move(rr));
+        createRestSession(m_config.restApiUri, "/fapi/v1/exchangeInfo", false, std::move(rr), false, RestParams{});
     }
 
     void BinanceBeast::serverTime(RestResponseHandler rr)
     {
-        createRestSession(m_config.restApiUri, "/fapi/v1/time", false, std::move(rr));
+        createRestSession(m_config.restApiUri, "/fapi/v1/time", false, std::move(rr), false, RestParams{});
     }
 
     void BinanceBeast::orderBook(RestResponseHandler rr, RestParams params)

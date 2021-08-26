@@ -83,7 +83,7 @@ namespace bblib
         /// Some requests require a signature, the Binance API docs will say "HMAC SHA256" if so.
         /// For unsigned requests: set 'sign' to RestSign::Unsigned.
         /// For signed rqeuests:   set 'sign' to RestSign::HMAC_SHA256 but DO NOT include a 'timestamp' in the params, BinanceBeast will do that.
-        void sendRestRequest(RestResponseHandler rc, const string& path, const RestSign sign, RestParams params = RestParams {});
+        void sendRestRequest(RestResponseHandler rc, const string& path, const RestSign sign, RestParams params, const RequestType type);
         
         /// Start a new websocket session, for all websocket endpoints except user data (use startUserData() for that).
         /// The supplied callback handler will be called for each response, which may include an error.
@@ -103,7 +103,7 @@ namespace bblib
 
         // REST calls
         [[deprecated("use sendRestRequest() instead")]]
-        void ping ();
+        void ping (RestResponseHandler rr);
         [[deprecated("use sendRestRequest() instead")]]
         void exchangeInfo(RestResponseHandler rr);
         [[deprecated("use sendRestRequest() instead")]]
@@ -196,7 +196,7 @@ namespace bblib
         }
 
 
-        void createRestSession(const string& host, const string& path, const bool createStrand, RestResponseHandler&& rc,  const bool sign = false, RestParams params = RestParams{})
+        void createRestSession(const string& host, const string& path, const bool createStrand, RestResponseHandler&& rc,  const bool sign, RestParams params, const RequestType type = RequestType::Get)
         {
             if (rc == nullptr)
                 throw std::runtime_error("callback is null");
@@ -245,11 +245,11 @@ namespace bblib
                     pathToSend = std::move(pathWithParams.str());
                 }
 
-                session->run(host, "443", pathToSend, 11);    // 11 is HTTP version 1.1
+                session->run(host, "443", pathToSend, 11, type);   // 11 is HTTP version 1.1
             }
             else
             {
-                session->run(host, "443", path, 11); 
+                session->run(host, "443", path, 11, type);
             }
         }
 

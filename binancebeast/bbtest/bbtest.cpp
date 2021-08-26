@@ -218,7 +218,7 @@ int main (int argc, char ** argv)
     
     //ListenKeyExtender listenKeyExtender{bb};
 
-    bb.sendRestRequest(onRestResponse, "/fapi/v1/exchangeInfo", RestSign::Unsigned);
+    bb.sendRestRequest(onRestResponse, "/fapi/v1/exchangeInfo", RestSign::Unsigned, RestParams{}, RequestType::Get);
     //bb.sendRestRequest(onRestResponse, "/fapi/v1/allOrders", RestSign::HMAC_SHA256, RestParams{{{"symbol", "BTCUSDT"}}});
     //bb.sendRestRequest(onRestResponse, "/fapi/v1/depth", RestSign::Unsigned, RestParams{{{"symbol", "BTCUSDT"}}});
 

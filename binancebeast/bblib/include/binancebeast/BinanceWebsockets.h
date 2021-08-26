@@ -202,6 +202,7 @@ namespace bblib
         }
         
 
+
     private:
         tcp::resolver m_resolver;
         websocket::stream<beast::ssl_stream<beast::tcp_stream>> m_ws;
