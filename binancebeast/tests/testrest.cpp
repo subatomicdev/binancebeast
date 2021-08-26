@@ -46,10 +46,16 @@ int main (int argc, char ** argv)
 {
     std::cout << "\n\nTest REST API\n\n";
 
+    if (argc != 2)
+    {   
+        std::cout << "Usage, requires key file or keys:\n"
+                  << argv[0] << " <full path to keyfile>\n";
+        return 1;
+    }
+
+    auto config = ConnectionConfig::MakeTestNetConfig(std::filesystem::path{argv[1]});
+
     BinanceBeast bb;
-
-    auto config = ConnectionConfig::MakeTestNetConfig(argc == 2 ? argv[1] : "");
-
     bb.start(config);
     
     // market

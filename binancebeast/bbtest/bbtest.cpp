@@ -210,15 +210,15 @@ int main (int argc, char ** argv)
         }
     });
 
-    auto config = ConnectionConfig::MakeTestNetConfig(argc == 2 ? argv[1] : "");
+
+    auto config = argc == 2 ? ConnectionConfig::MakeTestNetConfig(std::filesystem::path{argv[1]}) : ConnectionConfig::MakeTestNetConfig();
 
     BinanceBeast bb;
     bb.start(config,4, 8);
     
-    
     //ListenKeyExtender listenKeyExtender{bb};
 
-    //bb.sendRestRequest(onRestResponse, "/fapi/v1/exchangeInfo", RestSign::Unsigned);
+    bb.sendRestRequest(onRestResponse, "/fapi/v1/exchangeInfo", RestSign::Unsigned);
     //bb.sendRestRequest(onRestResponse, "/fapi/v1/allOrders", RestSign::HMAC_SHA256, RestParams{{{"symbol", "BTCUSDT"}}});
     //bb.sendRestRequest(onRestResponse, "/fapi/v1/depth", RestSign::Unsigned, RestParams{{{"symbol", "BTCUSDT"}}});
 

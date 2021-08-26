@@ -47,7 +47,14 @@ int main (int argc, char ** argv)
 {
     std::cout << "\n\nTest WebSockets API\n\n";
 
-    auto config = ConnectionConfig::MakeTestNetConfig(argc == 2 ? argv[1] : "");
+    if (argc != 2)
+    {   
+        std::cout << "Usage, requires key file or keys:\n"
+                  << argv[0] << " <full path to keyfile>\n";
+        return 1;
+    }
+    
+    auto config = ConnectionConfig::MakeTestNetConfig(std::filesystem::path{argv[1]});
 
     BinanceBeast bb;
     bb.start(config);

@@ -74,33 +74,53 @@ namespace bblib
 			}
         }
 
-        static ConnectionConfig MakeTestNetConfig (const std::filesystem::path& keyFile = std::filesystem::path{}) 
+        static ConnectionConfig MakeTestNetConfig (const std::filesystem::path& keyFile) 
         {
-            static std::string DefaultFuturesTestnetWsUri {"stream.binancefuture.com"};
-            static std::string DefaultUsdFuturesTestnetRestUri {"testnet.binancefuture.com"};
-            
             if (!std::filesystem::path(keyFile).empty())
             {
                 auto keys = readKeyFile(keyFile, false);
-                return ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultFuturesTestnetWsUri, false, ConnectionKeys{std::get<0>(keys), std::get<1>(keys)}};
+                return MakeConfig(std::get<0>(keys), std::get<1>(keys), false);
             }
             else
-                return ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultFuturesTestnetWsUri, false};
+                return MakeConfig("", "", false);
         }
 
-        static ConnectionConfig MakeLiveConfig (const std::filesystem::path& keyFile = std::filesystem::path{})
+        static ConnectionConfig MakeLiveConfig (const std::filesystem::path& keyFile)
         {
-            static std::string DefaultFuturesWsUri {"fstream.binance.com"};
-            static std::string DefaultUsdFuturesRestUri {"fapi.binance.com"};
-
             if (!std::filesystem::path(keyFile).empty())
             {
                 auto keys = readKeyFile(keyFile, true);
-                return ConnectionConfig {DefaultUsdFuturesRestUri, DefaultFuturesWsUri, false, ConnectionKeys{std::get<0>(keys), std::get<1>(keys)}};
+                return MakeConfig(std::get<0>(keys), std::get<1>(keys), true);
             }
             else
-                return ConnectionConfig {DefaultUsdFuturesRestUri, DefaultFuturesWsUri, true};
+                return MakeConfig("", "", true);
         }
+
+        static ConnectionConfig MakeTestNetConfig (const string& apiKey = "", const string& secretKey = "")
+        {
+            return MakeConfig(apiKey, secretKey, false);
+        }
+
+        static ConnectionConfig MakeLiveConfig (const string& apiKey = "", const string& secretKey = "")
+        {
+            return MakeConfig(apiKey, secretKey, true);
+        }
+
+
+        static ConnectionConfig MakeConfig (const string& apiKey, const string& secretKey, const bool isLive)
+        {
+            static std::string DefaultFuturesTestnetWsUri {"stream.binancefuture.com"};
+            static std::string DefaultUsdFuturesTestnetRestUri {"testnet.binancefuture.com"};
+            static std::string DefaultFuturesWsUri {"fstream.binance.com"};
+            static std::string DefaultUsdFuturesRestUri {"fapi.binance.com"};
+
+            if (isLive)
+                return ConnectionConfig {DefaultUsdFuturesRestUri, DefaultFuturesWsUri, true, ConnectionKeys{apiKey, secretKey}};
+            else
+                return ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultFuturesTestnetWsUri, false, ConnectionKeys{apiKey, secretKey}};
+        }
+
+        
 
         struct ConnectionKeys
         {
