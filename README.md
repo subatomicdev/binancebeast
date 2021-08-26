@@ -51,10 +51,16 @@ int main (int argc, char ** argv)
 
     bb.allOrders(   [&](RestResult result)      // this is called when the reply is received or an error
                     {  
-                        std::cout << result.json.as_array() << "\n";
+                        if (result.hasErrorCode())
+                            std::cout << "\nFAIL: " << result.failMessage << "\n";
+                        else
+                            std::cout << "\n" << result.json << "\n";
+                        
                         cvHaveReply.notify_one();
                     },
-                    RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});      // params for REST call
+                    "/fapi/v1/allOrders",                   // path
+                    RestSign::HMAC_SHA256,                  // request must be signed
+                    RestParams{{{"symbol", "BTCUSDT"}}});   // request parameters
 
     std::mutex mux;
     std::unique_lock lck(mux);
@@ -79,7 +85,7 @@ int main (int argc, char ** argv)
 
 ## Quick Guide
 
-*NOTE: If you are calling a Rest function often, use the equivalent Websocket function instead*
+*NOTE: Consider using Websockets rather than frequent REST calls*
 
 *NOTE: All API functions are asychronous.*
 
@@ -89,7 +95,7 @@ The general usage is:
   - There are separate registration and keys for the live and test exchanges
 - Create the config with `ConnectionConfig::MakeTestNetConfig()` or `ConnectionConfig::MakeLiveConfig()` 
 - Instatiate a `BinanceBeast` object then call `start()`
-- Call a Rest or websocket function, all of which are asynchronous, supplied with a callback function (`RestCallback` or `WsCallback`)
+- Call a Rest or websocket function, all of which are asynchronous, supplied with a callback function (`RestResponseHandler` or `WebSocketResponseHandler`)
   - A websocket stream is closed when the `BinanceBeast` object is destructed
   - There is no close monitor function, this may be added later
 - In the handler, use the `hasErrorCode()` function
