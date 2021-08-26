@@ -9,15 +9,20 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 
 ## Status
 
-**NOTE BREAKING CHANGES**
+26th August 
+**BREAKING CHANGES**
+- The REST functions have been deprecated and will be removed. Use `sendRequest()` instead. See docs and `tests/testrest.cpp`.
+
+25th August 
+**BREAKING CHANGES**
 - The monitor functions have been deprecated and will be removed. Use `startWebSocket()`. See `tests/testwebsockets.cpp`.
 - For user data, `monitorUserData()` which has been renamed `startUserData()`.
 
 
 ### USD-M Futures
 - Rest
-  - Market: all
-  - Account/trade: 50%
+  - Market: All
+  - Account/trade: All
 - WebSockets: All
 - User Data: All
 
