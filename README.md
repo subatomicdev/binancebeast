@@ -75,6 +75,19 @@ int main (int argc, char ** argv)
 
 ---
 
+## Build
+You must have Git installed and a development environment installed (i.e. gcc, cmake). It has been developed with GCC 10.3.0.
+
+* `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
+* `cd binancebeast`
+* `./build_linux_x64_static_release.sh`
+  *  Uses `vcpkg` to install the required libraries. This installs cmake and ninja but it's local to vcpkg so will not affect existing installations
+  * Configure and build
+* After the build a short test runs (which doesn't require an API key)
+* The library and test binary are in the lib and bin directories
+
+---
+
 ## Quick Guide
 
 * Consider using Websockets rather than frequent REST calls
@@ -212,15 +225,4 @@ void onUserData(WsResult result)
 }
 ```
 
-
-## Build
-You must have Git installed and a development environment installed (i.e. gcc, cmake). It has been developed with GCC 10.3.0.
-
-* `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
-* `cd binancebeast`
-* `./build_linux_x64_static_release.sh`
-  *  Uses `vcpkg` to install the required libraries. This installs cmake and ninja but it's local to vcpkg so will not affect existing installations
-  * Configure and build
-* After the build a short test runs (which doesn't require an API key)
-* The library and test binary are in the lib and bin directories
   
