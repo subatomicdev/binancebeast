@@ -225,4 +225,45 @@ void onUserData(WsResult result)
 }
 ```
 
-  
+## How To
+### Configuration
+`BinanceBeast::start()` requires a `ConnectionConfig` which is created with either `ConnectionConfig::MakeTestNetConfig()` or `ConnectionConfig::MakeLiveConfig()`.
+
+These functions have overloads:
+
+* No API or secret key
+* API key with optional secret key
+* Read keys from a key file
+
+A key file is a simple convenient way to avoid having keys in code. A key file is text file with three 3 lines:
+
+```
+<live | test>
+<api key>
+<secret key>
+```
+
+It is convenient during development and test, not necessarily for production.
+
+
+### Start
+
+```cpp
+void start(const ConnectionConfig& config, const size_t nRestIoContexts = 4, const size_t nWebsockIoContexts = 6)
+```
+This allows you to set the number of `boost::asio::io_context` for REST and WebSockets.
+
+
+### REST Requests
+```cpp
+void sendRestRequest(RestResponseHandler rc, const string& path, const RestSign sign, RestParams params = RestParams {});
+```
+
+`path` is the path on the Binance API docs, i.e. for All Orders , the path is `/fapi/v1/allOrders'.
+`sign` tells BinanceBeast if it should add the `timestamp` and `signature` params. If the Binance API docs says "(HMAC SHA256)", i.e. for All Orders, then use RestSign::HMAC_SHA256. 
+
+Calls which are signed require your secret key.
+
+Signing reduces the risk of someone else sending a request to access your account/trading account.
+
+
