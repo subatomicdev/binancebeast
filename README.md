@@ -21,8 +21,8 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 
 ### USD-M Futures
 - Rest
-  - Market: all
-  - Account/trade: 50%
+  - Market: All
+  - Account/trade: All
 - WebSockets: All
 - User Data: All
 
