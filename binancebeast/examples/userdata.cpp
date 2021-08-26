@@ -86,8 +86,8 @@ int main (int argc, char ** argv)
     // start the network processing
     bb.start(config);
 
-    // start the user data, supplying the WebSocketResponseHandler which is called on every event
-    bb.startUserData([&](WsResult result)               
+    // receive user data 
+    bb.startUserData([&](WsResult result)      // this is called for each message or error
     {  
         std::cout << result.json << "\n\n";
 
@@ -121,6 +121,8 @@ int main (int argc, char ** argv)
 
     using namespace std::chrono_literals;    
     std::this_thread::sleep_for(30s);
+    //std::this_thread::sleep_for(std::chrono::minutes(120));
+
 
     return 0;
 }
