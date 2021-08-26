@@ -49,18 +49,18 @@ int main (int argc, char ** argv)
 
     bb.start(config);   // must always call this once to start the networking processing loop
 
-    bb.allOrders(   [&](RestResult result)      // this is called when the reply is received or an error
-                    {  
-                        if (result.hasErrorCode())
-                            std::cout << "\nFAIL: " << result.failMessage << "\n";
-                        else
-                            std::cout << "\n" << result.json << "\n";
-                        
-                        cvHaveReply.notify_one();
-                    },
-                    "/fapi/v1/allOrders",                   // path
-                    RestSign::HMAC_SHA256,                  // request must be signed
-                    RestParams{{{"symbol", "BTCUSDT"}}});   // request parameters
+    bb.sendRestRequest( [&](RestResult result)      // this is called when the reply is received or an error
+                        {  
+                            if (result.hasErrorCode())
+                                std::cout << "\nFAIL: " << result.failMessage << "\n";
+                            else
+                                std::cout << "\n" << result.json << "\n";
+
+                            cvHaveReply.notify_one();
+                        },
+                        "/fapi/v1/allOrders",                   // path
+                        RestSign::HMAC_SHA256,                  // request must be signed
+                        RestParams{{{"symbol", "BTCUSDT"}}});   // request parameters
 
     std::mutex mux;
     std::unique_lock lck(mux);
