@@ -173,6 +173,8 @@ int main (int argc, char ** argv)
 ```
 
 ## User Data
+See `examples\userdata.cpp` for a useful starting point.
+
 Use the `BinanceBeast::startUserData()`, it's a standard websocket session. 
 
 * User data has a key, "e", which is the eventType
