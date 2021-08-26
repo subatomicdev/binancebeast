@@ -27,52 +27,6 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 - User Data: All
 
 
-## Example
-
-See `examples` directory for code.
-
-* Use a REST call to get all orders for BTCUSDT
-* I use a mutex and cv to wait for the _async_ `allOrders()` to return
-* The call to `allOrders()`
-  * An std::function which is the result handler, called when there is an error or the reply is received
-  * The params which are appended to the REST query
-
-
-```cpp
-int main (int argc, char ** argv)
-{
-    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
-    config.keys.api     = "YOUR API KEY";
-    config.keys.secret  = "YOUR SECRET KEY";
-
-    std::condition_variable cvHaveReply;
-
-    BinanceBeast bb;
-
-    bb.start(config);   // must always call this once to start the networking processing loop
-
-    bb.sendRestRequest( [&](RestResult result)      // this is called when the reply is received or an error
-                        {  
-                            if (result.hasErrorCode())
-                                std::cout << "\nFAIL: " << result.failMessage << "\n";
-                            else
-                                std::cout << "\n" << result.json << "\n";
-
-                            cvHaveReply.notify_one();
-                        },
-                        "/fapi/v1/allOrders",                   // path
-                        RestSign::HMAC_SHA256,                  // request must be signed
-                        RestParams{{{"symbol", "BTCUSDT"}}});   // request parameters
-
-    std::mutex mux;
-    std::unique_lock lck(mux);
-
-    cvHaveReply.wait(lck);
-
-    return 0;
-}
-```
-
 ### Notes
 * The REST handlers are called from a boost::thread_pool
 * The WebSocket handlers are called from a thread pool which gaurantees the order is maintained
@@ -120,13 +74,21 @@ int main (int argc, char ** argv)
 
     bb.start(config);   // must always call this once to start the networking processing loop
 
-    bb.allOrders(   [&](RestResult result)      // this is called when the reply is received or an error
-                    {  
-                        std::cout << result.json << "\n";
-                        cvHaveReply.notify_one();
-                    },
-                    RestParams {RestParams::QueryParams {{"symbol", "BTCUSDT"}}});      // params for REST call
+    bb.sendRestRequest([&](RestResult result)                           // the RestResponseHandler
+    {
+        if (result.hasErrorCode())
+            std::cout << "\nFAIL: " << result.failMessage << "\n";
+        else
+            std::cout << "\n" << result.json << "\n";
 
+        cvHaveReply.notify_one();
+    },
+    "/fapi/v1/allOrders",                                               // the stream path
+    RestSign::HMAC_SHA256,                                              // this calls requires a signature
+    RestParams{{{"symbol", "BTCUSDT"}}},                                // rest parameters
+    RequestType::Get);                                                  // this is a GET request
+
+    
     std::mutex mux;
     std::unique_lock lck(mux);
 
