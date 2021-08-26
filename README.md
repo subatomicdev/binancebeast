@@ -73,25 +73,20 @@ int main (int argc, char ** argv)
 }
 ```
 
-### Notes
-* The REST handlers are called from a boost::thread_pool
-* The WebSocket handlers are called from a thread pool which gaurantees the order is maintained
-* If your handler takes time to process, it doesn't affect the networking processing thread(s)
-* There are multiple `boost::asio::io_context` for Rest and Websockets calls which are set with `BinanceBeast::start()`
-  * Rest default is 4
-  * Websockets default is 6
-* Work is distributed evenly with a simple round-robin
-
-
 ---
 
 ## Quick Guide
 
-*NOTE: Consider using Websockets rather than frequent REST calls*
+* Consider using Websockets rather than frequent REST calls
+* All API functions are asychnronous
+* There are multiple `boost::asio::io_context` for Rest and Websockets calls which are set with `BinanceBeast::start()`
+  * Rest default is 4
+  * Websockets default is 6
+  * Work is distributed evenly with a simple round-robin
+* 
 
-*NOTE: All API functions are asychronous.*
 
-The general usage is:
+General usage:
 
 - Create an account with Binance, verify your account and create an API key
   - There are separate registration and keys for the live and test exchanges
@@ -151,17 +146,12 @@ int main (int argc, char ** argv)
 
     bb.startWebSocket([&](WsResult result)      // this is called for each message or error
     {  
-        std::cout << result.json << "\n\n";
+        std::cout << result.json << "\n\n";   // show entire JSON
 
         if (result.hasErrorCode())
-        {
-            std::cout << "\nError code: " << std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"]))
-                      << "\nError msg: " << json::value_to<std::string>(result.json.as_object()["msg"]) << "\n";
-        }
-        else
-        {
+            std::cout << "\nError: " << result.failMessage << "\n";
+        else // how to access values
             std::cout << "\n" << result.json.as_object()["s"] << " = " << result.json.as_object()["p"] << "\n";
-        }
 
     }, "ethusdt@markPrice@1s");      // params for Websocket call
 
