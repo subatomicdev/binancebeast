@@ -26,29 +26,20 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 - WebSockets: All
 - User Data: All
 
+---
 
-### Notes
-* The REST handlers are called from a boost::thread_pool
-* The WebSocket handlers are called from a thread pool which gaurantees the order is maintained
-* If your handler takes time to process, it doesn't affect the networking processing thread(s)
+## Quick Guide
+
+* Consider using Websockets rather than frequent REST calls 
+* All API functions are asychronous
 * There are multiple `boost::asio::io_context` for Rest and Websockets calls which are set with `BinanceBeast::start()`
   * Rest default is 4
   * Websockets default is 6
 * Work is distributed evenly with a simple round-robin
 
 
----
+General usage:
 
-## Quick Guide
-
-*NOTE: Consider using Websockets rather than frequent REST calls*
-
-*NOTE: All API functions are asychronous.*
-
-The general usage is:
-
-- Create an account with Binance, verify your account and create an API key
-  - There are separate registration and keys for the live and test exchanges
 - Create the config with `ConnectionConfig::MakeTestNetConfig()` or `ConnectionConfig::MakeLiveConfig()` 
 - Instatiate a `BinanceBeast` object then call `start()`
 - Call a Rest or websocket function, all of which are asynchronous, supplied with a callback function (`RestResponseHandler` or `WebSocketResponseHandler`)
