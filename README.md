@@ -88,9 +88,8 @@ int main (int argc, char ** argv)
 {
     // allOrders requires both keys
     auto config = ConnectionConfig::MakeTestNetConfig("YOUR API KEY", "YOUR SECRET KEY");
-    // to notify main thread when we have a reply
+    
     std::condition_variable cvHaveReply;
-
 
     BinanceBeast bb;
 
