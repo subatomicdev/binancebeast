@@ -23,7 +23,7 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 * Consider using Websockets rather than frequent REST calls 
 * All API functions are asychronous, supplied with a callback function (`RestResponseHandler` or `WebSocketResponseHandler`):
   *   `using RestResponseHandler = std::function<void(RestResult)>`
-  *   `using using WebSocketResponseHandler = std::function<void(WsResult)>;`
+  *   `using WebSocketResponseHandler = std::function<void(WsResult)>;`
 * `RestResult` and `WsResult` contain the json, a `state` flag, `failMessage` and `hasErrorCode()`
 *   If `hasErrorCode()` returns true, the `failMessage` is set
 * There are multiple `boost::asio::io_context` for Rest and Websockets calls which are set with `BinanceBeast::start()`
