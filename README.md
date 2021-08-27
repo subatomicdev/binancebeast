@@ -167,7 +167,7 @@ void onUserData(WsResult result)
 
 
 ## Build
-You must have Git installed and a development environment installed (i.e. gcc, cmake). It has been developed with GCC 10.3.0.
+It has been developed with GCC 10.3.0 but older versions that support C++17 will work.
 
 * `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
 * `cd binancebeast`
