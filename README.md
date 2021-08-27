@@ -11,8 +11,7 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 
 ### USD-M Futures
 - Rest
-  - All GET requests
-  - Others coming soon
+  - All
 - WebSockets: All
 - User Data: All
 
