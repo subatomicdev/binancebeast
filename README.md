@@ -9,16 +9,6 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 
 ## Status
 
-26th August 
-**BREAKING CHANGES**
-- The REST functions have been deprecated and will be removed. Use `sendRequest()` instead. See docs and `examples/rest.cpp`.
-
-25th August 
-**BREAKING CHANGES**
-- The monitor functions have been deprecated and will be removed. Use `startWebSocket()`. 
-- For user data, `monitorUserData()` which has been renamed `startUserData()`.See `examples/userdata.cpp`.
-
-
 ### USD-M Futures
 - Rest
   - All GET requests
@@ -31,65 +21,66 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 ## Quick Guide
 
 * Consider using Websockets rather than frequent REST calls 
-* All API functions are asychronous
+* All API functions are asychronous, supplied with a callback function (`RestResponseHandler` or `WebSocketResponseHandler`)
+* The handler have `RestResult` or `WsResult` which contain the json
+* The handler also has `hasErrorCode()`,  which if true, will set the `failMessage`
 * There are multiple `boost::asio::io_context` for Rest and Websockets calls which are set with `BinanceBeast::start()`
   * Rest default is 4
   * Websockets default is 6
-* Work is distributed evenly with a simple round-robin
 
 
-General usage:
+### Configuration
+Configs store the API keys, they are created with `ConnectionConfig::MakeTestNetConfig()` or `ConnectionConfig::MakeLiveConfig()`, which have overloads:
 
-- Create the config with `ConnectionConfig::MakeTestNetConfig()` or `ConnectionConfig::MakeLiveConfig()` 
-- Instatiate a `BinanceBeast` object then call `start()`
-- Call a Rest or websocket function, all of which are asynchronous, supplied with a callback function (`RestResponseHandler` or `WebSocketResponseHandler`)
-  - A websocket stream is closed when the `BinanceBeast` object is destructed
-  - There is no close monitor function, this may be added later
-- In the handler, use the `hasErrorCode()` function
-  - if so access `code` and `msg` to find information
-- The JSON is stored in a boost::json::value, so if there's no error, use the `as_object()` or `as_array()` 
+* Pass a path to a key file
+* Supply just an API key or API and secret key
 
+Which keys you need depends on the endpoints you use: https://binance-docs.github.io/apidocs/futures/en/#endpoint-security-type 
 
 
 ### REST
+This gets all orders for BTCUSDT:
+
 ```cpp
 int main (int argc, char ** argv)
 {
-    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
-    config.keys.api     = "YOUR API KEY";
-    config.keys.secret  = "YOUR SECRET KEY";
-
+    auto config = ConnectionConfig::MakeTestNetConfig("YOUR API KEY", "YOUR SECRET KEY");
+    
     std::condition_variable cvHaveReply;
 
     BinanceBeast bb;
 
-    bb.start(config);   // must always call this once to start the networking processing loop
+    bb.start(config);                                               // call once to start the networking processing loop
 
-    bb.sendRestRequest([&](RestResult result)                           // the RestResponseHandler
+    bb.sendRestRequest([&](RestResult result)                       // the RestResponseHandler
     {
         if (result.hasErrorCode())
-            std::cout << "\nFAIL: " << result.failMessage << "\n";
+            std::cout << "\nError: " << result.failMessage << "\n";
         else
             std::cout << "\n" << result.json << "\n";
 
         cvHaveReply.notify_one();
     },
-    "/fapi/v1/allOrders",                                               // the stream path
-    RestSign::HMAC_SHA256,                                              // this calls requires a signature
-    RestParams{{{"symbol", "BTCUSDT"}}},                                // rest parameters
-    RequestType::Get);                                                  // this is a GET request
+    "/fapi/v1/allOrders",                                            // the stream path
+    RestSign::HMAC_SHA256,                                           // this calls requires a signature
+    RestParams{{{"symbol", "BTCUSDT"}}},                             // rest parameters
+    RequestType::Get);                                               // this is a GET request
 
     
     std::mutex mux;
     std::unique_lock lck(mux);
 
     cvHaveReply.wait(lck);
+    
     return 0;
 }
 
 ```
 
+
 ### WebSockets
+A websocket stream is closed when the `BinanceBeast` object is destructed, there is no close monitor function, this may be added later.
+
 Receive Mark Price for ETHUSDT for 10 seconds:
 
 ```cpp
@@ -125,7 +116,8 @@ int main (int argc, char ** argv)
 }
 ```
 
-## User Data
+
+### User Data
 Use the `BinanceBeast::startUserData()`, it's a standard websocket session. 
 
 * User data has a key, "e", which is the eventType
