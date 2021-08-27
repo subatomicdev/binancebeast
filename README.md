@@ -34,6 +34,12 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 Configs store the API keys, they are created with `ConnectionConfig::MakeTestNetConfig()` or `ConnectionConfig::MakeLiveConfig()`, which have overloads:
 
 * Pass a path to a key file
+  *  A key file format is 3 lines, first line is "test" or "live", the next two lines are the API then secret key:
+  ```
+  test
+  myapiKeyMyKey723423Ju&jNhuayNahas617238Jaiasjd31as52v46523435vs
+  8LBwbPvcub5GHtxLgWDZnm23KFcXwXwXwXwLBwbLBwbAABBca-sdasdasdas123
+  ```
 * Supply just an API key or API and secret key
 
 Which keys you need depends on the endpoints you use: https://binance-docs.github.io/apidocs/futures/en/#endpoint-security-type 
