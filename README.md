@@ -41,7 +41,9 @@ Which keys you need depends on the endpoints you use: https://binance-docs.githu
 
 
 ### REST
-This gets all orders for BTCUSDT:
+
+#### Get Orders
+Get all orders for BTCUSDT:
 
 ```cpp
 int main (int argc, char ** argv)
@@ -78,6 +80,45 @@ int main (int argc, char ** argv)
     return 0;
 }
 
+```
+
+#### New Order
+```cpp
+int main (int argc, char ** argv)
+{
+    // allOrders requires both keys
+    auto config = ConnectionConfig::MakeTestNetConfig("YOUR API KEY", "YOUR SECRET KEY");
+    // to notify main thread when we have a reply
+    std::condition_variable cvHaveReply;
+
+
+    BinanceBeast bb;
+
+    // start the network processing
+    bb.start(config);
+
+    // create a new order
+    bb.sendRestRequest([&](RestResponse result)
+    {
+        if (result.hasErrorCode())    
+            std::cout << "Error: " << result.failMessage << "\n";
+        else
+            std::cout << "\nNew Order info:\n" << result.json << "\n";
+
+        cvHaveReply.notify_one();
+    },
+    "/fapi/v1/order",
+    RestSign::HMAC_SHA256,
+    RestParams{{{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}}},
+    RequestType::Post);
+
+
+    std::mutex mux;
+    std::unique_lock lck(mux);    
+    cvHaveReply.wait(lck);
+
+    return 0;
+}
 ```
 
 
