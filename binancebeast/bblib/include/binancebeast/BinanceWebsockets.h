@@ -8,21 +8,21 @@
 
 namespace bblib
 {
-    struct WsResult
+    struct WsResponse
     {
         enum class State { Fail, Success };
 
-        WsResult (const State s) : state(s)
+        WsResponse (const State s) : state(s)
         {
 
         }
 
-        WsResult (std::string_view failReason) : state(State::Fail), failMessage(failReason)
+        WsResponse (std::string_view failReason) : state(State::Fail), failMessage(failReason)
         {
 
         }
 
-        WsResult(json::value&& object) : json (std::move(object)), state(State::Success)
+        WsResponse(json::value&& object) : json (std::move(object)), state(State::Success)
         {
 
         }
@@ -61,13 +61,13 @@ namespace bblib
         string failMessage;
     };
 
-
-    using WsCallback = std::function<void(WsResult)>;   // DO NOT USE, will be removed. Use WebSocketResponseHandler
-    using WebSocketResponseHandler = std::function<void(WsResult)>;
+    using WsResult = WsResponse;                            // Deprecated, will be removed. Use WsResponse                              
+    using WsCallback = std::function<void(WsResponse)>;     // Deprecated, will be removed. Use WebSocketResponseHandler
+    using WebSocketResponseHandler = std::function<void(WsResponse)>;
     
 
     /// Manages a websocket client session, from initial connection until disconnect.
-    /// The websocket data (json) is sent via a WsResult object to the supplied callback handler.
+    /// The websocket data (json) is sent via a WsResponse object to the supplied callback handler.
     /// The handler is called from a thread pool, implemented so handlers are called in-order.
     class WsSession : public std::enable_shared_from_this<WsSession>
     {
@@ -81,15 +81,13 @@ namespace bblib
                 m_callback(std::move(callback)),
                 m_sslContext(ctx)
         {
-            m_handlersPool = std::make_unique<OrderedThreadPool<WsResult>> (4,4); // 4 threads and allow 4 queued functions before blocking
+            m_handlersPool = std::make_unique<OrderedThreadPool<WsResponse>> (4,4); // 4 threads and allow 4 queued functions before blocking
         }
 
 
         ~WsSession()
         {
-            // we don't want to use close() because thats mixing sync with async calls.
-            // we don't do an async_close() because shared_from_this() will refer to this object after being destructed
-            // we let beast handle it
+            // let beast handle disconnection
         }
 
 
@@ -193,7 +191,7 @@ namespace bblib
             }
             else
             {
-                WsResult result {std::move(jsonValue)};
+                WsResponse result {std::move(jsonValue)};
                 m_handlersPool->Do(m_callback, std::move(result));
             }
             
@@ -211,7 +209,7 @@ namespace bblib
         std::string m_path;
         WebSocketResponseHandler m_callback;
         std::shared_ptr<ssl::context> m_sslContext;
-        std::unique_ptr<OrderedThreadPool<WsResult>> m_handlersPool;
+        std::unique_ptr<OrderedThreadPool<WsResponse>> m_handlersPool;
     };
 }
 

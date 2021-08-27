@@ -19,7 +19,7 @@ void runTest(BinanceBeast& bb, const string& path, RestParams params, RestSign s
     std::condition_variable cvHaveReply;
     bool dataError = false;
 
-    auto handler = [&](RestResult result)
+    auto handler = [&](RestResponse result)
     {
         if (showData)
             std::cout << "\n" << result.json << "\n";

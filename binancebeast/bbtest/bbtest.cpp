@@ -8,7 +8,7 @@ using namespace bblib;
 
 
 
-bool handleError(RestResult& result)
+bool handleError(RestResponse& result)
 {
     if (result.hasErrorCode())
     {
@@ -18,7 +18,7 @@ bool handleError(RestResult& result)
     return false;
 }
 
-bool handleError(WsResult& result)
+bool handleError(WsResponse& result)
 {
     if (result.hasErrorCode())
     { 
@@ -29,7 +29,7 @@ bool handleError(WsResult& result)
 }
 
 
-void onExchangeInfo (RestResult result)
+void onExchangeInfo (RestResponse result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
 
@@ -40,7 +40,7 @@ void onExchangeInfo (RestResult result)
 }
 
 
-void onServerTime (RestResult result)
+void onServerTime (RestResponse result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
 
@@ -51,7 +51,7 @@ void onServerTime (RestResult result)
 }
 
 
-void onOrderBook (RestResult result)
+void onOrderBook (RestResponse result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
 
@@ -62,7 +62,7 @@ void onOrderBook (RestResult result)
 }
 
 
-void onAllOrders (RestResult result)
+void onAllOrders (RestResponse result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
 
@@ -74,7 +74,7 @@ void onAllOrders (RestResult result)
 
 
 
-void onUserData(WsResult result)
+void onUserData(WsResponse result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
     
@@ -111,23 +111,23 @@ void onUserData(WsResult result)
 }
 
 
-void onRenewListenKey(WsResult result)
+void onRenewListenKey(WsResponse result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
 
-    std::cout << "\nListen key renewal/extend success(true) or fail(false): " << std::boolalpha << (result.state == WsResult::State::Success) << "\n";
+    std::cout << "\nListen key renewal/extend success(true) or fail(false): " << std::boolalpha << (result.state == WsResponse::State::Success) << "\n";
 }
 
 
-void onCloseUserData(WsResult result)
+void onCloseUserData(WsResponse result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
 
-    std::cout << "\nUser data close success(true) or fail(false): " << std::boolalpha << (result.state == WsResult::State::Success) << "\n";
+    std::cout << "\nUser data close success(true) or fail(false): " << std::boolalpha << (result.state == WsResponse::State::Success) << "\n";
 }
 
 
-void onWsResponse(WsResult result)
+void onWsResponse(WsResponse result)
 {
     if (result.hasErrorCode())
         std::cout << "\nFAIL: " << result.failMessage << "\n";
@@ -135,7 +135,7 @@ void onWsResponse(WsResult result)
         std::cout << "\n" << result.json << "\n";
 }
 
-void onRestResponse(RestResult result)
+void onRestResponse(RestResponse result)
 {
     if (result.hasErrorCode())
         std::cout << "\nFAIL: " << result.failMessage << "\n";
@@ -171,7 +171,7 @@ public:
         m_bb.renewListenKey(std::bind(&ListenKeyExtender::onListenKeyRenew, this, std::placeholders::_1));
     }
 
-    void onListenKeyRenew(WsResult result)
+    void onListenKeyRenew(WsResponse result)
     {
         // call with 'true': the call to renew the listen key returns empty (null) json
         if (result.hasErrorCode(true))
@@ -249,7 +249,7 @@ int main (int argc, char ** argv)
 
     bb.start(config);   // must always call this once to start the networking processing loop
 
-    bb.startWebSocket([&](WsResult result)      // this is called for each message or error
+    bb.startWebSocket([&](WsResponse result)      // this is called for each message or error
     {  
         std::cout << result.json << "\n\n";
 

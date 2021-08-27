@@ -33,26 +33,27 @@ int main (int argc, char ** argv)
     
     // start the network processing
     bb.start(config);
-
-    bb.sendRestRequest([&](RestResponse result)                           // the RestResponseHandler
+  
+    // create a new order
+    bb.sendRestRequest([&](RestResponse result)
     {
-        if (result.hasErrorCode())
-            std::cout << "\nFAIL: " << result.failMessage << "\n";
+        if (result.hasErrorCode())    
+            std::cout << "Error: " << result.failMessage << "\n";
         else
-            std::cout << "\n" << result.json << "\n";
+            std::cout << "\nNew Order info:\n" << result.json << "\n";
 
         cvHaveReply.notify_one();
     },
-    "/fapi/v1/allOrders",                                               // the stream path
-    RestSign::HMAC_SHA256,                                              // this calls requires a signature
-    RestParams{{{"symbol", "BTCUSDT"}}},                                // rest parameters
-    RequestType::Get);                                                  // this is a GET request
+    "/fapi/v1/order",
+    RestSign::HMAC_SHA256,
+    RestParams{{{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}}},
+    RequestType::Post);
 
 
     std::mutex mux;
-    std::unique_lock lck(mux);
-
+    std::unique_lock lck(mux);    
     cvHaveReply.wait(lck);
+    
 
     return 0;
 }

@@ -106,22 +106,7 @@ namespace bblib
             return MakeConfig(apiKey, secretKey, true);
         }
 
-
-        static ConnectionConfig MakeConfig (const string& apiKey, const string& secretKey, const bool isLive)
-        {
-            static std::string DefaultFuturesTestnetWsUri {"stream.binancefuture.com"};
-            static std::string DefaultUsdFuturesTestnetRestUri {"testnet.binancefuture.com"};
-            static std::string DefaultFuturesWsUri {"fstream.binance.com"};
-            static std::string DefaultUsdFuturesRestUri {"fapi.binance.com"};
-
-            if (isLive)
-                return ConnectionConfig {DefaultUsdFuturesRestUri, DefaultFuturesWsUri, true, ConnectionKeys{apiKey, secretKey}};
-            else
-                return ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultFuturesTestnetWsUri, false, ConnectionKeys{apiKey, secretKey}};
-        }
-
-        
-
+    public:
         struct ConnectionKeys
         {
             ConnectionKeys(const string& apiKey = "") : api(apiKey)
@@ -153,11 +138,24 @@ namespace bblib
         {
         }
 
-        
+        static ConnectionConfig MakeConfig (const string& apiKey, const string& secretKey, const bool isLive)
+        {
+            static std::string DefaultFuturesTestnetWsUri {"stream.binancefuture.com"};
+            static std::string DefaultUsdFuturesTestnetRestUri {"testnet.binancefuture.com"};
+            static std::string DefaultFuturesWsUri {"fstream.binance.com"};
+            static std::string DefaultUsdFuturesRestUri {"fapi.binance.com"};
+
+            if (isLive)
+                return ConnectionConfig {DefaultUsdFuturesRestUri, DefaultFuturesWsUri, true, ConnectionKeys{apiKey, secretKey}};
+            else
+                return ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultFuturesTestnetWsUri, false, ConnectionKeys{apiKey, secretKey}};
+        }
+
+
     public:
         string restApiUri;
         string wsApiUri;
-        bool verifyPeer;
+        bool verifyPeer;    // connecteing to the TestNet fails to verify peer
         ConnectionKeys keys;
     };
 

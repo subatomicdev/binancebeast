@@ -28,16 +28,16 @@ namespace bblib
         Put
     };
 
-    struct RestResult
+    struct RestResponse
     {
         enum class State { Fail, Success };
 
-        RestResult (string failReason) : state(State::Fail), failMessage(failReason)
+        RestResponse (string failReason) : state(State::Fail), failMessage(failReason)
         {
 
         }
 
-        RestResult(json::value&& object) : json (std::move(object)), state(State::Success)
+        RestResponse(json::value&& object) : json (std::move(object)), state(State::Success)
         {
 
         }
@@ -80,8 +80,9 @@ namespace bblib
     
     using QueryParams = std::unordered_map<string, string>;
     
-    using RestCallback = std::function<void(RestResult)>;   // // DO NOT USE, will be removed. Use RestResponseHandler
-    using RestResponseHandler = std::function<void(RestResult)>;
+    using RestResult = RestResponse;                            // Deprecated. Use RestResponse.
+    using RestCallback = std::function<void(RestResponse)>;     // Deprecated. Use RestResponseHandler
+    using RestResponseHandler = std::function<void(RestResponse)>;
 
 
     struct RestParams
@@ -231,7 +232,7 @@ namespace bblib
                 }
                 else
                 {   
-                    RestResult result {std::move(value)};
+                    RestResponse result {std::move(value)};
                     net::post(m_threadPool, boost::bind(m_callback, std::move(result)));
                 }            
             }

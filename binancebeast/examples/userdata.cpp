@@ -35,7 +35,7 @@ public:
         m_bb.renewListenKey(std::bind(&ListenKeyExtender::onListenKeyRenew, this, std::placeholders::_1));
     }
 
-    void onListenKeyRenew(WsResult result)
+    void onListenKeyRenew(WsResponse result)
     {
         // call with 'true': the call to renew the listen key returns empty (null) json
         if (result.hasErrorCode(true))
@@ -87,7 +87,7 @@ int main (int argc, char ** argv)
     bb.start(config);
 
     // receive user data 
-    bb.startUserData([&](WsResult result)      // this is called for each message or error
+    bb.startUserData([&](WsResponse result)      // this is called for each message or error
     {  
         std::cout << result.json << "\n\n";
 
@@ -103,7 +103,7 @@ int main (int argc, char ** argv)
             if (eventType == "listenKeyExpired")
             {
                 std::cout << "listen key expired\n";
-                bb.renewListenKey([](WsResult renewKeyResult)
+                bb.renewListenKey([](WsResponse renewKeyResult)
                 { 
                     if (renewKeyResult.hasErrorCode())
                         std::cout << "Error: " << renewKeyResult.failMessage << "\n";

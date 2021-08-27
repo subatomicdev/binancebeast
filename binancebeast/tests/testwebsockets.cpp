@@ -16,7 +16,7 @@ std::condition_variable cvHaveReply;
 string_view test;
 
 
-void onWsResponse(WsResult result)
+void onWsResponse(WsResponse result)
 {
     if (showResponseData)
         std::cout << "\n" << result.json << "\n";
