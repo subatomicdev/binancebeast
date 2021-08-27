@@ -46,6 +46,7 @@ This gets all orders for BTCUSDT:
 ```cpp
 int main (int argc, char ** argv)
 {
+    // allOrders requires both keys
     auto config = ConnectionConfig::MakeTestNetConfig("YOUR API KEY", "YOUR SECRET KEY");
     
     std::condition_variable cvHaveReply;
@@ -88,9 +89,9 @@ Receive Mark Price for ETHUSDT for 10 seconds:
 ```cpp
 int main (int argc, char ** argv)
 {
-    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
     // you don't need API or secret keys for mark price
-
+    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
+    
     BinanceBeast bb;
 
     bb.start(config);                           // call once to start the networking processing loop
