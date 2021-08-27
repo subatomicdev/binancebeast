@@ -21,9 +21,11 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 ## Quick Guide
 
 * Consider using Websockets rather than frequent REST calls 
-* All API functions are asychronous, supplied with a callback function (`RestResponseHandler` or `WebSocketResponseHandler`)
-* The handler have `RestResult` or `WsResult` which contain the json
-* The handler also has `hasErrorCode()`,  which if true, will set the `failMessage`
+* All API functions are asychronous, supplied with a callback function (`RestResponseHandler` or `WebSocketResponseHandler`):
+  *   `using RestResponseHandler = std::function<void(RestResult)>`
+  *   `using using WebSocketResponseHandler = std::function<void(WsResult)>;`
+* `RestResult` and `WsResult` contain the json, a `state` flag and `hasErrorCode()`
+*   If `hasErrorCode()` returns true, the `failMessage` is set
 * There are multiple `boost::asio::io_context` for Rest and Websockets calls which are set with `BinanceBeast::start()`
   * Rest default is 4
   * Websockets default is 6
@@ -91,23 +93,24 @@ int main (int argc, char ** argv)
 
     BinanceBeast bb;
 
-    bb.start(config);   // must always call this once to start the networking processing loop
+    bb.start(config);                           // call once to start the networking processing loop
 
-    bb.startWebSocket([&](WsResult result)      // this is called for each message or error
+    bb.startWebSocket([&](WsResult result)      
     {  
         std::cout << result.json << "\n\n";
 
         if (result.hasErrorCode())
         {
-            std::cout << "\nError code: " << std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"]))
-                      << "\nError msg: " << json::value_to<std::string>(result.json.as_object()["msg"]) << "\n";
+            std::cout << "\nError " << result.failMessage << "\n";
         }
         else
         {
+            // access symbol and mark price in the result
             std::cout << "\n" << result.json.as_object()["s"] << " = " << result.json.as_object()["p"] << "\n";
         }
 
-    }, "ethusdt@markPrice@1s");      // params for Websocket call
+    },
+    "ethusdt@markPrice@1s");      // params
 
     using namespace std::chrono_literals;    
     std::this_thread::sleep_for(10s);
