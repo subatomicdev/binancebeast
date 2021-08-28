@@ -232,7 +232,7 @@ It has been developed with GCC 10.3.0 but older versions that support C++17 will
 
 
 ### Linking
-The build script create a release static library. To link from your app:
+To link from your app:
 
 * Add `binancebeast/lib/Release` and `binancebeast/lib/Debug` to link directories
 * Add `-lbinancebeast` to target link libraries
