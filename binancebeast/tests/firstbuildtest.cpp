@@ -8,6 +8,8 @@
 
 using namespace bblib;
 using namespace bblib_test;
+using namespace std::chrono_literals;
+
 
 int main (int argc, char ** argv)
 {
@@ -18,10 +20,11 @@ int main (int argc, char ** argv)
     auto config = ConnectionConfig::MakeTestNetConfig();
     bb.start(config);
 
-
     std::condition_variable cvHaveReply;
 
-    bb.sendRestRequest([&cvHaveReply](RestResult result)
+    std::cout << "\n\nREST: exchangeInfo\n\n";
+
+    bb.sendRestRequest([&cvHaveReply](RestResponse result)
     {
         if (result.hasErrorCode())
             std::cout << "FAIL: " << result.failMessage << "\n";
@@ -34,6 +37,17 @@ int main (int argc, char ** argv)
 
     waitReply(cvHaveReply, "exchangeInfo");
 
+
+    std::cout << "\n\nWebSockets: bookTicker\n\n";
+    bb.startWebSocket([](WsResponse result)
+    {
+        if (result.hasErrorCode())
+            std::cout << "ERROR: " << result.failMessage << "\n";
+        else
+            std::cout << result.json << "\n";
+    }, "!bookTicker");
+
+    std::this_thread::sleep_for(8s);
 
     return 0;
 }
