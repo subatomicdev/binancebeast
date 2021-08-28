@@ -124,7 +124,7 @@ namespace bblib
 
 
     public:
-        ConnectionConfig() : verifyPeer(false)
+        ConnectionConfig() : verifyPeer(false), usingTestRootCertificates(true)
         {
         }
 
@@ -134,7 +134,8 @@ namespace bblib
                 restApiUri(restUri),
                 wsApiUri(wsUri),
                 verifyPeer(sslVerifyPeer),
-                keys(apiKeys)
+                keys(apiKeys),
+                usingTestRootCertificates(true)
         {
         }
 
@@ -157,6 +158,7 @@ namespace bblib
         string wsApiUri;
         bool verifyPeer;    // connecteing to the TestNet fails to verify peer
         ConnectionKeys keys;
+        bool usingTestRootCertificates;
     };
 
     inline void fail(beast::error_code ec, const char * what)

@@ -9,6 +9,7 @@ namespace bblib
     BinanceBeast::BinanceBeast() : m_nextWsIoContext(0), m_nextRestIoContext(0)
     {
         m_nextWsId.store(1);
+        m_sslCtx = std::make_shared<ssl::context> (ssl::context::tlsv12_client);
     }
 
 
@@ -33,33 +34,27 @@ namespace bblib
     {  
         m_nextWsIoContext = 0;
         m_nextRestIoContext = 0;
-
-        m_restCtx = std::make_shared<ssl::context> (ssl::context::tlsv12_client);
-        m_wsCtx = std::make_shared<ssl::context> (ssl::context::tlsv12_client);
+        m_config = config;        
 
         boost::system::error_code ec;
-        load_root_certificates(*m_restCtx, ec);
-        load_root_certificates(*m_wsCtx, ec);
 
-
-        if (ec)
-            throw boost::system::system_error {ec};
-
+        // using certificates shipped with Beast. Do not do this for production. Use loadRootCertificate()
+        if (config.usingTestRootCertificates)
+        {
+            load_test_certificates(*m_sslCtx, ec);
+            
+            if (ec)
+                fail(ec, "failed to load root certificates");
+        }
+            
+        
         // if this enabled on the testnet, it fails validation.
         // using some online tools shows the testnet does not send the root certificate, this maybe the cause of the problem
         if (m_config.verifyPeer)
-        {
-            m_restCtx->set_verify_mode(ssl::verify_peer); 
-            m_wsCtx->set_verify_mode(ssl::verify_peer); 
-        }            
+            m_sslCtx->set_verify_mode(ssl::verify_peer); 
         else
-        {
-            m_restCtx->set_verify_mode(ssl::verify_none); 
-            m_wsCtx->set_verify_mode(ssl::verify_none);
-        }
-        
+            m_sslCtx->set_verify_mode(ssl::verify_none);
 
-        m_config = config;
 
         // rest io_contexts
         m_nextRestIoContext.store(0);
@@ -134,7 +129,7 @@ namespace bblib
         if (handler == nullptr)
             throw std::runtime_error("callback is null");
 
-        auto session = std::make_shared<WsSession>(getWsIoContext(), m_wsCtx, std::move(handler));
+        auto session = std::make_shared<WsSession>(getWsIoContext(), m_sslCtx, std::move(handler));
         
         auto wsid = m_nextWsId.load();
         m_nextWsId.store(wsid+1U);

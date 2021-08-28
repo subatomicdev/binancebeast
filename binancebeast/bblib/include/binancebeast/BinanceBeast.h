@@ -107,6 +107,25 @@ namespace bblib
         /// This does not close the web socket session, for that use stopWebSocket().
         void closeUserData (WebSocketResponseHandler handler);
 
+        /// Load PEM file with root certificates. Use this in production, but for test/dev then the default certificate is likely ok.
+        /// Call this before start().
+        void loadRootCertificate (std::filesystem::path& path)
+        {
+            if (!std::filesystem::exists(path))
+                fail("path to root certificate does not exist");
+            else
+            {
+                m_sslCtx->load_verify_file(path);                               
+            }
+        }
+
+        /// Add a directory containing certificate authority files used for HTTP verification. Must be PEM format.
+        /// Call this before start().
+        void addRootVerifyPath(const std::filesystem::path& path)
+        {
+            m_sslCtx->add_verify_path(path);
+        }
+
 
     private:
         void stop();
@@ -115,7 +134,7 @@ namespace bblib
         WsToken createWsSession (const string& host, const std::string& path, WebSocketResponseHandler&& handler);
 
 
-        void createRestSession(const string& host, const string& path, const bool createStrand, RestResponseHandler&& rc,  const bool sign, RestParams params, const RequestType type = RequestType::Get)
+        inline void createRestSession(const string& host, const string& path, const bool createStrand, RestResponseHandler&& rc,  const bool sign, RestParams params, const RequestType type = RequestType::Get)
         {
             if (rc == nullptr)
                 throw std::runtime_error("callback is null");
@@ -123,9 +142,9 @@ namespace bblib
             std::shared_ptr<RestSession> session;
 
             if (createStrand)
-                session = std::make_shared<RestSession>(net::make_strand(getRestIoContext()), m_restCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
+                session = std::make_shared<RestSession>(net::make_strand(getRestIoContext()), m_sslCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
             else
-                session = std::make_shared<RestSession>(getRestIoContext().get_executor(), m_restCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
+                session = std::make_shared<RestSession>(getRestIoContext().get_executor(), m_sslCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
 
             // we don't need to worry about the session's lifetime because RestSession::run() passes the session's shared_ptr
             // by value into the io_context. The session will be destroyed when there are no more io operations pending.
@@ -214,7 +233,7 @@ namespace bblib
             net::io_context ioc;
 
             tcp::resolver resolver(ioc);
-            beast::ssl_stream<beast::tcp_stream> stream(ioc, *m_wsCtx);
+            beast::ssl_stream<beast::tcp_stream> stream(ioc, *m_sslCtx);
 
             // Set SNI Hostname (many hosts need this to handshake successfully)
             if(! SSL_set_tlsext_host_name(stream.native_handle(), m_config.restApiUri.c_str()))
@@ -303,16 +322,14 @@ namespace bblib
 
         ConnectionConfig m_config;
         string m_listenKey;
-
+        std::shared_ptr<ssl::context> m_sslCtx;
 
         // REST
-        std::shared_ptr<ssl::context> m_restCtx;
         net::thread_pool m_restCallersThreadPool;       // The users's callback functions are called from this pool rather than using the io_context's thread
         std::vector<IoContext> m_restIocThreads;
         std::atomic_size_t m_nextRestIoContext;
 
         // WebSockets
-        std::shared_ptr<ssl::context> m_wsCtx;          // TODO do we need different ssl contexts for Rest and WS?
         std::vector<IoContext> m_wsIocThreads;
         std::atomic_size_t m_nextWsIoContext;
         std::atomic_uint32_t m_nextWsId;
