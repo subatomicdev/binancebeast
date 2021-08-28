@@ -150,14 +150,9 @@ int main (int argc, char ** argv)
         std::cout << result.json << "\n\n";
 
         if (result.hasErrorCode())
-        {
             std::cout << "\nError " << result.failMessage << "\n";
-        }
         else
-        {
-            // access symbol and mark price in the result
             std::cout << "\n" << result.json.as_object()["s"] << " = " << result.json.as_object()["p"] << "\n";
-        }
 
     },
     "ethusdt@markPrice@1s");      // params
@@ -195,25 +190,15 @@ void onUserData(WsResult result)
         const auto eventType = json::value_to<string>(topLevel["e"]);
 
         if (eventType == "listenKeyExpired")
-        {
             std::cout << "listen key expired, renew with BinanceBeast::renewListenKey()\n";
-        }
         else if (eventType == "MARGIN_CALL")
-        {
             std::cout << "margin call\n";
-        }
         else if (eventType == "ACCOUNT_UPDATE")
-        {
             std::cout << "account update\n";
-        }
         else if (eventType == "ORDER_TRADE_UPDATE")
-        {
             std::cout << "order trade update\n";
-        }
         else if (eventType == "ACCOUNT_CONFIG_UPDATE")
-        {
             std::cout << "account config update\n";
-        }
     }
 }
 ```
@@ -232,7 +217,7 @@ It has been developed with GCC 10.3.0 but older versions that support C++17 will
 
 
 ### Linking
-The build script create a release static library. To link from your app:
+To link from your app:
 
 * Add `binancebeast/lib/Release` and `binancebeast/lib/Debug` to link directories
 * Add `-lbinancebeast` to target link libraries
