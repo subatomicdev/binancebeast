@@ -16,7 +16,7 @@ void testLoadFromFile(string_view argv)
     config.usingTestRootCertificates = false;           // we will use our own
     config.verifyPeer = true;
 
-    auto pemPath = std::filesystem::path(argv).parent_path().parent_path() / "bbtest/testcerts.pem";
+    auto pemPath = std::filesystem::path(argv).parent_path().parent_path() / "tests/testcerts.pem";
 
     try
     {
@@ -64,7 +64,7 @@ void testNoLoad (string_view argv)
     config.usingTestRootCertificates = false;   // we will use our own
     config.verifyPeer = true;
     
-    auto pemPath = std::filesystem::path(argv).parent_path().parent_path() / "bbtest/testcerts.pem";
+    auto pemPath = std::filesystem::path(argv).parent_path().parent_path() / "tests/testcerts.pem";
 
     try
     {
@@ -91,9 +91,7 @@ void testNoLoad (string_view argv)
 
         auto haveReply = waitReply(cvHaveReply, "no cert file");
     
-        if (!haveReply)
-            std::cout << "FAIL\n";
-        else if (failMessage == "handshake certificate verify failed")
+        if (failMessage == "handshake certificate verify failed")
             std::cout << "PASS: " << failMessage << "\n";
         else
             std::cout << "FAIL: " << failMessage << "\n";
