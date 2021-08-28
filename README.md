@@ -10,8 +10,7 @@ The library has is developed on Ubuntu and only tested on Ubuntu. Support for Wi
 ## Status
 
 ### USD-M Futures
-- Rest
-  - All
+- Rest: All
 - WebSockets: All
 - User Data: All
 
@@ -127,7 +126,7 @@ int main (int argc, char ** argv)
 
 
 ### WebSockets
-A websocket stream is closed when the `BinanceBeast` object is destructed, there is no close monitor function, this may be added later.
+A websocket stream is closed when the `BinanceBeast` object is destructed or calling `BinanceBeast::stopWebSocket()`.
 
 Receive Mark Price for ETHUSDT for 10 seconds:
 
