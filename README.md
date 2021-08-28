@@ -217,7 +217,15 @@ void onUserData(WsResult result)
 ## Build
 It has been developed with GCC 10.3.0 but older versions that support C++17 will work.
 
-The `.vscode` directory is in the repo for convenience if you use VS Code, just open the binancebeast folder in VS Code.
+### Dev
+The `.vscode` directories are in the repo for convenience. If you use VS Code, just open the binancebeast folder in VS Code.
+
+### Linking
+The build script create a release static library. To link from your app:
+
+* Add `binancebeast/lib/Release` and `binancebeast/lib/Debug` to link directories
+* Add `-lbinancebeast` to target link libraries
+
 
 * `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
 * `cd binancebeast`
