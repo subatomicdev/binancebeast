@@ -224,7 +224,7 @@ It has been developed with GCC 10.3.0 but older versions that support C++17 will
 
 * `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
 * `cd binancebeast`
-* `./build_linux_x64_static_release.sh` or `./build_linux_x64_debug_release.sh`
+* `./build_linux_x64_static_release.sh` or `./build_linux_x64_static_debug.sh`
   *  Uses `vcpkg` to install the required libraries. This installs cmake and ninja but it's local to vcpkg so will not affect existing installations
   * Configure and build
 * After the build a short test runs (which doesn't require an API key)
