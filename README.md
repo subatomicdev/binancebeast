@@ -217,8 +217,14 @@ void onUserData(WsResult result)
 ## Build
 It has been developed with GCC 10.3.0 but older versions that support C++17 will work.
 
-### Dev
-The `.vscode` directories are in the repo for convenience. If you use VS Code, just open the binancebeast folder in VS Code.
+* `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
+* `cd binancebeast`
+* `./build_linux_x64_static_release.sh`
+  *  Uses `vcpkg` to install the required libraries. This installs cmake and ninja but it's local to vcpkg so will not affect existing installations
+  * Configure and build
+* After the build a short test runs (which doesn't require an API key)
+* The library and test binary are in the lib and bin directories
+
 
 ### Linking
 The build script create a release static library. To link from your app:
@@ -227,11 +233,6 @@ The build script create a release static library. To link from your app:
 * Add `-lbinancebeast` to target link libraries
 
 
-* `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
-* `cd binancebeast`
-* `./build_linux_x64_static_release.sh`
-  *  Uses `vcpkg` to install the required libraries. This installs cmake and ninja but it's local to vcpkg so will not affect existing installations
-  * Configure and build
-* After the build a short test runs (which doesn't require an API key)
-* The library and test binary are in the lib and bin directories
-  
+### Dev
+The `.vscode` directories are in the repo for convenience. If you use VS Code, just open the binancebeast folder in VS Code.
+ 
