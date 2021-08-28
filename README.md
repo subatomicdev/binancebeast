@@ -44,7 +44,7 @@ Configs store the API keys, they are created with `ConnectionConfig::MakeTestNet
   myapiKeyMyKey723423Ju&jNhuayNahas617238Jaiasjd31as52v46523435vs
   8LBwbPvcub5GHtxLgWDZnm23KFcXwXwXwXwLBwbLBwbAABBca-sdasdasdas123
   ```
-* Supply just an API key or API and secret key
+* Supply just an API key, or an API and secret key
 
 Which keys you need depends on the endpoints you use: https://binance-docs.github.io/apidocs/futures/en/#endpoint-security-type 
 
