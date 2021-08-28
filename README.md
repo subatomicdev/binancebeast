@@ -2,16 +2,15 @@
 ## NOTE: this is in the early stages and is subject to breaking changes
 ---
 
-A C++ library for the Binance Futures exchange, using Boost's Beast and JSON libraries for networking (http/websockets) and json respectively. 
+A C++ library for the Binance Futures exchange, using Boost's Beast and JSON and developed on Ubuntu and only tested on Ubuntu.
 
-The library has is developed on Ubuntu and only tested on Ubuntu. Support for Windows may be added later.
+The JSON returned from Binance is passed to response handlers and the BinanceBeast is lightweight API with functions for sending REST requests and starting Websocket sessions, rather than separate functions for specific calls. For example, rather than `getAllOrders()`, `getSymbolMarkPrice()` etc, all REST requests use `sendRestRequest()`. This means the BinanceBeast API is simpler and doesn't require updating if Binance add more endpoints or parameters.
 
 
 ## Status
 
 ### USD-M Futures
-- Rest
-  - All
+- Rest: All
 - WebSockets: All
 - User Data: All
 
@@ -127,7 +126,7 @@ int main (int argc, char ** argv)
 
 
 ### WebSockets
-A websocket stream is closed when the `BinanceBeast` object is destructed, there is no close monitor function, this may be added later.
+A websocket stream is closed when the `BinanceBeast` object is destructed or calling `BinanceBeast::stopWebSocket()`.
 
 Receive Mark Price for ETHUSDT for 10 seconds:
 
@@ -225,4 +224,15 @@ It has been developed with GCC 10.3.0 but older versions that support C++17 will
   * Configure and build
 * After the build a short test runs (which doesn't require an API key)
 * The library and test binary are in the lib and bin directories
-  
+
+
+### Linking
+The build script create a release static library. To link from your app:
+
+* Add `binancebeast/lib/Release` and `binancebeast/lib/Debug` to link directories
+* Add `-lbinancebeast` to target link libraries
+
+
+### Dev
+The `.vscode` directories are in the repo for convenience. If you use VS Code, just open the binancebeast folder in VS Code.
+ 
