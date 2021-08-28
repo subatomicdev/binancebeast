@@ -217,6 +217,8 @@ void onUserData(WsResult result)
 ## Build
 It has been developed with GCC 10.3.0 but older versions that support C++17 will work.
 
+The `.vscode` directory is in the repo for convenience if you use VS Code, just open the binancebeast folder in VS Code.
+
 * `git clone --recurse-submodules -j8 https://github.com/subatomicdev/binancebeast.git binancebeast`
 * `cd binancebeast`
 * `./build_linux_x64_static_release.sh`
