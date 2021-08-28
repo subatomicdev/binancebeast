@@ -21,7 +21,7 @@ namespace bblib_test
     {
         if (result.hasErrorCode())
         {
-            testFail(test, std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"])) + std::string{" : "} + json::value_to<std::string>(result.json.as_object()["msg"]));
+            testFail(test, result.failMessage);
             return true;
         }
         return false;
@@ -32,7 +32,7 @@ namespace bblib_test
     {
         if (result.hasErrorCode())
         {
-            testFail(test, std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"])) + std::string{" : "} + json::value_to<std::string>(result.json.as_object()["msg"]));
+            testFail(test, result.failMessage);
             return true;
         }
         return false;

@@ -29,51 +29,6 @@ bool handleError(WsResponse& result)
 }
 
 
-void onExchangeInfo (RestResponse result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json.as_object() << "\n";
-    }
-}
-
-
-void onServerTime (RestResponse result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json.as_object() << "\n";
-    }
-}
-
-
-void onOrderBook (RestResponse result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json.as_object() << "\n";
-    }
-}
-
-
-void onAllOrders (RestResponse result)
-{
-    std::cout << BB_FUNCTION_ENTER << "\n";
-
-    if (!handleError(result))
-    {
-        std::cout << result.json << "\n";
-    }
-}
-
-
-
 void onUserData(WsResponse result)
 {
     std::cout << BB_FUNCTION_ENTER << "\n";
@@ -129,7 +84,9 @@ void onCloseUserData(WsResponse result)
 
 void onWsResponse(WsResponse result)
 {
-    if (result.hasErrorCode())
+    if (result.state == WsResponse::State::Disconnect)
+        std::cout << "\nDisconnected\n";
+    else if (result.hasErrorCode())
         std::cout << "\nFAIL: " << result.failMessage << "\n";
     else
         std::cout << "\n" << result.json << "\n";
@@ -195,6 +152,7 @@ public:
 };
 
 
+using namespace std::chrono_literals;
 
 int main (int argc, char ** argv)
 {
@@ -210,21 +168,26 @@ int main (int argc, char ** argv)
         }
     });
 
-
     auto config = argc == 2 ? ConnectionConfig::MakeTestNetConfig(std::filesystem::path{argv[1]}) : ConnectionConfig::MakeTestNetConfig();
 
     BinanceBeast bb;
-    bb.start(config,4, 8);
+    bb.start(config, 4, 8);
     
     //ListenKeyExtender listenKeyExtender{bb};
 
-    bb.sendRestRequest(onRestResponse, "/fapi/v1/exchangeInfo", RestSign::Unsigned, RestParams{}, RequestType::Get);
+    //bb.sendRestRequest(onRestResponse, "/fapi/v1/exchangeInfo", RestSign::Unsigned, RestParams{}, RequestType::Get);
     //bb.sendRestRequest(onRestResponse, "/fapi/v1/allOrders", RestSign::HMAC_SHA256, RestParams{{{"symbol", "BTCUSDT"}}});
     //bb.sendRestRequest(onRestResponse, "/fapi/v1/depth", RestSign::Unsigned, RestParams{{{"symbol", "BTCUSDT"}}});
 
-    //bb.startWebSocket(onWsResponse, "btcusdt@markPrice@1s");
+    auto token = bb.startWebSocket(onWsResponse, "!bookTicker"/*"btcusdt@aggTrade"*//*"btcusdt@markPrice@1s"*/);
 
-    //bb.startUserData(onUserData);
+    ///bb.startUserData(onUserData);
+
+    /*
+    std::this_thread::sleep_for(5s);
+    std::cout << "Closing\n";
+    bb.stopWebSocket(token);
+    */
 
     {
         //bb.startUserData(onUserData);
@@ -237,37 +200,3 @@ int main (int argc, char ** argv)
 
     return 0;
 }
-
-
-/*
-int main (int argc, char ** argv)
-{
-    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
-    // you don't need API or secret keys for mark price
-
-    BinanceBeast bb;
-
-    bb.start(config);   // must always call this once to start the networking processing loop
-
-    bb.startWebSocket([&](WsResponse result)      // this is called for each message or error
-    {  
-        std::cout << result.json << "\n\n";
-
-        if (result.hasErrorCode())
-        {
-            std::cout << "\nError code: " << std::to_string(json::value_to<std::int32_t>(result.json.as_object()["code"]))
-                      << "\nError msg: " << json::value_to<std::string>(result.json.as_object()["msg"]) << "\n";
-        }
-        else
-        {
-            std::cout << "\n" << result.json.as_object()["s"] << " = " << result.json.as_object()["p"] << "\n";
-        }
-
-    }, "ethusdt@markPrice@1s");      // params for Websocket call
-
-    using namespace std::chrono_literals;    
-    std::this_thread::sleep_for(10s);
-
-    return 0;
-}
-*/

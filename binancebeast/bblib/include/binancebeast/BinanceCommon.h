@@ -180,7 +180,7 @@ namespace bblib
     {
         if (callback)
         {
-            net::post(callerPool, boost::bind(callback, ResultT {std::move(what)})); // call callback with  a Failed state
+            net::post(callerPool, boost::bind(callback, ResultT {std::move(what + " " + ec.message())})); // call callback with  a Failed state
         }    
     }
 
@@ -190,7 +190,7 @@ namespace bblib
     {
         if (callback)
         {
-            callback(ResultT {std::move(what)});
+            callback(ResultT {std::move(what + " " + ec.message())});
         }   
     }
 

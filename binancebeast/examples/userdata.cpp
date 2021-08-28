@@ -87,7 +87,7 @@ int main (int argc, char ** argv)
     bb.start(config);
 
     // receive user data 
-    bb.startUserData([&](WsResponse result)      // this is called for each message or error
+    auto token = bb.startUserData([&](WsResponse result)      // this is called for each message or error
     {  
         std::cout << result.json << "\n\n";
 
@@ -98,9 +98,7 @@ int main (int argc, char ** argv)
         else
         {
             auto topLevel = result.json.as_object();
-            const auto eventType = json::value_to<string>(topLevel["e"]);
-
-            if (eventType == "listenKeyExpired")
+            if (const auto eventType = json::value_to<string>(topLevel["e"]); eventType == "listenKeyExpired")
             {
                 std::cout << "listen key expired\n";
                 bb.renewListenKey([](WsResponse renewKeyResult)
@@ -121,8 +119,15 @@ int main (int argc, char ** argv)
 
     using namespace std::chrono_literals;    
     std::this_thread::sleep_for(30s);
-    //std::this_thread::sleep_for(std::chrono::minutes(120));
-
+    
+    // don't need to call this, for demonstration purposes only
+    bb.stopWebSocket(token, [](WsResponse result)
+    {
+        if (result.state == WsResponse::State::Disconnect)
+        {
+            std::cout << "Disconnected\n";
+        }
+    });
 
     return 0;
 }

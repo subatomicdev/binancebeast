@@ -83,117 +83,36 @@ namespace bblib
         /// Some requests require a signature, the Binance API docs will say "HMAC SHA256" if so.
         /// For unsigned requests: set 'sign' to RestSign::Unsigned.
         /// For signed rqeuests:   set 'sign' to RestSign::HMAC_SHA256 but DO NOT include a 'timestamp' in the params, BinanceBeast will do that.
-        void sendRestRequest(RestResponseHandler rc, const string& path, const RestSign sign, RestParams params, const RequestType type);
+        void sendRestRequest(RestResponseHandler handler, const string& path, const RestSign sign, RestParams params, const RequestType type);
         
         /// Start a new websocket session, for all websocket endpoints except user data (use startUserData() for that).
         /// The supplied callback handler will be called for each response, which may include an error.
         /// 'stream' is the "streamName" as defined on the Binance API docs.
-        void startWebSocket (WebSocketResponseHandler wc, string stream);
+        WsToken startWebSocket (WebSocketResponseHandler handler, string stream);
+
+        /// Closes a websocket connection, including user data stream.
+        /// token - the token, as returned from startWebSocket() or startUserData().
+        /// handler - will be called when the stream is closed. The WebSocketResponseHandler::state will be State::Disconnect.
+        ///           If nullptr then the existing handler (passed to startWebSocket()  / startUserData()) will be used.
+        void stopWebSocket (const WsToken& token, WebSocketResponseHandler handler = nullptr);
 
         /// Start a user data websocket session.
-        void startUserData(WebSocketResponseHandler wc);
+        WsToken startUserData(WebSocketResponseHandler handler);
 
         /// You should call this every 60 minutes to extend your listen key, otherwise your user data stream will become invalid/closed by Binance.
         /// You must first call monitorUserData() to create (or reuse exiting) listen key, there after calll this function every ~ 60 minutes.
-        void renewListenKey(WebSocketResponseHandler wc);
+        void renewListenKey(WebSocketResponseHandler handler);
 
-        /// This will invalidate your key, so you will no longer receive user data updates. Only call if you intend to shutdown.
-        void closeUserData (WebSocketResponseHandler wc);
+        /// This will invalidate your key, so you will no longer receive user data updates. 
+        /// This does not close the web socket session, for that use stopWebSocket().
+        void closeUserData (WebSocketResponseHandler handler);
 
-
-        // REST calls
-        [[deprecated("use sendRestRequest() instead")]]
-        void ping (RestResponseHandler rr);
-        [[deprecated("use sendRestRequest() instead")]]
-        void exchangeInfo(RestResponseHandler rr);
-        [[deprecated("use sendRestRequest() instead")]]
-        void serverTime(RestResponseHandler rr);
-        [[deprecated("use sendRestRequest() instead")]]
-        void orderBook(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void allOrders(RestResponseHandler rr, RestParams params);       
-        [[deprecated("use sendRestRequest() instead")]] 
-        void recentTradesList(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void historicTrades(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void aggregateTradesList(RestResponseHandler rr, RestParams params);        
-        [[deprecated("use sendRestRequest() instead")]]
-        void klines(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void contractKlines(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void indexPriceKlines(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void markPriceKlines(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void markPrice(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void fundingRate(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void tickerPriceChange24hr(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void symbolPriceTicker(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void symbolBookTicker(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void openInterest(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void openInterestStats(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void topTraderLongShortRatioAccounts(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void topTraderLongShortRatioPositions(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void longShortRatio(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void takerBuySellVolume(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void historicalBlvtNavKlines(RestResponseHandler rr, RestParams params);
-        [[deprecated("use sendRestRequest() instead")]]
-        void compositeIndexSymbolInfo(RestResponseHandler rr, RestParams params);
-
-
-        // WebSockets
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorMarkPrice (WebSocketResponseHandler wc, string params);
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorKline (WebSocketResponseHandler wc, string params);
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorIndividualSymbolMiniTicker (WebSocketResponseHandler wc, string symbol);
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorAllMarketMiniTickers (WebSocketResponseHandler wc);
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorIndividualSymbolTicker(WebSocketResponseHandler wc, string symbol);
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorSymbolBookTicker(WebSocketResponseHandler wc, string symbol);
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorAllBookTicker(WebSocketResponseHandler wc);
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorLiquidationOrder(WebSocketResponseHandler wc, string symbol);
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorAllMarketLiduiqdationOrder(WebSocketResponseHandler wc);
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorPartialBookDepth(WebSocketResponseHandler wc, string symbol, string levels, string updateSpeed = "250ms");
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorDiffBookDepth(WebSocketResponseHandler wc, string symbol, string updateSpeed = "250ms");
-        [[deprecated("use startWebSocket() instead. This function will be removed. See class docs.")]]
-        void monitorCompositeIndexSymbolInfo(WebSocketResponseHandler wc, string symbol);
-        
 
     private:
         void stop();
 
 
-        void createWsSession (const string& host, const std::string& path, WebSocketResponseHandler&& wc)
-        {
-            if (wc == nullptr)
-                throw std::runtime_error("callback is null");
-
-            std::shared_ptr<WsSession> session = std::make_shared<WsSession>(getWsIoContext(), m_wsCtx, std::move(wc));
-            
-            session->run(host, "443", path);
-        }
+        WsToken createWsSession (const string& host, const std::string& path, WebSocketResponseHandler&& handler);
 
 
         void createRestSession(const string& host, const string& path, const bool createStrand, RestResponseHandler&& rc,  const bool sign, RestParams params, const RequestType type = RequestType::Get)
@@ -217,7 +136,7 @@ namespace bblib
 
                 if (sign)
                 {
-                    // signature requires the timestamp and the value is a SHA256 of the query params:
+                    // signing rrequires a 'signature' param which is a SHA256 of the query params:
                     // 
                     //  https://fapi.binance.com/fapi/v1/allOrders?symbol=ABCDEF&recvWindow=5000&timestamp=123454
                     //                                             ^                                            ^
@@ -255,6 +174,7 @@ namespace bblib
 
 
         net::io_context& getWsIoContext();
+        
 
         net::io_context& getRestIoContext();
 
@@ -289,7 +209,7 @@ namespace bblib
     private:
         enum class UserDataStreamMode { Create, Extend, Close };
 
-        bool amendUserDataListenKey (WebSocketResponseHandler wc, const UserDataStreamMode mode)
+        bool amendUserDataListenKey (WebSocketResponseHandler handler, const UserDataStreamMode mode)
         {
             net::io_context ioc;
 
@@ -360,21 +280,20 @@ namespace bblib
                 json::error_code ec;
                 if (auto value = json::parse(res.body(), ec); ec)
                 {
-                    fail(ec, "monitorUserData(): json read", wc);
+                    fail(ec, "monitorUserData(): json read", handler);
                 }
                 else
                 {
-                    // for creating, we store the listen key, for other modes just check for error
-
+                    // when creating, we store the listen key, for other modes just check for error
                     if (value.as_object().if_contains("code"))
-                        fail (string{"monitorUserData(): json contains error code from Binance: " + json::value_to<string>(value.as_object()["msg"])}, wc);
+                        fail (string{"monitorUserData(): json contains error code from Binance: " + json::value_to<string>(value.as_object()["msg"])}, handler);
                     else if (mode == UserDataStreamMode::Create)  
                         m_listenKey = json::value_to<string>(value.as_object()["listenKey"]);
                 }
             }
             else
             {
-                fail("monitorUserData(): content not json", wc);
+                fail("monitorUserData(): content not json", handler);
             }          
 
             return !m_listenKey.empty();
@@ -388,7 +307,7 @@ namespace bblib
 
         // REST
         std::shared_ptr<ssl::context> m_restCtx;
-        net::thread_pool m_restCallersThreadPool;  // The users's callback functions are called from this pool rather than using the io_context's thread
+        net::thread_pool m_restCallersThreadPool;       // The users's callback functions are called from this pool rather than using the io_context's thread
         std::vector<IoContext> m_restIocThreads;
         std::atomic_size_t m_nextRestIoContext;
 
@@ -396,6 +315,9 @@ namespace bblib
         std::shared_ptr<ssl::context> m_wsCtx;          // TODO do we need different ssl contexts for Rest and WS?
         std::vector<IoContext> m_wsIocThreads;
         std::atomic_size_t m_nextWsIoContext;
+        std::atomic_uint32_t m_nextWsId;
+        std::map<WsToken::TokenId, std::shared_ptr<WsSession>> m_wsSessions;
+        std::mutex m_wsSessionsMux;
     };
 
 }   // namespace BinanceBeast

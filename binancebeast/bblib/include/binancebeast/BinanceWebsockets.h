@@ -10,7 +10,7 @@ namespace bblib
 {
     struct WsResponse
     {
-        enum class State { Fail, Success };
+        enum class State { Fail, Success, Disconnect };
 
         WsResponse (const State s) : state(s)
         {
@@ -31,27 +31,30 @@ namespace bblib
         bool hasErrorCode(bool isNullAllowed = false)
         {
             bool error = false;
-            try
+            if (state != State::Disconnect)
             {
-                if (!isNullAllowed && json.is_null())
-                    error = "null";
-                else if (json.is_object())
+                try
                 {
-                    auto jsonObj = json.as_object();
-                    error = jsonObj.if_contains("code") || jsonObj.if_contains("error");
-                    
-                    if (jsonObj.if_contains("code"))
+                    if (!isNullAllowed && json.is_null())
+                        error = "json is null/empty";
+                    else if (json.is_object())
                     {
-                        failMessage = (jsonObj.if_contains("msg") ? json::value_to<string>(jsonObj["msg"]) : "");
+                        auto& jsonObj = json.as_object();
+                        error = jsonObj.if_contains("code") || jsonObj.if_contains("error");
+                        
+                        if (jsonObj.if_contains("code"))
+                        {
+                            failMessage = (jsonObj.if_contains("msg") ? json::value_to<string>(jsonObj["msg"]) : "");
+                        }
                     }
                 }
+                catch(...)
+                {        
+                    error = true;    
+                }
+
+                state = error ? State::Fail : State::Success;
             }
-            catch(...)
-            {        
-                error = true;    
-            }
-            
-            state = error ? State::Fail : State::Success;
 
             return error;
         }
@@ -59,6 +62,15 @@ namespace bblib
         json::value json;
         State state;
         string failMessage;
+    };
+
+    struct WsToken
+    {
+        using TokenId = std::uint32_t;
+
+        bool isValidId() const { return id != 0; }
+
+        TokenId id = 0;
     };
 
     using WsResult = WsResponse;                            // Deprecated, will be removed. Use WsResponse                              
@@ -73,7 +85,8 @@ namespace bblib
     {
 
     public:
-    
+        using CloseConnectionHandler = std::function<void(void)>;
+        
         // Resolver and socket require an io_context
         explicit WsSession(net::io_context& ioc, std::shared_ptr<ssl::context> ctx, WebSocketResponseHandler&& callback)
             :   m_resolver(net::make_strand(ioc)),
@@ -91,12 +104,22 @@ namespace bblib
         }
 
 
+        void close (CloseConnectionHandler callback)
+        {
+            m_ws.async_close(websocket::close_code::normal, beast::bind_front_handler([callback](beast::error_code ec)
+            {
+                boost::ignore_unused(ec);
+                callback();
+            }));
+        }
+
+
         /// Start the websocket session:
         ///     - resolve the address
         ///     - connect
         ///     - ssl handshake
         ///     - read until stream closed by the server or object destruction
-        void run(const string& host, const string& port, const string& path)
+        void run(const string_view& host, const string_view& port, const string_view& path)
         {
             m_host = host;
             m_path = path;
@@ -137,7 +160,7 @@ namespace bblib
                 return fail(ec, "connect", m_callback);
             }
 
-            // perform the SSL handshake
+            // SSL handshake
             m_ws.next_layer().async_handshake(ssl::stream_base::client,beast::bind_front_handler(&WsSession::on_ssl_handshake,shared_from_this()));
         }
 
@@ -169,7 +192,6 @@ namespace bblib
             if(ec)
                 return fail(ec, "handshake", m_callback);
 
-            // begin reading. called repeatedly
             m_ws.async_read(m_buffer, beast::bind_front_handler(&WsSession::on_read,shared_from_this()));
         }
 
@@ -178,10 +200,10 @@ namespace bblib
         {
             boost::ignore_unused(bytes_transferred);
 
-            if (ec == net::error::shut_down)
+            // operation_aborted: if user calls close() whilst there's a pending async_read() in the event queue            
+            if (ec == net::error::shut_down || ec == net::error::operation_aborted)
                 return ;
-
-            if (ec)
+            else if (ec)
                 return fail(ec, "read", m_callback);
 
             json::error_code jsonEc;
@@ -198,7 +220,12 @@ namespace bblib
             m_buffer.clear();
             m_ws.async_read(m_buffer, beast::bind_front_handler(&WsSession::on_read,shared_from_this()));
         }
+
         
+        WebSocketResponseHandler handler() const
+        {
+            return m_callback;
+        }
 
 
     private:
