@@ -169,6 +169,8 @@ RequestType::Post);
 
 
 ### WebSockets
+
+#### Single Stream
 A websocket stream is closed when the `BinanceBeast` object is destructed or calling `BinanceBeast::stopWebSocket()`.
 
 Receive Mark Price for ETHUSDT for 10 seconds:
@@ -200,6 +202,40 @@ int main (int argc, char ** argv)
 
     return 0;
 }
+```
+
+
+#### Combined Streams
+If you want to receive data from multiple streams but do so with one response handler/websocket stream, you can use a combined stream.
+
+Receive the mark price for BTCUSDT and ETHUSDT in a combined stream:
+
+See `examples\combinedstreams.cpp` for full code.
+
+```cpp
+// each stream's data is pushed separately.
+// in this case, we have two combined streams, the handler will be called once for btcusdt and again for ethusdt.
+// the "stream" value contains the stream name
+bb.startWebSocket([](WsResponse result)
+{
+    if (result.hasErrorCode())
+        std::cout << "Error: " << result.failMessage << "\n";
+    else
+    {
+        auto& object = result.json.as_object();
+        auto& streamName = object["stream"];
+
+        if (streamName == "btcusdt@markPrice@1s")
+        {
+            std::cout << "Mark price for BTCUSDT:\n" << object["data"] << "\n";
+        }
+        else if (streamName == "ethusdt@markPrice@1s")
+        {
+            std::cout << "Mark price for ETHUSDT:\n" << object["data"] << "\n";
+        }
+    }   
+},
+{{"btcusdt@markPrice@1s"}, {"ethusdt@markPrice@1s"}});
 ```
 
 
