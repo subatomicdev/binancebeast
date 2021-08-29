@@ -12,15 +12,13 @@ The JSON returned from Binance is passed to response handlers and the BinanceBea
 **Updates**
 29th August
 * Support for COIN-M added. Requires you set the market when the config is created
-* 
-* ```
-* // old
-* auto config = ConnectionConfig::MakeTestNetConfig("your API key", "your secret key");
-* //
-* new
-* auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, "your API key", "your secret key");
-* ```
-* 
+ ```cpp
+ // old
+ auto config = ConnectionConfig::MakeTestNetConfig("your API key", "your secret key");
+ // new
+ auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, "your API key", "your secret key");
+ ```
+ 
 
 28th August
 * The libraries output paths are now:   `binancebeast/lib/<build_configuration>` .
