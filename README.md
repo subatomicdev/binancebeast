@@ -9,6 +9,9 @@ The JSON returned from Binance is passed to response handlers and the BinanceBea
 
 ## Status
 
+REST, WebSockets and User Data fully supported for USD-M and COIN-M.
+
+
 **Updates**
 
 29th August
@@ -24,14 +27,8 @@ The JSON returned from Binance is passed to response handlers and the BinanceBea
 28th August
 * The libraries output paths are now:   `binancebeast/lib/<build_configuration>` .
 * Do a clean build and update your library include paths to link to the latest library
-
-
-### USD-M Futures
-- Rest: All
-- WebSockets: All
-- User Data: All
-
 ---
+
 
 ## Quick Guide
 
