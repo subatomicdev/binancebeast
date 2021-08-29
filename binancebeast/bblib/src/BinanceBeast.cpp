@@ -105,6 +105,17 @@ namespace bblib
     }
 
 
+    WsToken BinanceBeast::startWebSocket (WebSocketResponseHandler handler, const std::vector<string>& streams)
+    {
+        std::stringstream target ;
+        
+        for (auto& stream : streams)
+            target << stream + "/";
+
+        return createWsSession(m_config.wsApiUri, std::move("/stream?streams="+std::move(target.str())), std::move(handler));
+    }
+
+
     void BinanceBeast::stopWebSocket (const WsToken& token, WebSocketResponseHandler handler)
     {
         if (auto sessionIt = m_wsSessions.find(token.id); sessionIt != m_wsSessions.end())

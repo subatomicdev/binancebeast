@@ -62,7 +62,7 @@ int main (int argc, char ** argv)
     bb.start(config);
     
     runTest(bb, "aggregrateTrade", "btcusdt@aggTrade");
-    runTest(bb, "markPrice", "btcusdt@markPrice@1s");    
+    runTest(bb, "markPrice", "btcusdt@markPrice@1s");
     runTest(bb, "markPriceForAll", "!markPrice@arr@1s");
     runTest(bb, "klines", "btcusdt@kline_15m");
     runTest(bb, "continuousContractKline", "btcusdt_perpetual@continuousKline_1m");

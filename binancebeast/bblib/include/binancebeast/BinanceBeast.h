@@ -100,6 +100,11 @@ namespace bblib
         /// 'stream' is the "streamName" as defined on the Binance API docs.
         WsToken startWebSocket (WebSocketResponseHandler handler, string stream);
 
+        /// This starts a combined stream, for example receiving mark price for two different symbols without having to separate calls
+        /// to startWebSocket(), and two response handlers, you can combine both into one stream.
+        /// See https://binance-docs.github.io/apidocs/futures/en/#websocket-market-streams 
+        WsToken startWebSocket (WebSocketResponseHandler handler, const std::vector<string>& streams);
+
         /// Closes a websocket connection, including user data stream.
         /// token - the token, as returned from startWebSocket() or startUserData().
         /// handler - will be called when the stream is closed. The WebSocketResponseHandler::state will be State::Disconnect.
