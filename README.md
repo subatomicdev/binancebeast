@@ -141,6 +141,56 @@ int main (int argc, char ** argv)
 }
 ```
 
+#### Batch Orders
+A batch order is a JSON array with the same content as single order but it's URL encoded. Binance Beast provides a function to do this.
+
+Given:
+```json
+{
+  "batchOrders":
+  [
+    {
+      "symbol": "BTCUSDT",
+      "side": "BUY",
+      "type": "MARKET",
+      "quantity": "0.001"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "side": "BUY",
+      "type": "MARKET",
+      "quantity": "0.001"
+    }
+  ]
+}
+```
+
+The param for `sendRestRequest()` is the array within `batchOrders` URL encoded, _not_ from the `batchOrders` object. 
+
+See `examples\neworder.cpp` for full code.
+
+
+```cpp
+boost::json::object order;
+ order["batchOrders"] =
+ {
+     {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}},
+     {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}}
+ };
+
+ bb.sendRestRequest([&](RestResponse result)
+ {
+     if (result.hasErrorCode())    
+         std::cout << "Error: " << result.failMessage << "\n";
+     else
+         std::cout << "\nNew Order info:\n" << result.json << "\n";
+ },
+ "/fapi/v1/batchOrders",
+ RestSign::HMAC_SHA256,
+ RestParams{{{"batchOrders", BinanceBeast::urlEncode(json::serialize(order["batchOrders"]))}}},
+ RequestType::Post);
+```
+
 
 ### WebSockets
 A websocket stream is closed when the `BinanceBeast` object is destructed or calling `BinanceBeast::stopWebSocket()`.
