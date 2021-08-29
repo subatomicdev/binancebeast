@@ -17,7 +17,7 @@ int main (int argc, char ** argv)
 
     BinanceBeast bb;
 
-    auto config = ConnectionConfig::MakeTestNetConfig();
+    auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM);
     bb.start(config);
 
     std::condition_variable cvHaveReply;

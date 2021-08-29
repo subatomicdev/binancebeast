@@ -22,6 +22,8 @@ namespace bblib
         HMAC_SHA256
     };
 
+    
+
     /// 
     /// REST API docs:  https://binance-docs.github.io/apidocs/futures/en/#market-data-endpoints, 
     ///                 https://binance-docs.github.io/apidocs/futures/en/#account-trades-endpoints

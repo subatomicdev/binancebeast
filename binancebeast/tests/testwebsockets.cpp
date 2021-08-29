@@ -56,7 +56,7 @@ int main (int argc, char ** argv)
         return 1;
     }
     
-    auto config = ConnectionConfig::MakeTestNetConfig(std::filesystem::path{argv[1]});
+    auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, std::filesystem::path{argv[1]});
 
     BinanceBeast bb;
     bb.start(config);

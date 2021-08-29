@@ -12,7 +12,7 @@ using namespace bblib_test;
 /// Set the usingTestRootCertificates to true but do load certificates from PEM file
 void testLoadFromFile(string_view argv)
 {
-    auto config = ConnectionConfig::MakeLiveConfig();   // use the live exchange, the testnet is ok without root certificates
+    auto config = ConnectionConfig::MakeLiveConfig(Market::USDM);   // use the live exchange, the testnet is ok without root certificates
     config.usingTestRootCertificates = false;           // we will use our own
     config.verifyPeer = true;
 
@@ -60,7 +60,7 @@ void testLoadFromFile(string_view argv)
 /// Set the usingTestRootCertificates to true but don't load certificates
 void testNoLoad (string_view argv)
 {
-    auto config = ConnectionConfig::MakeLiveConfig();
+    auto config = ConnectionConfig::MakeLiveConfig(Market::USDM);
     config.usingTestRootCertificates = false;   // we will use our own
     config.verifyPeer = true;
     

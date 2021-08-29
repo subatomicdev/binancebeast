@@ -24,8 +24,8 @@ namespace bblib
     #define BB_FUNCTION_MSG(msg) std::string {__func__} +"()"+ msg
     #define BB_FUNCTION_ENTER BB_FUNCTION_MSG(" enter")
 
-    using namespace boost::placeholders;    // to surpress global placeholders warning from boost::bind
-
+    
+    using namespace boost::placeholders;    // to supress global placeholders warning from boost::bind
 
     namespace beast = boost::beast;         // from <boost/beast.hpp>
     namespace http = beast::http;           // from <boost/beast/http.hpp>
@@ -34,15 +34,25 @@ namespace bblib
     namespace ssl = boost::asio::ssl;       // from <boost/asio/ssl.hpp>
     namespace json = boost::json;
 
+
     using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
-
     using std::string;
-    const std::string BINANCEBEAST_USER_AGENT = "binancebeast";
-
     using std::string_view;
 
+
+    const std::string BINANCEBEAST_USER_AGENT = "binancebeast";
+
+
+    enum class Market
+    {
+        None,
+        USDM,
+        COINM
+    };
+
+
     struct ConnectionConfig
-    {    
+    {   
         static std::tuple<string, string> readKeyFile (const std::filesystem::path& p, const bool isLive)
         {
             if (!std::filesystem::exists(p))
@@ -74,36 +84,36 @@ namespace bblib
 			}
         }
 
-        static ConnectionConfig MakeTestNetConfig (const std::filesystem::path& keyFile) 
+        static ConnectionConfig MakeTestNetConfig (const Market market, const std::filesystem::path& keyFile) 
         {
             if (!std::filesystem::path(keyFile).empty())
             {
                 auto keys = readKeyFile(keyFile, false);
-                return MakeConfig(std::get<0>(keys), std::get<1>(keys), false);
+                return MakeConfig(std::get<0>(keys), std::get<1>(keys), false, market);
             }
             else
-                return MakeConfig("", "", false);
+                return MakeConfig("", "", false, market);
         }
 
-        static ConnectionConfig MakeLiveConfig (const std::filesystem::path& keyFile)
+        static ConnectionConfig MakeLiveConfig (const Market market, const std::filesystem::path& keyFile)
         {
             if (!std::filesystem::path(keyFile).empty())
             {
                 auto keys = readKeyFile(keyFile, true);
-                return MakeConfig(std::get<0>(keys), std::get<1>(keys), true);
+                return MakeConfig(std::get<0>(keys), std::get<1>(keys), true, market);
             }
             else
-                return MakeConfig("", "", true);
+                return MakeConfig("", "", true, market);
         }
 
-        static ConnectionConfig MakeTestNetConfig (const string& apiKey = "", const string& secretKey = "")
+        static ConnectionConfig MakeTestNetConfig (const Market market, const string& apiKey = "", const string& secretKey = "")
         {
-            return MakeConfig(apiKey, secretKey, false);
+            return MakeConfig(apiKey, secretKey, false, market);
         }
 
-        static ConnectionConfig MakeLiveConfig (const string& apiKey = "", const string& secretKey = "")
+        static ConnectionConfig MakeLiveConfig (const Market market, const string& apiKey = "", const string& secretKey = "")
         {
-            return MakeConfig(apiKey, secretKey, true);
+            return MakeConfig(apiKey, secretKey, true, market);
         }
 
     public:
@@ -139,28 +149,46 @@ namespace bblib
         {
         }
 
-        static ConnectionConfig MakeConfig (const string& apiKey, const string& secretKey, const bool isLive)
+        static ConnectionConfig MakeConfig (const string& apiKey, const string& secretKey, const bool isLive, const Market market)
         {
-            static std::string DefaultFuturesTestnetWsUri {"stream.binancefuture.com"};
+            // USD-M
+            static std::string DefaultUsdFuturesTestnetWsUri {"stream.binancefuture.com"};
             static std::string DefaultUsdFuturesTestnetRestUri {"testnet.binancefuture.com"};
-            static std::string DefaultFuturesWsUri {"fstream.binance.com"};
+            static std::string DefaultUsdFuturesWsUri {"fstream.binance.com"};
             static std::string DefaultUsdFuturesRestUri {"fapi.binance.com"};
 
-            if (isLive)
-                return ConnectionConfig {DefaultUsdFuturesRestUri, DefaultFuturesWsUri, true, ConnectionKeys{apiKey, secretKey}};
+            // COIN-M
+            static std::string DefaultCoinFuturesTestnetWsUri {"dstream.binancefuture.com"};
+            static std::string DefaultCoinFuturesTestnetRestUri {"testnet.binancefuture.com"};
+            static std::string DefaultCoinFuturesWsUri {"dstream.binance.com"};
+            static std::string DefaultCoinFuturesRestUri {"dapi.binance.com"};
+
+            
+            if (market == Market::USDM)
+            {
+                return (isLive ?    ConnectionConfig {DefaultUsdFuturesRestUri, DefaultUsdFuturesWsUri, true, ConnectionKeys{apiKey, secretKey}} : 
+                                    ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultUsdFuturesTestnetWsUri, false, ConnectionKeys{apiKey, secretKey}} );
+                
+            }
+            else if (market == Market::COINM)
+            {
+                return (isLive ?    ConnectionConfig {DefaultCoinFuturesRestUri, DefaultCoinFuturesWsUri, true, ConnectionKeys{apiKey, secretKey}} :
+                                    ConnectionConfig {DefaultCoinFuturesTestnetRestUri, DefaultCoinFuturesTestnetWsUri, false, ConnectionKeys{apiKey, secretKey}});
+            }
             else
-                return ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultFuturesTestnetWsUri, false, ConnectionKeys{apiKey, secretKey}};
+                throw std::runtime_error ("Invalid market type"); 
         }
 
 
     public:
         string restApiUri;
         string wsApiUri;
-        bool verifyPeer;    // connecteing to the TestNet fails to verify peer
+        bool verifyPeer;    // connecting to the TestNet fails to verify peer
         ConnectionKeys keys;
         bool usingTestRootCertificates;
     };
 
+    
     inline void fail(beast::error_code ec, const char * what)
     {
         throw std::runtime_error(ec.message() + what);
@@ -205,7 +233,6 @@ namespace bblib
             callback(ResultT {std::move(what)});
         }    
     }
-
 }
 
 #endif

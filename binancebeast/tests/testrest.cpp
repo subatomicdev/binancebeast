@@ -53,45 +53,61 @@ int main (int argc, char ** argv)
         return 1;
     }
 
-    auto config = ConnectionConfig::MakeTestNetConfig(std::filesystem::path{argv[1]});
 
-    BinanceBeast bb;
-    bb.start(config);
+    // USD-M 
+    {
+        auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, std::filesystem::path{argv[1]});
+
+        BinanceBeast bb;
+        bb.start(config);
+        
+        
+        
+        // market
+        runTest(bb, "/fapi/v1/exchangeInfo", RestParams{}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/time", RestParams{}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/depth", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/trades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/historicalTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/aggTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/klines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/continuousKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}, {"contractType","PERPETUAL"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/indexPriceKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/markPriceKlines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/premiumIndex", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/ticker/24hr", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/ticker/price", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/ticker/bookTicker", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/openInterest", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/fapi/v1/indexInfo", RestParams{{{"symbol", "DEFIUSDT"}}}, RestSign::Unsigned, false);
+        
+        // TODO always an invalid symbol
+        //runTest(bb, "/fapi/v1/lvtKlines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
+
+        // these all timeout on testnet
+        //runTest(bb, "/fapi/v1/fundingRate", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
+        //runTest(bb, "/fapi/v1/openInterestHist", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+        //runTest(bb, "/futures/data/topLongShortAccountRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+        //runTest(bb, "/futures/data/topLongShortPositionRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+        //runTest(bb, "/futures/data/globalLongShortAccountRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+        //runTest(bb, "/futures/data/longshortRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+        //runTest(bb, "/futures/data/takerlongshortRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+
+
+        // account/trades
+        runTest(bb, "/fapi/v1/allOrders", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::HMAC_SHA256, false);    
+        runTest(bb, "/fapi/v1/multiAssetsMargin", RestParams{{{"multiAssetsMargin", "false"}}}, RestSign::HMAC_SHA256, false);    
+    }
     
-    // market
-    runTest(bb, "/fapi/v1/exchangeInfo", RestParams{}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/time", RestParams{}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/depth", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/trades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/historicalTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/aggTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/klines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/continuousKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}, {"contractType","PERPETUAL"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/indexPriceKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/markPriceKlines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/premiumIndex", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/ticker/24hr", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/ticker/price", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/ticker/bookTicker", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/openInterest", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-    runTest(bb, "/fapi/v1/indexInfo", RestParams{{{"symbol", "DEFIUSDT"}}}, RestSign::Unsigned, false);
     
-    // TODO always an invalid symbol
-    //runTest(bb, "/fapi/v1/lvtKlines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
+    // COIN-M : aside from params and response data, the only difference should be the host addresses and possibly paths, so have a few tests for sanity checks
+    {
+        auto config = ConnectionConfig::MakeTestNetConfig(Market::COINM, std::filesystem::path{argv[1]});
 
-    // TODO these all timeout
-    //runTest(bb, "/fapi/v1/fundingRate", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-    //runTest(bb, "/fapi/v1/openInterestHist", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-    //runTest(bb, "/futures/data/topLongShortAccountRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-    //runTest(bb, "/futures/data/topLongShortPositionRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-    //runTest(bb, "/futures/data/globalLongShortAccountRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-    //runTest(bb, "/futures/data/longshortRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-    //runTest(bb, "/futures/data/takerlongshortRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
+        BinanceBeast bb;
+        bb.start(config);
 
-
-    // account/trades
-    runTest(bb, "/fapi/v1/allOrders", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::HMAC_SHA256, false);    
-    runTest(bb, "/fapi/v1/multiAssetsMargin", RestParams{{{"multiAssetsMargin", "false"}}}, RestSign::HMAC_SHA256, false);
-    
-    // TODO add more tests
+        runTest(bb, "/dapi/v1/premiumIndex", RestParams{{{"symbol", "BTCUSD_PERP"}}}, RestSign::Unsigned, false);
+        runTest(bb, "/dapi/v1/klines", RestParams{{{"symbol", "BTCUSD_PERP"}, {"interval","15m"}}}, RestSign::Unsigned, false);    
+    }
 }

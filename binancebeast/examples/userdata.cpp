@@ -75,9 +75,9 @@ int main (int argc, char ** argv)
     ConnectionConfig config;
 
     if (argc == 2)
-        config = ConnectionConfig::MakeTestNetConfig(std::filesystem::path{argv[1]});
+        config = ConnectionConfig::MakeTestNetConfig(Market::USDM, std::filesystem::path{argv[1]});
     else if (argc == 3)
-        config = ConnectionConfig::MakeTestNetConfig(argv[1], argv[2]);
+        config = ConnectionConfig::MakeTestNetConfig(Market::USDM, argv[1], argv[2]);
 
 
     BinanceBeast bb;
