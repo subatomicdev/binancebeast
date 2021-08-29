@@ -18,8 +18,8 @@ REST, WebSockets and User Data fully supported for USD-M and COIN-M.
 **Updates**
 
 30th August
-* Added util function, `urlEncode()` and example for batch orders call
-* Added overload of `startWebSocket()` to create a combined stream
+* Added util function, `urlEncode()`, and example for batch orders call
+* Added overload of `startWebSocket()` and example to create a combined stream
 
 
 29th August
