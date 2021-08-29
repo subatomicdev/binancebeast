@@ -115,7 +115,7 @@ int main (int argc, char ** argv)
     });
 
     
-    std::cout << "Running. Create or close orders on the Binance Futures TestNet to see user data\n";
+    std::cout << "Running. Create or close orders on the Binance Futures TestNet to see user data. Running for 30 seconds.\n";
 
     using namespace std::chrono_literals;    
     std::this_thread::sleep_for(30s);

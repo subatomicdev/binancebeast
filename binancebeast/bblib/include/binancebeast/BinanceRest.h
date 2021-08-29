@@ -218,15 +218,13 @@ namespace bblib
             boost::ignore_unused(bytes_transferred);
 
             if (ec)
-            {
                 return fail(ec, "read", m_threadPool, m_callback);
-            }
 
             if (m_res[http::field::content_type] == "application/json")
             {
                 json::error_code ec;
-
-                if (auto value = json::parse(m_res.body(), ec); ec)
+                
+                if (auto value = json::parse(std::move(m_res.body()), ec); ec)
                 {
                     fail(ec, "json read", m_threadPool, m_callback);
                 }

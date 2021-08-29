@@ -69,6 +69,14 @@ namespace bblib
             std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>> guard;
         };
 
+        enum class UserDataStreamMode
+        {
+            Create,
+            Extend,
+            Close
+        };
+
+
     public:
         BinanceBeast() ;
         ~BinanceBeast();
@@ -127,9 +135,38 @@ namespace bblib
         {
             m_sslCtx->add_verify_path(path);
         }
+        
 
+        static std::string urlEncode (const string_view& s)  
+        {
+            std::ostringstream os;
+
+            for ( std::string_view::const_iterator ci = s.cbegin(); ci != s.cend(); ++ci )
+            {
+                if ( (*ci >= 'a' && *ci <= 'z') ||
+                     (*ci >= 'A' && *ci <= 'Z') ||
+                     (*ci >= '0' && *ci <= '9') )
+                { // allowed
+                    os << *ci;
+                }
+                else if ( *ci == ' ')
+                {
+                    os << '+';
+                }
+                else
+                {
+                    os << '%' << to_hex(*ci >> 4) << to_hex(*ci % 16);
+                }
+            }
+
+            return os.str();
+        }
+
+        
 
     private:
+       
+
         void stop();
 
 
@@ -226,9 +263,7 @@ namespace bblib
             return hash;
         }
 
-
-    private:
-        enum class UserDataStreamMode { Create, Extend, Close };
+       
 
         bool amendUserDataListenKey (WebSocketResponseHandler handler, const UserDataStreamMode mode)
         {
@@ -319,6 +354,13 @@ namespace bblib
 
             return !m_listenKey.empty();
         }
+
+
+        static unsigned char to_hex( unsigned char x )  
+        {
+            return x + (x > 9 ? ('A'-10) : '0');
+        }
+
 
     private:
 
