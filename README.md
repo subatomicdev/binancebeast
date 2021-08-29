@@ -172,23 +172,23 @@ See `examples\neworder.cpp` for full code.
 
 ```cpp
 boost::json::object order;
- order["batchOrders"] =
- {
-     {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}},
-     {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}}
- };
+order["batchOrders"] =
+{
+    {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}},
+    {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}}
+};
 
- bb.sendRestRequest([&](RestResponse result)
- {
-     if (result.hasErrorCode())    
-         std::cout << "Error: " << result.failMessage << "\n";
-     else
-         std::cout << "\nNew Order info:\n" << result.json << "\n";
- },
- "/fapi/v1/batchOrders",
- RestSign::HMAC_SHA256,
- RestParams{{{"batchOrders", BinanceBeast::urlEncode(json::serialize(order["batchOrders"]))}}},
- RequestType::Post);
+bb.sendRestRequest([&](RestResponse result)
+{
+    if (result.hasErrorCode())    
+        std::cout << "Error: " << result.failMessage << "\n";
+    else
+        std::cout << "\nNew Order info:\n" << result.json << "\n";
+},
+"/fapi/v1/batchOrders",
+RestSign::HMAC_SHA256,
+RestParams{{{"batchOrders", BinanceBeast::urlEncode(json::serialize(order["batchOrders"]))}}},
+RequestType::Post);
 ```
 
 
