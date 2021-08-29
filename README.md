@@ -171,7 +171,7 @@ See `examples\neworder.cpp` for full code.
 
 
 ```cpp
-boost::json::object order;
+json::object order;
 order["batchOrders"] =
 {
     {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}},
@@ -205,7 +205,7 @@ int main (int argc, char ** argv)
     
     BinanceBeast bb;
 
-    bb.start(config);                           // call once to start the networking processing loop
+    bb.start(config);
 
     bb.startWebSocket([&](WsResponse result)      
     {  
@@ -217,7 +217,7 @@ int main (int argc, char ** argv)
             std::cout << "\n" << result.json.as_object()["s"] << " = " << result.json.as_object()["p"] << "\n";
 
     },
-    "ethusdt@markPrice@1s");      // params
+    "ethusdt@markPrice@1s");      // stream
 
     using namespace std::chrono_literals;    
     std::this_thread::sleep_for(10s);
@@ -243,9 +243,7 @@ NOTE: because user data relates to positions and orders, you won't receive anyth
 void onUserData(WsResult result)
 {
     if (result.hasErrorCode())
-    {
         std::cout << result.failMessage << "\n";
-    }
     else
     {
         auto topLevel = result.json.as_object();
