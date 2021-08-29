@@ -1,8 +1,4 @@
----
-## NOTE: this is in the early stages and is subject to breaking changes
----
-
-A C++ library for the Binance Futures exchange, using Boost's Beast and JSON and developed on Ubuntu and only tested on Ubuntu.
+A C++ library for the Binance Futures exchange, using Boost's Beast and JSON, developed and test on Ubuntu. There are no plans to support Windows.
 
 The JSON returned from Binance is passed to response handlers and the BinanceBeast is lightweight API with functions for sending REST requests and starting Websocket sessions, rather than separate functions for specific calls. For example, rather than `getAllOrders()`, `getSymbolMarkPrice()` etc, all REST requests use `sendRestRequest()`. This means the BinanceBeast API is simpler and doesn't require updating if Binance add more endpoints or parameters.
 
@@ -16,6 +12,11 @@ REST, WebSockets and User Data fully supported for USD-M and COIN-M.
 
 
 **Updates**
+
+30th August
+* Added util function, `urlEncode()`, and example for batch orders call
+* Added overload of `startWebSocket()` and example to create a combined stream
+
 
 29th August
 * Support for COIN-M added. Requires you set the market when the config is created
@@ -169,6 +170,8 @@ RequestType::Post);
 
 
 ### WebSockets
+
+#### Single Stream
 A websocket stream is closed when the `BinanceBeast` object is destructed or calling `BinanceBeast::stopWebSocket()`.
 
 Receive Mark Price for ETHUSDT for 10 seconds:
@@ -200,6 +203,42 @@ int main (int argc, char ** argv)
 
     return 0;
 }
+```
+
+
+#### Combined Streams
+If you want to receive data from multiple streams but do so with one response handler/websocket stream, you can use a combined stream.
+
+Use `BinanceBeast::startWebSocket (WebSocketResponseHandler handler, const std::vector<string>& streams)`.
+
+See `examples\combinedstreams.cpp` for full code.
+
+Receive the mark price for BTCUSDT and ETHUSDT in a combined stream:
+
+```cpp
+// each stream's data is pushed separately.
+// in this case, we have two combined streams, the handler will be called once for btcusdt and again for ethusdt.
+// the "stream" value contains the stream name
+bb.startWebSocket([](WsResponse result)
+{
+    if (result.hasErrorCode())
+        std::cout << "Error: " << result.failMessage << "\n";
+    else
+    {
+        auto& object = result.json.as_object();
+        auto& streamName = object["stream"];
+
+        if (streamName == "btcusdt@markPrice@1s")
+        {
+            std::cout << "Mark price for BTCUSDT:\n" << object["data"] << "\n";
+        }
+        else if (streamName == "ethusdt@markPrice@1s")
+        {
+            std::cout << "Mark price for ETHUSDT:\n" << object["data"] << "\n";
+        }
+    }   
+},
+{{"btcusdt@markPrice@1s"}, {"ethusdt@markPrice@1s"}});
 ```
 
 
