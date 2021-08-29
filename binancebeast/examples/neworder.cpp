@@ -65,8 +65,7 @@ int main (int argc, char ** argv)
 
     // create a batch order (max of 5)
     // the safest way is to use boost::json to create the json then serialise
-    boost::json::object order;
-    order["batchOrders"] =
+    boost::json::array order =
     {
         {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}},
         {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}}
@@ -83,7 +82,7 @@ int main (int argc, char ** argv)
     },
     "/fapi/v1/batchOrders",
     RestSign::HMAC_SHA256,
-    RestParams{{{"batchOrders", BinanceBeast::urlEncode(json::serialize(order["batchOrders"]))}}},  // serialise starting from the object inside "batchOrders", not from the top level
+    RestParams{{{"batchOrders", BinanceBeast::urlEncode(json::serialize(order))}}},
     RequestType::Post);
 
     
