@@ -1,4 +1,4 @@
-A C++ library for the Binance Futures exchange, using Boost's Beast and JSON and developed on Ubuntu and only tested on Ubuntu.
+A C++ library for the Binance Futures exchange, using Boost's Beast and JSON, developed and test on Ubuntu. There are no plans to support Windows.
 
 The JSON returned from Binance is passed to response handlers and the BinanceBeast is lightweight API with functions for sending REST requests and starting Websocket sessions, rather than separate functions for specific calls. For example, rather than `getAllOrders()`, `getSymbolMarkPrice()` etc, all REST requests use `sendRestRequest()`. This means the BinanceBeast API is simpler and doesn't require updating if Binance add more endpoints or parameters.
 
