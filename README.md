@@ -165,14 +165,11 @@ Given:
 }
 ```
 
-The param for `sendRestRequest()` is the array within `batchOrders` URL encoded, _not_ from the `batchOrders` object. 
-
 See `examples\neworder.cpp` for full code.
 
 
 ```cpp
-json::object order;
-order["batchOrders"] =
+boost::json::array order =
 {
     {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}},
     {{"symbol", "BTCUSDT"}, {"side", "BUY"}, {"type", "MARKET"}, {"quantity", "0.001"}}
@@ -187,7 +184,7 @@ bb.sendRestRequest([&](RestResponse result)
 },
 "/fapi/v1/batchOrders",
 RestSign::HMAC_SHA256,
-RestParams{{{"batchOrders", BinanceBeast::urlEncode(json::serialize(order["batchOrders"]))}}},
+RestParams{{{"batchOrders", BinanceBeast::urlEncode(json::serialize(order))}}},
 RequestType::Post);
 ```
 
