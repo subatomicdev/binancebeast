@@ -10,6 +10,7 @@ The JSON returned from Binance is passed to response handlers and the BinanceBea
 ## Status
 
 **Updates**
+
 29th August
 * Support for COIN-M added. Requires you set the market when the config is created
  ```cpp
