@@ -70,7 +70,7 @@ Get all orders for BTCUSDT:
 int main (int argc, char ** argv)
 {
     // allOrders requires both keys
-    auto config = ConnectionConfig::MakeTestNetConfig("YOUR API KEY", "YOUR SECRET KEY");
+    auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, "YOUR API KEY", "YOUR SECRET KEY");
     
     std::condition_variable cvHaveReply;
 
@@ -108,7 +108,7 @@ int main (int argc, char ** argv)
 int main (int argc, char ** argv)
 {
     // allOrders requires both keys
-    auto config = ConnectionConfig::MakeTestNetConfig("YOUR API KEY", "YOUR SECRET KEY");
+    auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, "YOUR API KEY", "YOUR SECRET KEY");
     
     std::condition_variable cvHaveReply;
 
@@ -151,7 +151,7 @@ Receive Mark Price for ETHUSDT for 10 seconds:
 int main (int argc, char ** argv)
 {
     // you don't need API or secret keys for mark price
-    auto config = ConnectionConfig::MakeTestNetConfig();    // or MakeLiveConfig()
+    auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM);    // or MakeLiveConfig()
     
     BinanceBeast bb;
 
