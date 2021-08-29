@@ -171,92 +171,22 @@ namespace bblib
 
     private:
        
-
         void stop();
 
 
         WsToken createWsSession (const string& host, const std::string& path, WebSocketResponseHandler&& handler);
 
 
-        inline void createRestSession(const string& host, const string& path, const bool createStrand, RestResponseHandler&& rc,  const bool sign, RestParams params, const RequestType type = RequestType::Get)
-        {
-            if (rc == nullptr)
-                throw std::runtime_error("callback is null");
-
-            std::shared_ptr<RestSession> session;
-
-            if (createStrand)
-                session = std::make_shared<RestSession>(net::make_strand(getRestIoContext()), m_sslCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
-            else
-                session = std::make_shared<RestSession>(getRestIoContext().get_executor(), m_sslCtx, m_config.keys, std::move(rc), m_restCallersThreadPool);
-
-            // we don't need to worry about the session's lifetime because RestSession::run() passes the session's shared_ptr
-            // by value into the io_context. The session will be destroyed when there are no more io operations pending.
-
-            if (!params.queryParams.empty())
-            {
-                string pathToSend;
-
-                if (sign)
-                {
-                    // signing rrequires a 'signature' param which is a SHA256 of the query params:
-                    // 
-                    //  https://fapi.binance.com/fapi/v1/allOrders?symbol=ABCDEF&recvWindow=5000&timestamp=123454
-                    //                                             ^                                            ^
-                    //                                          from here                                    to here   
-                    // the "&signature=123456456565672565624" is appended
-
-                    std::ostringstream pathWithParams;
-                
-                    for (auto& param : params.queryParams)
-                        pathWithParams << std::move(param.first) << "=" << std::move(param.second) << "&";                
-
-                    pathWithParams << "timestamp=" << std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count(); 
-                    
-                    auto pathWithoutSig = pathWithParams.str();
-                    pathToSend = path + "?" + std::move(pathWithoutSig) + "&signature=" + createSignature(m_config.keys.secret, pathWithoutSig);
-                }
-                else
-                {
-                    std::ostringstream pathWithParams;
-                    pathWithParams << path << "?";
-
-                    for (auto& param : params.queryParams)
-                        pathWithParams << std::move(param.first) << "=" << std::move(param.second) << "&";                
-
-                    pathToSend = std::move(pathWithParams.str());
-                }
-
-                session->run(host, "443", pathToSend, 11, type);   // 11 is HTTP version 1.1
-            }
-            else
-            {
-                session->run(host, "443", path, 11, type);
-            }
-        }
+        inline void createRestSession(const string& host, const string& path, const bool createStrand, RestResponseHandler&& rc,  const bool sign, RestParams params, const RequestType type = RequestType::Get);
 
 
-        net::io_context& getWsIoContext();
+        inline net::io_context& getWsIoContext() noexcept;
         
 
-        net::io_context& getRestIoContext();
+        inline net::io_context& getRestIoContext() noexcept;
 
-    
-        inline string b2a_hex(char* byte_arr, int n)
-        {
-            const static std::string HexCodes = "0123456789abcdef";
-            string HexString;
-            for (int i = 0; i < n; ++i)
-            {
-                unsigned char BinValue = byte_arr[i];
-                HexString += HexCodes[(BinValue >> 4) & 0x0F];
-                HexString += HexCodes[BinValue & 0x0F];
-            }
-            return HexString;
-        }
-        
 
-        inline string createSignature(const string& key, const string& data)
+        inline string createSignature(const string& key, const string& data) noexcept
         {
             string hash;
 
@@ -268,7 +198,6 @@ namespace bblib
             return hash;
         }
 
-       
 
         bool amendUserDataListenKey (WebSocketResponseHandler handler, const UserDataStreamMode mode)
         {
@@ -361,7 +290,21 @@ namespace bblib
         }
 
 
-        static unsigned char to_hex( unsigned char x )  
+        inline string b2a_hex(char* byte_arr, const int n) noexcept
+        {
+            const static std::string HexCodes = "0123456789abcdef";
+            string HexString;
+            for (int i = 0; i < n; ++i)
+            {
+                unsigned char BinValue = byte_arr[i];
+                HexString += HexCodes[(BinValue >> 4) & 0x0F];
+                HexString += HexCodes[BinValue & 0x0F];
+            }
+            return HexString;
+        }
+
+
+        static unsigned char to_hex (const unsigned char x)
         {
             return x + (x > 9 ? ('A'-10) : '0');
         }
