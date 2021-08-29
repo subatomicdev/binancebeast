@@ -144,27 +144,6 @@ int main (int argc, char ** argv)
 #### Batch Orders
 A batch order is a JSON array with the same content as single order but it's URL encoded. Binance Beast provides a function to do this.
 
-Given:
-```json
-{
-  "batchOrders":
-  [
-    {
-      "symbol": "BTCUSDT",
-      "side": "BUY",
-      "type": "MARKET",
-      "quantity": "0.001"
-    },
-    {
-      "symbol": "BTCUSDT",
-      "side": "BUY",
-      "type": "MARKET",
-      "quantity": "0.001"
-    }
-  ]
-}
-```
-
 See `examples\neworder.cpp` for full code.
 
 
