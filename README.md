@@ -208,9 +208,11 @@ int main (int argc, char ** argv)
 #### Combined Streams
 If you want to receive data from multiple streams but do so with one response handler/websocket stream, you can use a combined stream.
 
-Receive the mark price for BTCUSDT and ETHUSDT in a combined stream:
+Use `BinanceBeast::startWebSocket (WebSocketResponseHandler handler, const std::vector<string>& streams)`.
 
 See `examples\combinedstreams.cpp` for full code.
+
+Receive the mark price for BTCUSDT and ETHUSDT in a combined stream:
 
 ```cpp
 // each stream's data is pushed separately.
