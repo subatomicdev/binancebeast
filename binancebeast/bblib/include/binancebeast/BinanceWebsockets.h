@@ -73,8 +73,6 @@ namespace bblib
         TokenId id = 0;
     };
 
-    using WsResult = WsResponse;                            // Deprecated, will be removed. Use WsResponse                              
-    using WsCallback = std::function<void(WsResponse)>;     // Deprecated, will be removed. Use WebSocketResponseHandler
     using WebSocketResponseHandler = std::function<void(WsResponse)>;
     
 
@@ -106,9 +104,8 @@ namespace bblib
 
         void close (CloseConnectionHandler callback)
         {
-            m_ws.async_close(websocket::close_code::normal, beast::bind_front_handler([callback](beast::error_code ec)
+            m_ws.async_close(websocket::close_code::normal, beast::bind_front_handler([callback](beast::error_code)
             {
-                boost::ignore_unused(ec);
                 callback();
             }));
         }
@@ -177,8 +174,7 @@ namespace bblib
             m_ws.set_option(websocket::stream_base::timeout::suggested(beast::role_type::client));
 
             // set a decorator to change the User-Agent of the handshake
-            m_ws.set_option(websocket::stream_base::decorator(
-            [](websocket::request_type& req)
+            m_ws.set_option(websocket::stream_base::decorator([](websocket::request_type& req)
             {
                 req.set(http::field::user_agent, BINANCEBEAST_USER_AGENT);
             }));
@@ -191,15 +187,22 @@ namespace bblib
         {
             if(ec)
                 return fail(ec, "handshake", m_callback);
-
-            m_ws.async_read(m_buffer, beast::bind_front_handler(&WsSession::on_read,shared_from_this()));
+            
+            /* TODO how do we find out if target (m_path) for async_handshake() is found?
+            http::async_read(m_ws.next_layer(), m_buffer, m_httpRes, [this, self = shared_from_this()](beast::error_code ec, std::size_t)
+            {
+                if (m_httpRes.result() == http::status::not_found)
+                    return fail("path not found", m_callback);
+                else
+                    m_ws.async_read(m_buffer, beast::bind_front_handler(&WsSession::on_read, self->shared_from_this()));
+            });
+            */
+            m_ws.async_read(m_buffer, beast::bind_front_handler(&WsSession::on_read, shared_from_this()));
         }
 
 
-        void on_read(beast::error_code ec, std::size_t bytes_transferred)
+        void on_read(beast::error_code ec, std::size_t/* bytes_transferred*/)
         {
-            boost::ignore_unused(bytes_transferred);
-
             // operation_aborted: if user calls close() whilst there's a pending async_read() in the event queue            
             if (ec == net::error::shut_down || ec == net::error::operation_aborted)
                 return ;
@@ -208,9 +211,7 @@ namespace bblib
 
             json::error_code jsonEc;
             if (auto jsonValue = json::parse(beast::buffers_to_string(m_buffer.cdata()), jsonEc); jsonEc)
-            {
                 fail(jsonEc, "json read", m_callback);
-            }
             else
             {
                 WsResponse result {std::move(jsonValue)};
@@ -231,6 +232,7 @@ namespace bblib
     private:
         tcp::resolver m_resolver;
         websocket::stream<beast::ssl_stream<beast::tcp_stream>> m_ws;
+        http::response<http::string_body> m_httpRes;
         beast::flat_buffer m_buffer;
         std::string m_host;
         std::string m_path;

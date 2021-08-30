@@ -93,12 +93,17 @@ namespace bblib
         /// Some requests require a signature, the Binance API docs will say "HMAC SHA256" if so.
         /// For unsigned requests: set 'sign' to RestSign::Unsigned.
         /// For signed rqeuests:   set 'sign' to RestSign::HMAC_SHA256 but DO NOT include a 'timestamp' in the params, BinanceBeast will do that.
-        void sendRestRequest(RestResponseHandler handler, const string& path, const RestSign sign, RestParams params, const RequestType type);
+        void sendRestRequest(RestResponseHandler&& handler, const string& path, const RestSign sign, const RestParams& params, const RequestType type);
         
+        /// As sendRestRequest(RestResponseHandler, const string&, const RestSign, RestParams, const RequestType)
+        /// but the path and params are moved.
+        void sendRestRequest(RestResponseHandler&& handler, string&& path, const RestSign sign, RestParams&& params, const RequestType type);
+        
+
         /// Start a new websocket session, for all websocket endpoints except user data (use startUserData() for that).
         /// The supplied callback handler will be called for each response, which may include an error.
         /// 'stream' is the "streamName" as defined on the Binance API docs.
-        WsToken startWebSocket (WebSocketResponseHandler handler, string stream);
+        WsToken startWebSocket (WebSocketResponseHandler handler, const string& stream);
 
         /// This starts a combined stream, for example receiving mark price for two different symbols without having to separate calls
         /// to startWebSocket(), and two response handlers, you can combine both into one stream.
@@ -111,6 +116,7 @@ namespace bblib
         ///           If nullptr then the existing handler (passed to startWebSocket()  / startUserData()) will be used.
         void stopWebSocket (const WsToken& token, WebSocketResponseHandler handler = nullptr);
 
+
         /// Start a user data websocket session.
         WsToken startUserData(WebSocketResponseHandler handler);
 
@@ -121,6 +127,7 @@ namespace bblib
         /// This will invalidate your key, so you will no longer receive user data updates. 
         /// This does not close the web socket session, for that use stopWebSocket().
         void closeUserData (WebSocketResponseHandler handler);
+
 
         /// Load PEM file with root certificates. Use this in production, but for test/dev then the default certificate is likely ok.
         /// Call this before start().
@@ -134,7 +141,7 @@ namespace bblib
             }
         }
 
-        /// Add a directory containing certificate authority files used for HTTP verification. Must be PEM format.
+        /// Add a directory containing certificate authority files used for HTTPS verification. Must be PEM format.
         /// Call this before start().
         void addRootVerifyPath(const std::filesystem::path& path)
         {
@@ -142,6 +149,7 @@ namespace bblib
         }
         
 
+        /// Encode the string as a URL. Used for calls to the batchOrder, see the neworder example.
         static std::string urlEncode (const string_view& s)  
         {
             std::ostringstream os;

@@ -17,7 +17,7 @@ namespace bblib_test
     }
 
 
-    bool hasError(std::string_view test, bblib::RestResult& result)
+    bool hasError(std::string_view test, bblib::RestResponse& result)
     {
         if (result.hasErrorCode())
         {
@@ -28,7 +28,7 @@ namespace bblib_test
     }
 
 
-    bool hasError(std::string_view test, bblib::WsResult& result)
+    bool hasError(std::string_view test, bblib::WsResponse& result)
     {
         if (result.hasErrorCode())
         {

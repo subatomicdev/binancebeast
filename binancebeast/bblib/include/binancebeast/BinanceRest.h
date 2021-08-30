@@ -79,9 +79,6 @@ namespace bblib
 
     
     using QueryParams = std::unordered_map<string, string>;
-    
-    using RestResult = RestResponse;                            // Deprecated. Use RestResponse.
-    using RestCallback = std::function<void(RestResponse)>;     // Deprecated. Use RestResponseHandler
     using RestResponseHandler = std::function<void(RestResponse)>;
 
 

@@ -8,8 +8,6 @@
 using namespace bblib;
 using namespace bblib_test;
 
-using WsFunction = void (BinanceBeast::*)(RestCallback, string);
-
 
 bool showResponseData = false, dataError = false;
 std::condition_variable cvHaveReply;
@@ -57,7 +55,7 @@ int main (int argc, char ** argv)
     }
     
     auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, std::filesystem::path{argv[1]});
-
+    
     BinanceBeast bb;
     bb.start(config);
     
@@ -88,7 +86,7 @@ int main (int argc, char ** argv)
     }, "!miniTicker@arr");
 
 
-    std::this_thread::sleep_for(10s);
+    std::this_thread::sleep_for(2s);
 
     std::condition_variable cvDisconnect;
     bool disconnectFail = false;
@@ -114,4 +112,20 @@ int main (int argc, char ** argv)
         std::cout << "Test: Disconnect : FAIL\n";
     else
         std::cout << "Test: Disconnect : PASS\n";
+
+
+    /* TODO blocked on this until I can get path not found from a beast websocket::stream
+    // test invalid stream name
+    auto token = bb.startWebSocket([](WsResponse result)
+    {
+        if (result.state == WsResponse::State::Disconnect)
+        {
+
+        }
+
+    }, "IDontExist1234");
+
+
+    std::this_thread::sleep_for(10s);
+    */
 }

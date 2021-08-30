@@ -96,15 +96,21 @@ namespace bblib
     }
 
 
-    void BinanceBeast::sendRestRequest(RestResponseHandler handler, const string& path, const RestSign sign, RestParams params, const RequestType type)
+    void BinanceBeast::sendRestRequest(RestResponseHandler&& handler, const string& path, const RestSign sign, const RestParams& params, const RequestType type)
     {
-        createRestSession(m_config.restApiUri, path, true, std::move(handler), sign == RestSign::HMAC_SHA256, std::move(params), type);
+        createRestSession(m_config.restApiUri, path, true, std::move(handler), sign == RestSign::HMAC_SHA256, params, type);
+    }
+
+    
+    void BinanceBeast::sendRestRequest(RestResponseHandler&& handler, string&& path, const RestSign sign, RestParams&& params, const RequestType type)
+    {
+        createRestSession(m_config.restApiUri, std::move(path), true, std::move(handler), sign == RestSign::HMAC_SHA256, std::move(params), type);
     }
 
 
-    WsToken BinanceBeast::startWebSocket (WebSocketResponseHandler handler, string streamName)
+    WsToken BinanceBeast::startWebSocket (WebSocketResponseHandler handler, const string& streamName)
     {
-        return createWsSession(m_config.wsApiUri, std::move("/ws/"+std::move(streamName)), std::move(handler));
+        return createWsSession(m_config.wsApiUri, std::move("/ws/"+streamName), std::move(handler));
     }
 
 
@@ -121,6 +127,8 @@ namespace bblib
 
     void BinanceBeast::stopWebSocket (const WsToken& token, WebSocketResponseHandler handler)
     {
+        std::scoped_lock (m_wsSessionsMux);
+
         if (auto sessionIt = m_wsSessions.find(token.id); sessionIt != m_wsSessions.end())
         {                
             m_wsSessions[token.id]->close([token, handler, this, session = m_wsSessions[token.id]]()
@@ -159,7 +167,7 @@ namespace bblib
 
             if (sign)
             {
-                // signing rrequires a 'signature' param which is a SHA256 of the query params:
+                // signing requires a 'signature' param which is a SHA256 of the query params:
                 // 
                 //  https://fapi.binance.com/fapi/v1/allOrders?symbol=ABCDEF&recvWindow=5000&timestamp=123454
                 //                                             ^                                            ^
@@ -231,9 +239,9 @@ namespace bblib
     void BinanceBeast::renewListenKey(WebSocketResponseHandler handler)
     {
         if (amendUserDataListenKey(handler, UserDataStreamMode::Extend))
-        {
-            handler(WsResult{WsResult::State::Success});
-        }
+            handler(WsResponse{WsResponse::State::Success});
+        else 
+            handler(WsResponse{string_view{"Failed to renew listen key"}});
     }
 
 
@@ -242,8 +250,10 @@ namespace bblib
         if (amendUserDataListenKey(handler, UserDataStreamMode::Close))
         {
             m_listenKey.clear();
-            handler(WsResult{WsResult::State::Success});
+            handler(WsResponse{WsResponse::State::Success});
         }
+        else
+            handler(WsResponse{string_view{"Failed to close listen key"}});
     }
 
 }   // namespace BinanceBeast
