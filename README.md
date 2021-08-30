@@ -23,8 +23,8 @@ REST, WebSockets and User Data fully supported for USD-M and COIN-M.
  ```cpp
  // old
  auto config = ConnectionConfig::MakeTestNetConfig("your API key", "your secret key");
- // new
- auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, "your API key", "your secret key");  // or Market::COINM
+ // new, setting Market to either USDM or COINM
+ auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, "your API key", "your secret key");  
  ```
 
 ## Quick Guide
