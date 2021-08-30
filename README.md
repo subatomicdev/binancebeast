@@ -26,13 +26,6 @@ REST, WebSockets and User Data fully supported for USD-M and COIN-M.
  // new
  auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, "your API key", "your secret key");  // or Market::COINM
  ```
- 
-
-28th August
-* The libraries output paths are now:   `binancebeast/lib/<build_configuration>` .
-* Do a clean build and update your library include paths to link to the latest library
----
-
 
 ## Quick Guide
 
