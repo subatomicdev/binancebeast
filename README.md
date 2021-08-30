@@ -225,13 +225,11 @@ bb.startWebSocket([](WsResponse result)
         auto& streamName = object["stream"];
 
         if (streamName == "btcusdt@markPrice@1s")
-        {
-            std::cout << "Mark price for BTCUSDT:\n" << object["data"] << "\n";
-        }
+            std::cout << "Mark price for BTCUSDT:\n";
         else if (streamName == "ethusdt@markPrice@1s")
-        {
-            std::cout << "Mark price for ETHUSDT:\n" << object["data"] << "\n";
-        }
+            std::cout << "Mark price for ETHUSDT:\n";
+        
+        std::cout << object["data"] << "\n";
     }   
 },
 {{"btcusdt@markPrice@1s"}, {"ethusdt@markPrice@1s"}});
