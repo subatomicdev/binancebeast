@@ -293,5 +293,5 @@ To link from your app:
 
 
 ### Dev
-The `.vscode` directories are in the repo for convenience. If you use VS Code, just open the binancebeast folder in VS Code.
+The `.vscode` directories are in the repo for convenience. If you use VS Code open the `binancebeast/binancebeast` folder in VS Code.
  
