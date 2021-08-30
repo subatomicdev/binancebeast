@@ -169,9 +169,7 @@ namespace bblib
         void on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type)
         {
             if (ec)
-            {
                 fail(ec, "connect", m_threadPool, m_callback);
-            } 
             else
             {
                 // Perform the SSL handshake
@@ -183,13 +181,11 @@ namespace bblib
         void on_handshake(beast::error_code ec)
         {        
             if (ec)
-            {
                 fail(ec, "handshake", m_threadPool, m_callback);
-            } 
             else
             {
                 // Set a timeout on the operation
-                beast::get_lowest_layer(m_stream).expires_after(std::chrono::seconds(10));
+                beast::get_lowest_layer(m_stream).expires_after(std::chrono::seconds(5));
 
                 // Send the HTTP request to the remote host
                 http::async_write(m_stream, m_req, beast::bind_front_handler(&RestSession::on_write, shared_from_this()));
@@ -198,10 +194,8 @@ namespace bblib
         }
 
 
-        void on_write(beast::error_code ec, std::size_t bytes_transferred)
+        void on_write(beast::error_code ec, std::size_t /*bytes_transferred*/)
         {
-            boost::ignore_unused(bytes_transferred);
-
             // connected and handshaked, so can begin reading websocket data
 
             beast::get_lowest_layer(m_stream).expires_after(std::chrono::seconds(30));   
@@ -213,12 +207,13 @@ namespace bblib
         }
 
 
-        void on_read(beast::error_code ec, std::size_t bytes_transferred)
+        void on_read(beast::error_code ec, std::size_t /*bytes_transferred*/)
         {
-            boost::ignore_unused(bytes_transferred);
-
             if (ec)
                 return fail(ec, "read", m_threadPool, m_callback);
+
+            if (m_res.result() == http::status::not_found)
+                return fail("path not found", m_callback);
 
             if (m_res[http::field::content_type] == "application/json")
             {
