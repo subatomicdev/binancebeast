@@ -36,7 +36,7 @@ REST, WebSockets and User Data fully supported for USD-M and COIN-M.
 * All API functions are asychronous, supplied with a callback function, either:
   *   `using RestResponseHandler = std::function<void(RestResponse)>`
   *   `using WebSocketResponseHandler = std::function<void(WsResponse)>`
-* `RestResponse` and `WsResponse` contain the json, a `state` flag, `failMessage` and `hasErrorCode()`
+* `RestResponse` and `WsResponse` contain `json`, a `state`, `failMessage` and `hasErrorCode()` members
 *   If `hasErrorCode()` returns true, the `failMessage` is set
 * There are multiple `boost::asio::io_context` for Rest and Websockets calls which are set with `BinanceBeast::start()`
   * Rest default is 4
