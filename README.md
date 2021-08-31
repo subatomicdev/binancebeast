@@ -13,22 +13,15 @@ REST, WebSockets and User Data fully supported for USD-M and COIN-M.
 
 **Updates**
 
-30th August
-* Added util function, `urlEncode()`, and example for batch orders call
-* Added overload of `startWebSocket()` and example to create a combined stream
+31st August
 
+**Breaking Changes**
 
-29th August
-* Support for COIN-M added. Requires you set the market when the config is created
- ```cpp
- // old
- auto configFromKeyStrings = ConnectionConfig::MakeTestNetConfig("your API key", "your secret key");
- auto configFromKeyFile = ConnectionConfig::MakeTestNetConfig(filesysem::path{"/path/to/keyfile.txt"});
- 
- // new, set Market to either USDM or COINM
- auto configFromKeyStrings = ConnectionConfig::MakeTestNetConfig(Market::USDM, "your API key", "your secret key");  
- auto configFromKeyFile = ConnectionConfig::MakeTestNetConfig(Market::USDM, filesysem::path{"/path/to/keyfile.txt"});  
- ```
+Potentially - the tests now use Google Test, so this needs to be added to vcpkg, which you can do either:
+
+1. Run one of the scripts: `./build_linux_x64_static_release.sh` or `./build_linux_x64_static_debug.sh` 
+2. Manually: open a terminal in the `vcpkg` dir then: `./vcpkg install gtest --triplet x64-linux`
+
 
 ## Quick Guide
 
