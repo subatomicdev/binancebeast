@@ -3,111 +3,167 @@
 #include <future>
 #include <chrono>
 #include <condition_variable>
-
+#include <gtest/gtest.h>
 
 
 using namespace bblib;
 using namespace bblib_test;
 
-using RestFunction = void (BinanceBeast::*)(RestResponseHandler);
-using RestAndParamsFunction = void (BinanceBeast::*)(RestResponseHandler, RestParams);
+std::filesystem::path g_keyFile;
 
 
-
-void runTest(BinanceBeast& bb, const string& path, RestParams params, RestSign sign, const bool showData = false)
+/// These test the REST api. They require an API key.
+class RestTest : public testing::Test
 {
-    std::condition_variable cvHaveReply;
-    bool dataError = false;
+protected:
 
-    auto handler = [&](RestResponse result)
+
+    virtual void SetUp() override
     {
-        if (showData)
-            std::cout << "\n" << result.json << "\n";
+        auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, g_keyFile);
 
-        dataError = bblib_test::hasError(path, result);
+        m_bb.start(config);
+    }
 
-        cvHaveReply.notify_one();
-    };
 
-    std::cout << "Test: " << path << " : ";
+    bool runTest(const string& path, RestParams params, RestSign sign)
+    {
+        std::condition_variable cvHaveReply;
 
-    bb.sendRestRequest(handler, path, sign, params, RequestType::Get);
+        auto handler = [&](RestResponse result)
+        {
+            m_dataError = bblib_test::hasError(path, result);
 
-    auto haveReply = waitReply(cvHaveReply, path);
-    
-    std::cout << (!dataError && haveReply ? "PASS" : "FAIL") << "\n";
+            cvHaveReply.notify_one();
+        };
+
+        m_bb.sendRestRequest(handler, path, sign, params, RequestType::Get);
+
+        auto haveReply = waitReply(cvHaveReply) ;
+            
+        return !m_dataError && haveReply;
+    }
+
+
+    bool waitReply (std::condition_variable& cvHaveReply, const std::chrono::milliseconds timeout = 5s)
+    {
+        std::mutex mux;
+
+        std::unique_lock lck(mux);
+        return cvHaveReply.wait_for(lck, timeout) != std::cv_status::timeout;
+    }
+
+
+private:
+    BinanceBeast m_bb;
+    string m_path;
+    bool m_dataError;
+};
+
+
+// USD-M
+TEST_F(RestTest, exchangeInfo)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/exchangeInfo", RestParams{}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, time)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/time", RestParams{}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, depth)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/depth", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, trades)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/trades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, historicalTrades)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/historicalTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, aggTrades)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/aggTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, klines)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/klines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, continuousKlines)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/continuousKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}, {"contractType","PERPETUAL"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, indexPriceKlines)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/indexPriceKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, premiumIndex)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/premiumIndex", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, ticker24hr)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/ticker/24hr", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, tickerPrice)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/ticker/price", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, tickerbookTicker)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/ticker/bookTicker", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, openInterest)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/openInterest", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, indexInfo)
+{
+    EXPECT_TRUE(runTest("/fapi/v1/indexInfo", RestParams{{{"symbol", "DEFIUSDT"}}}, RestSign::Unsigned));
 }
 
 
+// COIN-M
+TEST_F(RestTest, dapi_premiumIndex)
+{
+    EXPECT_TRUE(runTest("/dapi/v1/premiumIndex", RestParams{{{"symbol", "BTCUSD_PERP"}}}, RestSign::Unsigned));
+}
+
+TEST_F(RestTest, dapi_klines)
+{
+    EXPECT_TRUE(runTest("/dapi/v1/klines", RestParams{{{"symbol", "BTCUSD_PERP"}, {"interval","15m"}}}, RestSign::Unsigned));
+}
 
 
 
 int main (int argc, char ** argv)
 {
     std::cout << "\n\nTest REST API\n\n";
-
+    
     if (argc != 2)
     {   
         std::cout << "Usage, requires key file or keys:\n"
                   << argv[0] << " <full path to keyfile>\n";
         return 1;
     }
-
-
-    // USD-M 
-    {
-        auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, std::filesystem::path{argv[1]});
-
-        BinanceBeast bb;
-        bb.start(config);
-        
-        
-        
-        // market
-        runTest(bb, "/fapi/v1/exchangeInfo", RestParams{}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/time", RestParams{}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/depth", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/trades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/historicalTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/aggTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/klines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/continuousKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}, {"contractType","PERPETUAL"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/indexPriceKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/markPriceKlines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/premiumIndex", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/ticker/24hr", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/ticker/price", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/ticker/bookTicker", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/openInterest", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/fapi/v1/indexInfo", RestParams{{{"symbol", "DEFIUSDT"}}}, RestSign::Unsigned, false);
-        
-        // TODO always an invalid symbol
-        //runTest(bb, "/fapi/v1/lvtKlines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned, false);
-
-        // these all timeout on testnet
-        //runTest(bb, "/fapi/v1/fundingRate", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned, false);
-        //runTest(bb, "/fapi/v1/openInterestHist", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-        //runTest(bb, "/futures/data/topLongShortAccountRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-        //runTest(bb, "/futures/data/topLongShortPositionRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-        //runTest(bb, "/futures/data/globalLongShortAccountRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-        //runTest(bb, "/futures/data/longshortRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-        //runTest(bb, "/futures/data/takerlongshortRatio", RestParams{{{"symbol", "BTCUSDT"}, {"period", "15m"}}}, RestSign::Unsigned, false);
-
-
-        // account/trades
-        runTest(bb, "/fapi/v1/allOrders", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::HMAC_SHA256, false);    
-        runTest(bb, "/fapi/v1/multiAssetsMargin", RestParams{{{"multiAssetsMargin", "false"}}}, RestSign::HMAC_SHA256, false);    
-    }
     
-    
-    // COIN-M : aside from params and response data, the only difference should be the host addresses and possibly paths, so have a few tests for sanity checks
-    {
-        auto config = ConnectionConfig::MakeTestNetConfig(Market::COINM, std::filesystem::path{argv[1]});
+    g_keyFile = std::filesystem::path{argv[1]};
 
-        BinanceBeast bb;
-        bb.start(config);
-
-        runTest(bb, "/dapi/v1/premiumIndex", RestParams{{{"symbol", "BTCUSD_PERP"}}}, RestSign::Unsigned, false);
-        runTest(bb, "/dapi/v1/klines", RestParams{{{"symbol", "BTCUSD_PERP"}, {"interval","15m"}}}, RestSign::Unsigned, false);    
-    }
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

@@ -21,10 +21,10 @@ set_target_properties(firstbuildtest PROPERTIES CXX_STANDARD 17)
 target_link_libraries(firstbuildtest binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl)
 
 set_target_properties(testrest PROPERTIES CXX_STANDARD 17)
-target_link_libraries(testrest binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl)
+target_link_libraries(testrest binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl -lgtest)
 
 set_target_properties(testws PROPERTIES CXX_STANDARD 17)
-target_link_libraries(testws binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl)
+target_link_libraries(testws binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl -lgtest)
 
 set_target_properties(testcertload PROPERTIES CXX_STANDARD 17)
-target_link_libraries(testcertload binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl)
+target_link_libraries(testcertload binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl -lgtest)

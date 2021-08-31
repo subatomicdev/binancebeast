@@ -38,7 +38,7 @@ namespace bblib_test
         return false;
     }
 
-        
+    
     bool waitReply (std::condition_variable& cvHaveReply, const std::string_view test, const std::chrono::milliseconds timeout = 5s)
     {
         std::mutex mux;
@@ -50,7 +50,6 @@ namespace bblib_test
             return false;
         }
         return true;
-
     }
 }
 #endif

@@ -3,113 +3,144 @@
 #include <future>
 #include <chrono>
 #include <condition_variable>
+#include <gtest/gtest.h>
 
 
 using namespace bblib;
 using namespace bblib_test;
 
-
-bool showResponseData = false, dataError = false;
-std::condition_variable cvHaveReply;
-string_view test;
+std::filesystem::path g_keyFile;
 
 
-void onWsResponse(WsResponse result)
+
+class WsTest : public testing::Test
 {
-    if (showResponseData)
-        std::cout << "\n" << result.json << "\n";
+protected:
 
-    dataError = bblib_test::hasError(test, result);  
+    virtual void SetUp() override
+    {
+        auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, g_keyFile);
 
-    cvHaveReply.notify_all(); 
-}
+        m_bb.start(config);
+    }
 
 
+    virtual bool runTest(const string& stream, const bool alwaysExpectData = true) = 0;
 
-void runTest(BinanceBeast& bb, string currentTest, string stream, const bool showData = false, const bool alwaysExpectResponse = true)
+
+    bool waitReply (std::condition_variable& cvHaveReply, const std::chrono::milliseconds timeout = 6s)
+    {
+        std::mutex mux;
+
+        std::unique_lock lck(mux);
+        return cvHaveReply.wait_for(lck, timeout) != std::cv_status::timeout;
+    }
+
+
+protected:
+    BinanceBeast m_bb;
+    string m_path;
+    bool m_dataError;
+    bool m_alwaysExpectData = true;
+    std::condition_variable m_cvHaveReply;
+};
+
+
+/// Start a websocket, do not explicitly close.
+class NormalWsTest : public WsTest
 {
-    showResponseData = showData;
-    test = currentTest;
+protected:
+    bool runTest(const string& stream, const bool alwaysExpectData =true) override
+    {
+        bool dataError;
+        
+        auto token = m_bb.startWebSocket([&, this](WsResponse result)
+        {
+            dataError = result.hasErrorCode();
+            m_cvHaveReply.notify_all(); 
 
-    auto token = bb.startWebSocket(onWsResponse, stream);
+        }, stream);
 
-    auto haveReply = waitReply(cvHaveReply, test);
-    
-    
-    if (alwaysExpectResponse)
-        std::cout << "Test: " << currentTest << " : " << (!dataError && haveReply ? "PASS" : "FAIL") << "\n";
-    else
-        std::cout << "Test: " << currentTest << " : " << (!dataError ? "PASS" : "FAIL") << "\n";
-}
+        auto haveReply = waitReply(m_cvHaveReply);
+
+        return (alwaysExpectData ? !dataError && haveReply : !dataError);
+    }
+};
+
+
+/// Start a websocket, wait a few seconds, then close the stream.
+class DisconnectWsTest : public WsTest
+{
+protected:
+    bool runTest(const string& stream, const bool alwaysExpectData = true) override
+    {
+        bool dataError;
+        
+        auto token = m_bb.startWebSocket([&, this](WsResponse result)
+        {
+            dataError = result.hasErrorCode();
+            m_cvHaveReply.notify_all(); 
+        }, stream);
+
+
+        std::this_thread::sleep_for(3s);
+
+
+        std::condition_variable cvDisconnect;
+        bool disconnectFail = false;
+        m_bb.stopWebSocket(token, [&](WsResponse result)
+        {
+            if (result.state == WsResponse::State::Disconnect)
+                disconnectFail = result.hasErrorCode();
+
+            cvDisconnect.notify_one();
+        });
+
+
+        std::mutex mux;
+        std::unique_lock lck(mux);    
+
+        auto timeout = cvDisconnect.wait_for(lck, 5s) == std::cv_status::timeout;
+
+        return !dataError && !timeout && !disconnectFail;
+    }
+};
+
+
+TEST_F (NormalWsTest, aggregrateTrade) { EXPECT_TRUE(runTest("btcusdt@aggTrade")); }
+TEST_F (NormalWsTest, markPrice) { EXPECT_TRUE(runTest("btcusdt@markPrice@1s")); }
+TEST_F (NormalWsTest, markPriceForAll) { EXPECT_TRUE(runTest("!markPrice@arr@1s"));}
+TEST_F (NormalWsTest, klines) { EXPECT_TRUE(runTest("btcusdt@kline_15m"));}
+TEST_F (NormalWsTest, continuousContractKline) { EXPECT_TRUE(runTest("btcusdt_perpetual@continuousKline_1m"));}
+TEST_F (NormalWsTest, individualSymbolMiniTicker) { EXPECT_TRUE(runTest("btcusdt@miniTicker"));}
+TEST_F (NormalWsTest, allMarketTicker) { EXPECT_TRUE(runTest("!ticker@arr"));}
+TEST_F (NormalWsTest, individualSymbolBookTicker) { EXPECT_TRUE(runTest("btcusdt@bookTicker"));}
+TEST_F (NormalWsTest, allBookTicker) { EXPECT_TRUE(runTest("!bookTicker"));}
+TEST_F (NormalWsTest, liquidationOrder) { EXPECT_TRUE(runTest("btcusdt@forceOrder", false));}
+TEST_F (NormalWsTest, allMarketLiquidationOrder) { EXPECT_TRUE(runTest("!forceOrder@arr", false));}
+TEST_F (NormalWsTest, partialBookDepth) { EXPECT_TRUE(runTest("btcusdt@depth5@100ms"));}
+TEST_F (NormalWsTest, diffBookDepth) { EXPECT_TRUE(runTest("btcusdt@depth@100ms"));}
+TEST_F (NormalWsTest, compositeIndexSymbolInfo) { EXPECT_TRUE(runTest("defiusdt@compositeIndex"));}
+
+
+TEST_F (DisconnectWsTest, allBookTicker) { EXPECT_TRUE(runTest("!bookTicker"));}
+ 
+
 
 
 int main (int argc, char ** argv)
 {
-    std::cout << "\n\nTest WebSockets API\n\n";
-
+    std::cout << "\n\nTest REST API\n\n";
+    
     if (argc != 2)
     {   
-        std::cout << "Usage, requires key file:\n"
+        std::cout << "Usage, requires key file or keys:\n"
                   << argv[0] << " <full path to keyfile>\n";
         return 1;
     }
     
-    auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, std::filesystem::path{argv[1]});
-    
-    BinanceBeast bb;
-    bb.start(config);
-    
-    runTest(bb, "aggregrateTrade", "btcusdt@aggTrade");
-    runTest(bb, "markPrice", "btcusdt@markPrice@1s");
-    runTest(bb, "markPriceForAll", "!markPrice@arr@1s");
-    runTest(bb, "klines", "btcusdt@kline_15m");
-    runTest(bb, "continuousContractKline", "btcusdt_perpetual@continuousKline_1m");
-    runTest(bb, "individualSymbolMiniTicker", "btcusdt@miniTicker");
-    runTest(bb, "allMarketMiniTicker", "!miniTicker@arr");
-    runTest(bb, "individualSymbolTicker", "btcusdt@ticker");
-    runTest(bb, "allMarketTicker", "!ticker@arr");
-    runTest(bb, "individualSymbolBookTicker", "btcusdt@bookTicker");
-    runTest(bb, "allBookTicker", "!bookTicker");
-    runTest(bb, "liquidationOrder", "btcusdt@forceOrder", false, false); 
-    runTest(bb, "allMarketLiquidationOrder", "!forceOrder@arr", false, false); 
-    runTest(bb, "partialBookDepth", "btcusdt@depth5@100ms"); 
-    runTest(bb, "diffBookDepth", "btcusdt@depth@100ms"); 
-    runTest(bb, "compositeIndexSymbolInfo", "defiusdt@compositeIndex");     
+    g_keyFile = std::filesystem::path{argv[1]};
 
-
-    // test disconnect only
-    auto token = bb.startWebSocket([](WsResponse result)
-    {
-        if (showResponseData)
-            std::cout << "\n" << result.json << "\n";
-
-    }, "!miniTicker@arr");
-
-
-    std::this_thread::sleep_for(2s);
-
-    std::condition_variable cvDisconnect;
-    bool disconnectFail = false;
-    bb.stopWebSocket(token, [&](WsResponse result)
-    {
-        if (result.state == WsResponse::State::Disconnect)
-        {
-            disconnectFail = result.hasErrorCode();
-
-            if (showResponseData)
-                std::cout << "\n" << (result.hasErrorCode() ? result.failMessage : "\nDisconnected\n");
-        }
-
-        cvDisconnect.notify_one();
-    });
-
-    std::mutex mux;
-    std::unique_lock lck(mux);    
-
-    if (cvDisconnect.wait_for(lck, 5s)  == std::cv_status::timeout)
-        std::cout << "Test: Disconnect : FAIL : timeout\n";
-    else if (disconnectFail)
-        std::cout << "Test: Disconnect : FAIL\n";
-    else
-        std::cout << "Test: Disconnect : PASS\n";
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();    
 }

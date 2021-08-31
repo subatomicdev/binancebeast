@@ -14,7 +14,7 @@ echo
 echo Installing packages
 echo
 
-./vcpkg install boost-beast boost-json --triplet x64-linux
+./vcpkg install boost-beast boost-json gtest --triplet x64-linux
 
 
 echo
