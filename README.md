@@ -281,8 +281,15 @@ It has been developed with GCC 10.3.0 but older versions that support C++17 will
 ### Linking
 To link from your app:
 
+Includes:
+* `binancebeast/binanbeast/bblib/include/`
+* `binancebeast/ordered_thread_pool`
+* `binancebeast/vcpkg/installed/x64-linux/include`
+
+Library:
 * Add `binancebeast/lib/Release` and `binancebeast/lib/Debug` to link directories
-* Add `-lbinancebeast` to target link libraries
+* Add `binancebeast/vcpkg/installed/x64-linux/lib` to link directories
+* Add `-lbinancebeast -lssl -lboost_json -lcrypto -lpthread -ldl` to target link libraries
 
 
 ### Dev
