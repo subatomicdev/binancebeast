@@ -30,6 +30,10 @@ namespace bblib
     ///
     /// WebSockets API docs: https://binance-docs.github.io/apidocs/futures/en/#websocket-market-streams
     ///
+    /// See GitHub for more documentation, and the tests and examples directories.
+    ///
+    /// All REST query are sent with sendRestRequest().
+    ///
     /// All websockets are started with startWebSocket() , except user data which is startUserData().
     /// 
     /// startWebSocket() requires a result handler and the stream name, which is on the Binance docs.
@@ -102,11 +106,17 @@ namespace bblib
 
         /// Start a new websocket session, for all websocket endpoints except user data (use startUserData() for that).
         /// The supplied callback handler will be called for each response, which may include an error.
+        ///
+        /// Warning: if stream does not exist, Binance does not report this. Instead no data is pushed.
+        ///
         /// 'stream' is the "streamName" as defined on the Binance API docs.
         WsToken startWebSocket (WebSocketResponseHandler handler, const string& stream);
 
         /// This starts a combined stream, for example receiving mark price for two different symbols without having to separate calls
         /// to startWebSocket(), and two response handlers, you can combine both into one stream.
+        ///
+        /// Warning: if stream does not exist, Binance does not report this. Instead no data is pushed.
+        ///
         /// See https://binance-docs.github.io/apidocs/futures/en/#websocket-market-streams 
         WsToken startWebSocket (WebSocketResponseHandler handler, const std::vector<string>& streams);
 

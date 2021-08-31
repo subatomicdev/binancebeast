@@ -79,6 +79,9 @@ namespace bblib
     /// Manages a websocket client session, from initial connection until disconnect.
     /// The websocket data (json) is sent via a WsResponse object to the supplied callback handler.
     /// The handler is called from a thread pool, implemented so handlers are called in-order.
+    ///
+    /// NOTE:   if you pass an invalid stream target, it seems that Binance accepts an upgrade to WebSocket 
+    ///         and does not a HTTP NOT FOUND.
     class WsSession : public std::enable_shared_from_this<WsSession>
     {
 
@@ -92,7 +95,9 @@ namespace bblib
                 m_callback(std::move(callback)),
                 m_sslContext(ctx)
         {
-            m_handlersPool = std::make_unique<OrderedThreadPool<WsResponse>> (4,4); // 4 threads and allow 4 queued functions before blocking
+            // the user's handler are not rentrant so can only have a pool of 1, but allow
+            // 4 queued before we block
+            m_handlersPool = std::make_unique<OrderedThreadPool<WsResponse>> (4, 1) ; 
         }
 
 
@@ -188,15 +193,6 @@ namespace bblib
             if(ec)
                 return fail(ec, "handshake", m_callback);
             
-            /* TODO how do we find out if target (m_path) for async_handshake() is found?
-            http::async_read(m_ws.next_layer(), m_buffer, m_httpRes, [this, self = shared_from_this()](beast::error_code ec, std::size_t)
-            {
-                if (m_httpRes.result() == http::status::not_found)
-                    return fail("path not found", m_callback);
-                else
-                    m_ws.async_read(m_buffer, beast::bind_front_handler(&WsSession::on_read, self->shared_from_this()));
-            });
-            */
             m_ws.async_read(m_buffer, beast::bind_front_handler(&WsSession::on_read, shared_from_this()));
         }
 
@@ -239,6 +235,7 @@ namespace bblib
         WebSocketResponseHandler m_callback;
         std::shared_ptr<ssl::context> m_sslContext;
         std::unique_ptr<OrderedThreadPool<WsResponse>> m_handlersPool;
+        net::io_context m_handlersIoc;
     };
 }
 
