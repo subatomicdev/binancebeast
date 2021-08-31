@@ -15,6 +15,7 @@ REST, WebSockets and User Data fully supported for USD-M and COIN-M.
 
 31st August
 **Breaking Changes**
+
 Potentially - the tests now use Google Test, so this needs to be added to vcpkg, which you can do either:
 
 1. Run one of the scripts: `./build_linux_x64_static_release.sh` or `./build_linux_x64_static_debug.sh` 
