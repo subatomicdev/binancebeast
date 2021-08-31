@@ -282,7 +282,7 @@ It has been developed with GCC 10.3.0 but older versions that support C++17 will
 To link from your app:
 
 Includes:
-* `binancebeast/binanbeast/bblib/include/`
+* `binancebeast/binancebeast/bblib/include/`
 * `binancebeast/ordered_thread_pool`
 * `binancebeast/vcpkg/installed/x64-linux/include`
 
