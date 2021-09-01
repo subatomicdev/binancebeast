@@ -13,9 +13,15 @@ REST, WebSockets and User Data fully supported for USD-M, COIN-M Futures and SPO
 
 **Updates**
 
+**Breaking Changes**
+
 1st Sept
 
 * Initial support for the Spot market. Remember, the Spot market uses different keys to the Futures. You can create keys for the Spot testnet [here](https://testnet.binance.vision/)
+* The user data stream functions require the stream name:
+  * USD-M: `/fapi/v1/listenKey`
+  * COIN-M: `/dapi/v1/listenKey`
+  * Spot:  `/api/v3/userDataStream`
 * Added `multiplemarkets.cpp` example
 
 
