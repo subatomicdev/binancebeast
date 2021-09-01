@@ -125,7 +125,7 @@ public:
     void onTimerExpire(const boost::system::error_code)
     {
         std::cout << "Sending listen key extend request\n";
-        m_bb.renewListenKey(std::bind(&ListenKeyExtender::onListenKeyRenew, this, std::placeholders::_1));
+        m_bb.renewListenKey(std::bind(&ListenKeyExtender::onListenKeyRenew, this, std::placeholders::_1), "/fapi/v1/listenKey");
     }
 
     void onListenKeyRenew(WsResponse result)
@@ -168,7 +168,7 @@ int main (int argc, char ** argv)
         }
     });
 
-    auto config = argc == 2 ? ConnectionConfig::MakeTestNetConfig(Market::SPOT, std::filesystem::path{argv[1]}) : ConnectionConfig::MakeTestNetConfig(Market::SPOT);
+    auto config = argc == 2 ? ConnectionConfig::MakeTestNetConfig(Market::USDM, std::filesystem::path{argv[1]}) : ConnectionConfig::MakeTestNetConfig(Market::SPOT);
 
     BinanceBeast bb;
     bb.start(config, 4, 8);

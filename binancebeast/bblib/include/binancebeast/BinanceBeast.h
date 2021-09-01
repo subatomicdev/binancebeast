@@ -137,15 +137,15 @@ namespace bblib
 
 
         /// Start a user data websocket session.
-        WsToken startUserData(WebSocketResponseHandler handler);
+        WsToken startUserData(WebSocketResponseHandler handler, const string_view stream);
 
         /// You should call this every 60 minutes to extend your listen key, otherwise your user data stream will become invalid/closed by Binance.
         /// You must first call monitorUserData() to create (or reuse exiting) listen key, there after calll this function every ~ 60 minutes.
-        void renewListenKey(WebSocketResponseHandler handler);
+        void renewListenKey(WebSocketResponseHandler handler, const string_view stream);
 
         /// This will invalidate your key, so you will no longer receive user data updates. 
         /// This does not close the web socket session, for that use stopWebSocket().
-        void closeUserData (WebSocketResponseHandler handler);
+        void closeUserData (WebSocketResponseHandler handler, const string_view stream);
 
 
         /// Load PEM file with root certificates. Use this in production, but for test/dev then the default certificate is likely ok.
@@ -226,7 +226,7 @@ namespace bblib
         }
 
 
-        bool amendUserDataListenKey (WebSocketResponseHandler handler, const UserDataStreamMode mode)
+        bool amendUserDataListenKey (WebSocketResponseHandler handler, const UserDataStreamMode mode, const string_view streamName)
         {
             net::io_context ioc;
 
@@ -266,7 +266,7 @@ namespace bblib
                 break;
             }
 
-            http::request<http::string_body> req{requestVerb, "/fapi/v1/listenKey", 11};
+            http::request<http::string_body> req{requestVerb, string{streamName}, 11};
             req.set(http::field::host, m_config.restApiUri);
             req.set(http::field::user_agent, BINANCEBEAST_USER_AGENT);
             req.insert("X-MBX-APIKEY", m_config.keys.api);
@@ -291,26 +291,26 @@ namespace bblib
             // when creating stream, a listen key is returned, otherwise nothing is returned
             if (mode == UserDataStreamMode::Create)
                 m_listenKey.clear();
-                
-            if (res[http::field::content_type] == "application/json")
+
+            if (res[http::field::content_type] == "application/json" || res[http::field::content_type] == "application/json;charset=UTF-8")
             {
                 json::error_code ec;
                 if (auto value = json::parse(res.body(), ec); ec)
                 {
-                    fail(ec, "monitorUserData(): json read", handler);
+                    fail(ec, "amendUserDataListenKey(): json read", handler);
                 }
                 else
                 {
                     // when creating, we store the listen key, for other modes just check for error
                     if (value.as_object().if_contains("code"))
-                        fail (string{"monitorUserData(): json contains error code from Binance: " + json::value_to<string>(value.as_object()["msg"])}, handler);
+                        fail (string{"amendUserDataListenKey(): json contains error code from Binance: " + json::value_to<string>(value.as_object()["msg"])}, handler);
                     else if (mode == UserDataStreamMode::Create)  
                         m_listenKey = json::value_to<string>(value.as_object()["listenKey"]);
                 }
             }
             else
             {
-                fail("monitorUserData(): content not json", handler);
+                fail("amendUserDataListenKey(): content not json", handler);
             }          
 
             return !m_listenKey.empty();

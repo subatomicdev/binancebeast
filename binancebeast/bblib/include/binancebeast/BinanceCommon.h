@@ -171,7 +171,6 @@ namespace bblib
             static std::string DefaultSpotRestUri {"api.binance.com"};
             static std::string DefaultSpotTestnetWsUri {"testnet.binance.vision"};
             static std::string DefaultSpotTestnetRestUri {"testnet.binance.vision"};
-
             
             if (market == Market::USDM)
             {

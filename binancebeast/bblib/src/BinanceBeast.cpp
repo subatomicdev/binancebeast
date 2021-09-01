@@ -236,10 +236,10 @@ namespace bblib
     }
     
 
-    WsToken BinanceBeast::startUserData(WebSocketResponseHandler handler)
+    WsToken BinanceBeast::startUserData(WebSocketResponseHandler handler, const string_view stream)
     {
         WsToken token;
-        if (amendUserDataListenKey(handler, UserDataStreamMode::Create))
+        if (amendUserDataListenKey(handler, UserDataStreamMode::Create, stream))
         {
             token = createWsSession(m_config.wsApiUri, std::move("/ws/"+m_listenKey), std::move(handler));
         }
@@ -247,18 +247,18 @@ namespace bblib
     }    
 
 
-    void BinanceBeast::renewListenKey(WebSocketResponseHandler handler)
+    void BinanceBeast::renewListenKey(WebSocketResponseHandler handler, const string_view stream)
     {
-        if (amendUserDataListenKey(handler, UserDataStreamMode::Extend))
+        if (amendUserDataListenKey(handler, UserDataStreamMode::Extend, stream))
             handler(WsResponse{WsResponse::State::Success});
         else 
             handler(WsResponse{string_view{"Failed to renew listen key"}});
     }
 
 
-    void BinanceBeast::closeUserData (WebSocketResponseHandler handler)
+    void BinanceBeast::closeUserData (WebSocketResponseHandler handler, const string_view stream)
     {
-        if (amendUserDataListenKey(handler, UserDataStreamMode::Close))
+        if (amendUserDataListenKey(handler, UserDataStreamMode::Close, stream))
         {
             m_listenKey.clear();
             handler(WsResponse{WsResponse::State::Success});

@@ -32,7 +32,7 @@ public:
     void onTimerExpire(const boost::system::error_code)
     {
         std::cout << "Sending listen key extend request\n";
-        m_bb.renewListenKey(std::bind(&ListenKeyExtender::onListenKeyRenew, this, std::placeholders::_1));
+        m_bb.renewListenKey(std::bind(&ListenKeyExtender::onListenKeyRenew, this, std::placeholders::_1), /*"/api/v3/userDataStream"*/"/fapi/v1/listenKey");
     }
 
     void onListenKeyRenew(WsResponse result)
@@ -79,7 +79,6 @@ int main (int argc, char ** argv)
     else if (argc == 3)
         config = ConnectionConfig::MakeTestNetConfig(Market::USDM, argv[1], argv[2]);
 
-
     BinanceBeast bb;
     ListenKeyExtender extender {bb};    // will send a listen key renew request every 59 minutes
 
@@ -103,16 +102,16 @@ int main (int argc, char ** argv)
                 std::cout << "listen key expired\n";
                 bb.renewListenKey([](WsResponse renewKeyResult)
                 { 
-                    if (renewKeyResult.hasErrorCode())
+                    if (renewKeyResult.hasErrorCode(true))
                         std::cout << "Error: " << renewKeyResult.failMessage << "\n";
-                });
+                }, /*"/api/v3/userDataStream"*/ "/fapi/v1/listenKey");
             }
             else
             {
                 std::cout << result.json << "\n";
             }
         }
-    });
+    }, /*"/api/v3/userDataStream"*/ "/fapi/v1/listenKey");
 
     
     std::cout << "Running. Create or close orders on the Binance Futures TestNet to see user data. Running for 30 seconds.\n";
