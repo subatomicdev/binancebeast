@@ -81,7 +81,7 @@ namespace bblib
     /// The handler is called from a thread pool, implemented so handlers are called in-order.
     ///
     /// NOTE:   if you pass an invalid stream target, it seems that Binance accepts an upgrade to WebSocket 
-    ///         and does not a HTTP NOT FOUND.
+    ///         and does not return a HTTP NOT FOUND.
     class WsSession : public std::enable_shared_from_this<WsSession>
     {
 
@@ -95,9 +95,23 @@ namespace bblib
                 m_callback(std::move(callback)),
                 m_sslContext(ctx)
         {
-            // the user's handler are not rentrant so can only have a pool of 1, but allow
-            // 4 queued before we block
-            m_handlersPool = std::make_unique<OrderedThreadPool<WsResponse>> (4, 1) ; 
+            // the user's handler is documented as non-reentrant, but we don't want to delay io processing
+            // if the handler is still running, so we create a thread pool of 1, and we can queue up to 4 
+            // more before we block.
+            // NOTE: important: this thread pool gaurantees the handlers are called in the same order as 
+            //       as pushed onto the pool
+            m_handlersPool = std::make_unique<OrderedThreadPool<WsResponse>> (1, 4) ; 
+
+            // TODO is this actually worthwhile? it allows processing messages from the network sooner,
+            //      but they'll still be be blocked until the handler queue is free.
+            //      on the other hand, for handlers that can process before the next response is ready, it means
+            //      they'll receive their data sooner (than if we always called the handler on this thread)
+
+            // TODO could have a setting allowing the handler to be reentrant - any advantage?
+
+            // TODO consider implications of the websocket stream not using a strand - it means on_read() must be rentrant
+            //      aware. That is more complex because the m_buffer is shared between calls, which is not a problem with a strand.
+            //      A beast::flat_buffer pool? Hmm ...
         }
 
 
