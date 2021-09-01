@@ -8,10 +8,16 @@ _Disclaimer: The author(s) of Binance Beast are not liable for any losses (be it
 
 ## Status
 
-REST, WebSockets and User Data fully supported for USD-M and COIN-M.
+REST, WebSockets and User Data fully supported for USD-M, COIN-M Futures and SPOT.
 
 
 **Updates**
+
+1st Sept
+
+* Initial support for the Spot market. Remember, the Spot market uses different keys to the Futures. You can create keys for the Spot testnet [here](https://testnet.binance.vision/)
+* Added `multiplemarkets.cpp` example
+
 
 31st August
 
@@ -264,6 +270,15 @@ void onUserData(WsResult result)
     }
 }
 ```
+
+## Examples
+The `examples` directory contains:
+
+* `rest.cpp` : how to send a REST query
+* `combinedstreams.cpp` : how to use `startStartWebSocket()` for a combined stream
+* `userdata.cpp` : shows how to start a user data session, and an example of how to periodically renew the listen key
+* `neworder.cpp` : creates a single order and shows how to do a batch order
+* `multiplemarkets.cpp` : example of how to receive from USD, COIN futures and SPOT markets
 
 
 ## Build
