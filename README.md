@@ -15,7 +15,8 @@ REST, WebSockets and User Data fully supported for USD-M, COIN-M Futures and SPO
 
 1st Sept
 
-Initial support for the Spot market. Remember, the Spot market uses different keys to the Futures. You can create keys for the Spot testnet [here](https://testnet.binance.vision/).
+* Initial support for the Spot market. Remember, the Spot market uses different keys to the Futures. You can create keys for the Spot testnet [here](https://testnet.binance.vision/)
+* Added `multiplemarkets.cpp` example
 
 
 31st August
