@@ -168,20 +168,39 @@ int main (int argc, char ** argv)
         }
     });
 
-    auto config = argc == 2 ? ConnectionConfig::MakeTestNetConfig(Market::USDM, std::filesystem::path{argv[1]}) : ConnectionConfig::MakeTestNetConfig(Market::USDM);
+    auto config = argc == 2 ? ConnectionConfig::MakeTestNetConfig(Market::SPOT, std::filesystem::path{argv[1]}) : ConnectionConfig::MakeTestNetConfig(Market::SPOT);
 
     BinanceBeast bb;
     bb.start(config, 4, 8);
     
+    bb.sendRestRequest([](RestResponse result)
+    {
+        if (result.hasErrorCode())
+            std::cout << result.failMessage << "\n";
+        else
+            std::cout << result.json << "\n";
+        
+    },"/api/v3/ticker/price", RestSign::Unsigned, RestParams{}, RequestType::Get);
+
+
+    bb.startWebSocket([](WsResponse result)
+    {
+        if (result.hasErrorCode())
+            std::cout << result.failMessage << "\n";
+        else
+            std::cout << result.json << "\n";
+
+    }, "!bookTicker");
+
     //ListenKeyExtender listenKeyExtender{bb};
 
     //bb.sendRestRequest(onRestResponse, "/fapi/v1/exchangeInfo", RestSign::Unsigned, RestParams{}, RequestType::Get);
     //bb.sendRestRequest(onRestResponse, "/fapi/v1/allOrders", RestSign::HMAC_SHA256, RestParams{{{"symbol", "BTCUSDT"}}});
     //bb.sendRestRequest(onRestResponse, "/fapi/v1/depth", RestSign::Unsigned, RestParams{{{"symbol", "BTCUSDT"}}});
 
-    auto token = bb.startWebSocket(onWsResponse, "!bookTicker"/*"btcusdt@aggTrade"*//*"btcusdt@markPrice@1s"*/);
+    //auto token = bb.startWebSocket(onWsResponse, "!bookTicker"/*"btcusdt@aggTrade"*//*"btcusdt@markPrice@1s"*/);
 
-    ///bb.startUserData(onUserData);
+    //bb.startUserData(onUserData);
 
     /*
     std::this_thread::sleep_for(5s);
@@ -196,6 +215,7 @@ int main (int argc, char ** argv)
         //bb.startUserData(onUserData);
     }
 
+    
     cmdFut.wait();
 
     return 0;

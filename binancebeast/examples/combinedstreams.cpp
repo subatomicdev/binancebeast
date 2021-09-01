@@ -54,7 +54,7 @@ int main (int argc, char ** argv)
             }
         }   
     },
-    {{"btcusdt@markPrice@1s"}, {"ethusdt@markPrice@1s"}});
+    std::set<string> {"btcusdt@markPrice@1s", "ethusdt@markPrice@1s"});
 
     std::this_thread::sleep_for(10s);
 

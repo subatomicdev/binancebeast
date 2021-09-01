@@ -47,7 +47,8 @@ namespace bblib
     {
         None,
         USDM,
-        COINM
+        COINM,
+        SPOT
     };
 
 
@@ -140,12 +141,14 @@ namespace bblib
 
 
     private:
-        ConnectionConfig (const string& restUri, const string& wsUri, const bool sslVerifyPeer, const ConnectionKeys& apiKeys = ConnectionKeys{}) :   
-                restApiUri(restUri),
-                wsApiUri(wsUri),
-                verifyPeer(sslVerifyPeer),
-                keys(apiKeys),
-                usingTestRootCertificates(true)
+        ConnectionConfig (const string& restUri, const string& wsUri, const bool sslVerifyPeer, const ConnectionKeys& apiKeys, const string restPort = "443", const string websockPort = "443") :   
+            restApiUri(restUri),
+            wsApiUri(wsUri),
+            verifyPeer(sslVerifyPeer),
+            keys(apiKeys),
+            usingTestRootCertificates(true),
+            restPort(restPort),
+            wsPort(websockPort)
         {
         }
 
@@ -163,17 +166,27 @@ namespace bblib
             static std::string DefaultCoinFuturesWsUri {"dstream.binance.com"};
             static std::string DefaultCoinFuturesRestUri {"dapi.binance.com"};
 
+            // SPOT
+            static std::string DefaultSpotWsUri {"stream.binance.com"};
+            static std::string DefaultSpotRestUri {"api.binance.com"};
+            static std::string DefaultSpotTestnetWsUri {"testnet.binance.vision"};
+            static std::string DefaultSpotTestnetRestUri {"testnet.binance.vision"};
+
             
             if (market == Market::USDM)
             {
                 return (isLive ?    ConnectionConfig {DefaultUsdFuturesRestUri, DefaultUsdFuturesWsUri, true, ConnectionKeys{apiKey, secretKey}} : 
-                                    ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultUsdFuturesTestnetWsUri, false, ConnectionKeys{apiKey, secretKey}} );
-                
+                                    ConnectionConfig {DefaultUsdFuturesTestnetRestUri, DefaultUsdFuturesTestnetWsUri, false, ConnectionKeys{apiKey, secretKey}} );                
             }
             else if (market == Market::COINM)
             {
                 return (isLive ?    ConnectionConfig {DefaultCoinFuturesRestUri, DefaultCoinFuturesWsUri, true, ConnectionKeys{apiKey, secretKey}} :
                                     ConnectionConfig {DefaultCoinFuturesTestnetRestUri, DefaultCoinFuturesTestnetWsUri, false, ConnectionKeys{apiKey, secretKey}});
+            }
+            else if (market == Market::SPOT)
+            {
+                return (isLive ?    ConnectionConfig {DefaultSpotRestUri, DefaultSpotWsUri, true, ConnectionKeys{apiKey, secretKey}, "443", "9443"} :
+                                    ConnectionConfig {DefaultSpotTestnetRestUri, DefaultSpotTestnetWsUri, false, ConnectionKeys{apiKey, secretKey}});
             }
             else
                 throw std::runtime_error ("Invalid market type"); 
@@ -186,6 +199,8 @@ namespace bblib
         bool verifyPeer;    // connecting to the TestNet fails to verify peer
         ConnectionKeys keys;
         bool usingTestRootCertificates;
+        string restPort = "443";
+        string wsPort = "443";
     };
 
     

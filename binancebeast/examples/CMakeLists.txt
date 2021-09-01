@@ -15,6 +15,8 @@ add_executable (rest "rest.cpp")
 add_executable (userdata "userdata.cpp")
 add_executable (neworder "neworder.cpp")
 add_executable (combinedstreams "combinedstreams.cpp")
+add_executable (multiplemarkets "multiplemarkets.cpp")
+
 
 set_target_properties(rest PROPERTIES CXX_STANDARD 17)
 target_link_libraries(rest binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl)
@@ -27,3 +29,6 @@ target_link_libraries(neworder binancebeast -lssl -lboost_json -lcrypto -lpthrea
 
 set_target_properties(combinedstreams PROPERTIES CXX_STANDARD 17)
 target_link_libraries(combinedstreams binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl)
+
+set_target_properties(multiplemarkets PROPERTIES CXX_STANDARD 17)
+target_link_libraries(multiplemarkets binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl)

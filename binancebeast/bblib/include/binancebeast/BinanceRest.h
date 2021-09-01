@@ -212,7 +212,7 @@ namespace bblib
             if (m_res.result() == http::status::not_found)
                 return fail("path not found", m_callback);
 
-            if (m_res[http::field::content_type] == "application/json")
+            if (m_res[http::field::content_type] == "application/json" || m_res[http::field::content_type] == "application/json;charset=UTF-8")
             {
                 json::error_code ec;
                 
@@ -225,6 +225,11 @@ namespace bblib
                     RestResponse result {std::move(value)};
                     net::post(m_threadPool, boost::bind(m_callback, std::move(result)));
                 }            
+            }
+            else
+            {
+                RestResponse result {"Content type invalid: " + string{m_res[http::field::content_type]}};
+                net::post(m_threadPool, boost::bind(m_callback, std::move(result)));
             }
         }
 

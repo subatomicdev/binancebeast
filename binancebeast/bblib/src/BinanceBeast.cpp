@@ -125,6 +125,17 @@ namespace bblib
     }
 
 
+    WsToken BinanceBeast::startWebSocket (WebSocketResponseHandler handler, const std::set<string>& streams)
+    {
+        std::stringstream target ;
+        
+        for (auto& stream : streams)
+            target << stream + "/";
+
+        return createWsSession(m_config.wsApiUri, std::move("/stream?streams="+std::move(target.str())), std::move(handler));
+    }
+
+
     void BinanceBeast::stopWebSocket (const WsToken& token, WebSocketResponseHandler handler)
     {
         std::scoped_lock (m_wsSessionsMux);
@@ -195,11 +206,11 @@ namespace bblib
                 pathToSend = std::move(pathWithParams.str());
             }
 
-            session->run(host, "443", pathToSend, 11, type);   // 11 is HTTP version 1.1
+            session->run(host, m_config.restPort, pathToSend, 11, type);   // 11 is HTTP version 1.1
         }
         else
         {
-            session->run(host, "443", path, 11, type);
+            session->run(host, m_config.restPort, path, 11, type);
         }
     }
 
@@ -219,7 +230,7 @@ namespace bblib
             m_wsSessions[wsid] = session;
         }
         
-        session->run(host, "443", path);
+        session->run(host, m_config.wsPort, path);
 
         return WsToken{.id = wsid};
     }
