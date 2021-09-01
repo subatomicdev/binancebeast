@@ -270,6 +270,7 @@ The `examples` directory contains:
 
 * `rest.cpp` : how to send a REST query
 * `combinedstreams.cpp` : how to use `startStartWebSocket()` for a combined stream
+* `userdata.cpp` : shows how to start a user data session, and an example of how to periodically renew the listen key
 * `neworder.cpp` : creates a single order and shows how to do a batch order
 * `multiplemarkets.cpp` : example of how to receive from USD, COIN futures and SPOT markets
 
