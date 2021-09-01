@@ -265,6 +265,14 @@ void onUserData(WsResult result)
 }
 ```
 
+## Examples
+The `examples` directory contains:
+
+* `rest.cpp` : how to send a REST query
+* `combinedstreams.cpp` : how to use `startStartWebSocket()` for a combined stream
+* `neworder.cpp` : creates a single order and shows how to do a batch order
+* `multiplemarkets.cpp` : example of how to receive from USD, COIN futures and SPOT markets
+
 
 ## Build
 It has been developed with GCC 10.3.0 but older versions that support C++17 will work.
