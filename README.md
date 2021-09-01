@@ -8,10 +8,15 @@ _Disclaimer: The author(s) of Binance Beast are not liable for any losses (be it
 
 ## Status
 
-REST, WebSockets and User Data fully supported for USD-M and COIN-M.
+REST, WebSockets and User Data fully supported for USD-M, COIN-M Futures and SPOT.
 
 
 **Updates**
+
+1st Sept
+
+Initial support for the Spot market. Remember, the Spot market uses different keys to the Futures. You can create keys for the Spot testnet [here](https://testnet.binance.vision/).
+
 
 31st August
 
