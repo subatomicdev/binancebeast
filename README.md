@@ -24,6 +24,7 @@ REST, WebSockets and User Data fully supported for USD-M, COIN-M Futures and SPO
   * Spot:  `/api/v3/userDataStream`
 * Added `multiplemarkets.cpp` example
 
+---
 
 31st August
 
