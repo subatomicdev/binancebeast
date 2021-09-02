@@ -188,7 +188,7 @@ int main (int argc, char ** argv)
     
     if (argc != 3)
     {   
-        std::cout << "Usage, requires key file or keys:\n"
+        std::cout << "Usage, requires LIVE key file or keys:\n"
                   << argv[0] << " <path to futures keyfile> <path to spot keyfile>\n";
         return 1;
     }

@@ -16,11 +16,14 @@ std::filesystem::path g_keyFile;
 class RestTest : public testing::Test
 {
 protected:
+    RestTest(Market m) : m_market(m)
+    {
 
+    }
 
     virtual void SetUp() override
     {
-        auto config = ConnectionConfig::MakeTestNetConfig(Market::USDM, g_keyFile);
+        auto config = ConnectionConfig::MakeLiveConfig(m_market, g_keyFile);
 
         m_bb.start(config);
     }
@@ -58,97 +61,139 @@ private:
     BinanceBeast m_bb;
     string m_path;
     bool m_dataError;
+    Market m_market;
+};
+
+
+class UsdFuturesRest : public RestTest
+{
+public:
+    UsdFuturesRest () : RestTest(Market::USDM)
+    {
+
+    }
+};
+
+
+class CoinFuturesRest : public RestTest
+{
+public:
+    CoinFuturesRest () : RestTest(Market::COINM)
+    {
+
+    }
+};
+
+
+class SpotRest : public RestTest
+{
+public:
+    SpotRest () : RestTest(Market::SPOT)
+    {
+
+    }
 };
 
 
 // USD-M
-TEST_F(RestTest, exchangeInfo)
+TEST_F(UsdFuturesRest, exchangeInfo)
 {
     EXPECT_TRUE(runTest("/fapi/v1/exchangeInfo", RestParams{}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, time)
+TEST_F(UsdFuturesRest, time)
 {
     EXPECT_TRUE(runTest("/fapi/v1/time", RestParams{}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, depth)
+TEST_F(UsdFuturesRest, depth)
 {
     EXPECT_TRUE(runTest("/fapi/v1/depth", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, trades)
+TEST_F(UsdFuturesRest, trades)
 {
     EXPECT_TRUE(runTest("/fapi/v1/trades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, historicalTrades)
+TEST_F(UsdFuturesRest, historicalTrades)
 {
     EXPECT_TRUE(runTest("/fapi/v1/historicalTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, aggTrades)
+TEST_F(UsdFuturesRest, aggTrades)
 {
     EXPECT_TRUE(runTest("/fapi/v1/aggTrades", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, klines)
+TEST_F(UsdFuturesRest, klines)
 {
     EXPECT_TRUE(runTest("/fapi/v1/klines", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, continuousKlines)
+TEST_F(UsdFuturesRest, continuousKlines)
 {
     EXPECT_TRUE(runTest("/fapi/v1/continuousKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}, {"contractType","PERPETUAL"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, indexPriceKlines)
+TEST_F(UsdFuturesRest, indexPriceKlines)
 {
     EXPECT_TRUE(runTest("/fapi/v1/indexPriceKlines", RestParams{{{"pair", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, premiumIndex)
+TEST_F(UsdFuturesRest, premiumIndex)
 {
     EXPECT_TRUE(runTest("/fapi/v1/premiumIndex", RestParams{{{"symbol", "BTCUSDT"}, {"interval","15m"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, ticker24hr)
+TEST_F(UsdFuturesRest, ticker24hr)
 {
     EXPECT_TRUE(runTest("/fapi/v1/ticker/24hr", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, tickerPrice)
+TEST_F(UsdFuturesRest, tickerPrice)
 {
     EXPECT_TRUE(runTest("/fapi/v1/ticker/price", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, tickerbookTicker)
+TEST_F(UsdFuturesRest, tickerbookTicker)
 {
     EXPECT_TRUE(runTest("/fapi/v1/ticker/bookTicker", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, openInterest)
+TEST_F(UsdFuturesRest, openInterest)
 {
     EXPECT_TRUE(runTest("/fapi/v1/openInterest", RestParams{{{"symbol", "BTCUSDT"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, indexInfo)
+TEST_F(UsdFuturesRest, indexInfo)
 {
     EXPECT_TRUE(runTest("/fapi/v1/indexInfo", RestParams{{{"symbol", "DEFIUSDT"}}}, RestSign::Unsigned));
 }
 
 
 // COIN-M
-TEST_F(RestTest, dapi_premiumIndex)
+TEST_F(CoinFuturesRest, dapi_premiumIndex)
 {
-    EXPECT_TRUE(runTest("/dapi/v1/premiumIndex", RestParams{{{"symbol", "BTCUSD_PERP"}}}, RestSign::Unsigned));
+    EXPECT_TRUE(runTest("/dapi/v1/ticker/price", RestParams{{{"symbol", "BTCUSD_PERP"}}}, RestSign::Unsigned));
 }
 
-TEST_F(RestTest, dapi_klines)
+TEST_F(CoinFuturesRest, dapi_klines)
 {
-    EXPECT_TRUE(runTest("/dapi/v1/klines", RestParams{{{"symbol", "BTCUSD_PERP"}, {"interval","15m"}}}, RestSign::Unsigned));
+    EXPECT_TRUE(runTest("/dapi/v1/depth", RestParams{{{"symbol", "BTCUSD_PERP"}, {"interval","15m"}}}, RestSign::Unsigned));
 }
 
+
+// SPOT
+TEST_F(SpotRest, spot_tickerprice)
+{
+    EXPECT_TRUE(runTest("/api/v3/ticker/price", RestParams{{{"symbol", "ETHBTC"}}}, RestSign::Unsigned));
+}
+
+TEST_F(SpotRest, spot_depth)
+{
+    EXPECT_TRUE(runTest("/api/v3/depth", RestParams{{{"symbol", "BNBBTC"}}}, RestSign::Unsigned));
+}
 
 
 int main (int argc, char ** argv)
@@ -157,7 +202,7 @@ int main (int argc, char ** argv)
     
     if (argc != 2)
     {   
-        std::cout << "Usage, requires key file or keys:\n"
+        std::cout << "Usage, requires key LIVE file or keys:\n"
                   << argv[0] << " <full path to keyfile>\n";
         return 1;
     }
