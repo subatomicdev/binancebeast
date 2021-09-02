@@ -13,31 +13,6 @@ _Disclaimer: The author(s) of Binance Beast are not liable for any losses (be it
 REST, WebSockets and User Data fully supported for USD-M, COIN-M Futures and SPOT.
 
 
-**Updates**
-
-1st Sept
-
-**Breaking Changes**
-
-* Initial support for the Spot market. Remember, the Spot market uses different keys to the Futures. You can create keys for the Spot testnet [here](https://testnet.binance.vision/)
-* The user data stream functions require the stream name:
-  * USD-M: `/fapi/v1/listenKey`
-  * COIN-M: `/dapi/v1/listenKey`
-  * Spot:  `/api/v3/userDataStream`
-* Added `multiplemarkets.cpp` example
-
----
-
-31st August
-
-**Breaking Changes**
-
-Potentially - the tests now use Google Test, so this needs to be added to vcpkg, which you can do either:
-
-1. Run one of the scripts: `./build_linux_x64_static_release.sh` or `./build_linux_x64_static_debug.sh` 
-2. Manually: open a terminal in the `vcpkg` dir then: `./vcpkg install gtest --triplet x64-linux`
-
-
 ## Quick Guide
 
 * Consider using Websockets rather than frequent REST calls 
