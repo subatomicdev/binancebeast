@@ -21,7 +21,7 @@ REST, WebSockets and User Data fully supported for USD-M, COIN-M Futures and SPO
   *   `using WebSocketResponseHandler = std::function<void(WsResponse)>`
 * `RestResponse` and `WsResponse` contain `json`, a `state`, `failMessage` and `hasErrorCode()` members
 *   If `hasErrorCode()` returns true, the `failMessage` is set
-* There are multiple `boost::asio::io_context` for Rest and Websockets calls which are set with `BinanceBeast::start()`
+* There are multiple `boost::asio::io_context` to handle Rest and Websockets, set with `BinanceBeast::start()`
   * Rest default is 4
   * Websockets default is 6
 
