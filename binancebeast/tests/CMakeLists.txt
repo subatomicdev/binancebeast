@@ -15,6 +15,7 @@ add_executable (firstbuildtest "firstbuildtest.cpp")
 add_executable (testrest "testrest.cpp")
 add_executable (testws "testwebsockets.cpp")
 add_executable (testcertload "testcertload.cpp")
+add_executable (testuserdata "testuserdata.cpp")
 
 
 set_target_properties(firstbuildtest PROPERTIES CXX_STANDARD 17)
@@ -28,3 +29,6 @@ target_link_libraries(testws binancebeast -lssl -lboost_json -lcrypto -lpthread 
 
 set_target_properties(testcertload PROPERTIES CXX_STANDARD 17)
 target_link_libraries(testcertload binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl -lgtest)
+
+set_target_properties(testuserdata PROPERTIES CXX_STANDARD 17)
+target_link_libraries(testuserdata binancebeast -lssl -lboost_json -lcrypto -lpthread -ldl -lgtest)

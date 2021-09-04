@@ -9,8 +9,8 @@
 using namespace bblib;
 using namespace bblib_test;
 
-std::filesystem::path g_futuresKeyFile, g_spotKeyFile;
-
+std::filesystem::path   g_futuresKeyFile,
+                        g_spotKeyFile;
 
 
 
@@ -27,24 +27,9 @@ public:
 
 protected:
 
-    virtual void SetUp() override
-    {
-        auto config = ConnectionConfig::MakeLiveConfig(m_market, g_futuresKeyFile);
+    virtual void SetUp() override = 0;
 
-        m_bb.start(config);
-    }
-
-
-    virtual bool runTest(const string& stream, const bool alwaysExpectData = true) = 0;
-
-
-    bool waitReply (std::condition_variable& cvHaveReply, const std::chrono::milliseconds timeout = 6s)
-    {
-        std::mutex mux;
-
-        std::unique_lock lck(mux);
-        return cvHaveReply.wait_for(lck, timeout) != std::cv_status::timeout;
-    }
+    virtual bool runTest(const string& stream) = 0;
 
 
 protected:
@@ -57,18 +42,25 @@ protected:
 };
 
 
+ 
+
 
 
 /// Start a websocket, do not explicitly close.
 class NormalWsTest : public WsTest
 {
+public:
+    virtual ~NormalWsTest() {}
+
 protected:
     NormalWsTest(Market market) : WsTest(market)
     {
 
     }
 
-    bool runTest(const string& stream, const bool alwaysExpectData =true) override
+    
+
+    bool runTest(const string& stream) override
     {
         bool dataError;
         
@@ -81,7 +73,7 @@ protected:
 
         auto haveReply = waitReply(m_cvHaveReply);
 
-        return (alwaysExpectData ? !dataError && haveReply : !dataError);
+        return !dataError && haveReply;
     }
 };
 
@@ -92,13 +84,24 @@ public:
     FuturesUsdmTest() : NormalWsTest(Market::USDM)
     {
     }
+
+    virtual void SetUp() override
+    {
+        m_bb.start(ConnectionConfig::MakeLiveConfig(m_market, g_futuresKeyFile));
+    }
 };
+
 
 class SpotTest : public NormalWsTest
 {
 public:
     SpotTest() : NormalWsTest(Market::SPOT)
     {
+    }
+
+    virtual void SetUp() override
+    {
+        m_bb.start(ConnectionConfig::MakeLiveConfig(m_market, g_spotKeyFile));
     }
 };
 
@@ -112,7 +115,12 @@ public:
     }
 
 protected:
-    bool runTest(const string& stream, const bool alwaysExpectData = true) override
+    virtual void SetUp() override
+    {
+        m_bb.start(ConnectionConfig::MakeLiveConfig(m_market, g_futuresKeyFile));
+    }
+
+    bool runTest(const string& stream) override
     {
         bool dataError;
         
@@ -136,7 +144,8 @@ protected:
             cvDisconnect.notify_one();
         });
 
-
+        
+        
         std::mutex mux;
         std::unique_lock lck(mux);    
 
@@ -158,8 +167,8 @@ TEST_F (FuturesUsdmTest, individualSymbolMiniTicker) { EXPECT_TRUE(runTest("btcu
 TEST_F (FuturesUsdmTest, allMarketTicker) { EXPECT_TRUE(runTest("!ticker@arr"));}
 TEST_F (FuturesUsdmTest, individualSymbolBookTicker) { EXPECT_TRUE(runTest("btcusdt@bookTicker"));}
 TEST_F (FuturesUsdmTest, allBookTicker) { EXPECT_TRUE(runTest("!bookTicker"));}
-TEST_F (FuturesUsdmTest, liquidationOrder) { EXPECT_TRUE(runTest("btcusdt@forceOrder", false));}
-TEST_F (FuturesUsdmTest, allMarketLiquidationOrder) { EXPECT_TRUE(runTest("!forceOrder@arr", false));}
+TEST_F (FuturesUsdmTest, liquidationOrder) { EXPECT_TRUE(runTest("btcusdt@forceOrder"));}
+TEST_F (FuturesUsdmTest, allMarketLiquidationOrder) { EXPECT_TRUE(runTest("!forceOrder@arr"));}
 TEST_F (FuturesUsdmTest, partialBookDepth) { EXPECT_TRUE(runTest("btcusdt@depth5@100ms"));}
 TEST_F (FuturesUsdmTest, diffBookDepth) { EXPECT_TRUE(runTest("btcusdt@depth@100ms"));}
 TEST_F (FuturesUsdmTest, compositeIndexSymbolInfo) { EXPECT_TRUE(runTest("defiusdt@compositeIndex"));}
@@ -170,6 +179,7 @@ TEST_F (DisconnectWsTest, allBookTicker) { EXPECT_TRUE(runTest("!bookTicker"));}
  
 
 // SPOT
+/* // Waiting for verfication for live
 TEST_F (SpotTest, aggregrateTrade) { EXPECT_TRUE(runTest("btcusdt@aggTrade")); }
 TEST_F (SpotTest, trade) { EXPECT_TRUE(runTest("btcusdt@trade")); }
 TEST_F (SpotTest, klines) { EXPECT_TRUE(runTest("btcusdt@kline_15m"));}
@@ -179,12 +189,13 @@ TEST_F (SpotTest, individualSymbolBookTicker) { EXPECT_TRUE(runTest("btcusdt@boo
 TEST_F (SpotTest, allBookTicker) { EXPECT_TRUE(runTest("!bookTicker"));}
 TEST_F (SpotTest, partialBookDepth) { EXPECT_TRUE(runTest("btcusdt@depth5@100ms"));}
 TEST_F (SpotTest, diffBookDepth) { EXPECT_TRUE(runTest("btcusdt@depth@100ms"));}
+*/
 
 
 
 int main (int argc, char ** argv)
 {
-    std::cout << "\n\nTest REST API\n\n";
+    std::cout << "\n\nTest Websockets API\n\n";
     
     if (argc != 3)
     {   
@@ -195,7 +206,7 @@ int main (int argc, char ** argv)
     
     g_futuresKeyFile = std::filesystem::path{argv[1]};
     g_spotKeyFile = std::filesystem::path{argv[2]};
-
+    
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();    
 }

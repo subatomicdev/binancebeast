@@ -39,7 +39,7 @@ namespace bblib_test
     }
 
     
-    bool waitReply (std::condition_variable& cvHaveReply, const std::string_view test, const std::chrono::milliseconds timeout = 5s)
+    bool waitReply (std::condition_variable& cvHaveReply, const std::string_view test, const std::chrono::milliseconds timeout = 6s)
     {
         std::mutex mux;
 
@@ -51,5 +51,16 @@ namespace bblib_test
         }
         return true;
     }
+
+
+    bool waitReply (std::condition_variable& cvHaveReply, const std::chrono::milliseconds timeout = 6s)
+    {
+        std::mutex mux;
+
+        std::unique_lock lck(mux);
+        return cvHaveReply.wait_for(lck, timeout) != std::cv_status::timeout;
+    }
+
+
 }
 #endif

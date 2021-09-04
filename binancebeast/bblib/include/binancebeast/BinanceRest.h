@@ -50,15 +50,20 @@ namespace bblib
             try
             {
                 if (!isNullAllowed && json.is_null())
-                    error = "null";
+                    error = true;
                 else if (json.is_object())
                 {
                     auto jsonObj = json.as_object();
-                    error = jsonObj.if_contains("code") || jsonObj.if_contains("error");
                     
-                    if (jsonObj.if_contains("code"))
+                    if (jsonObj.if_contains("error"))
+                        error = true;
+                    else if (jsonObj.if_contains("code"))
                     {
-                        failMessage = (jsonObj.if_contains("msg") ? json::value_to<string>(jsonObj["msg"]) : "");
+                        if (json::value_to<int64_t>(jsonObj["code"]) != 200)
+                        {
+                            error = true;
+                            failMessage = (jsonObj.if_contains("msg") ? json::value_to<string>(jsonObj["msg"]) : "");
+                        }
                     }
                 }
             }
