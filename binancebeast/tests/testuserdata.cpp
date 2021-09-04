@@ -7,8 +7,6 @@
 
 
 
-
-
 using namespace bblib;
 using namespace bblib_test;
 
@@ -45,7 +43,8 @@ protected:
 
 
 
-
+/// Get the price of symbol, reduce slightly then create a LIMIT order. Price is reduced
+/// so that the order isn't filled, allowing it to be cancelled with Cancel All Orders.
 class UserDataTest : public WsTest
 {
 public:
@@ -87,17 +86,6 @@ public:
                 symbolPriceStream = "/fapi/v1/ticker/price",
                 cancelOpenOrdersStream = "/fapi/v1/allOpenOrders";
         
-        if (m_market == Market::SPOT)
-        {
-            newOrderStream = "";
-            symbolPriceStream = "";
-        }
-        else if (m_market == Market::COINM)
-        {
-            newOrderStream = "";
-            symbolPriceStream = "";
-        }
-
         return runTest(userDataStream, newOrderStream, cancelOpenOrdersStream, getPriceForOrder(symbolPriceStream));
     }
 
@@ -178,6 +166,7 @@ protected:
 
 // user data: usdm
 TEST_F (UserDataFuturesTest, UsdFuturesUserData) { EXPECT_TRUE(runTest("/fapi/v1/listenKey")); }
+
 
 
 int main (int argc, char ** argv)
