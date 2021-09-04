@@ -53,7 +53,7 @@ namespace bblib
                     error = true;
                 else if (json.is_object())
                 {
-                    auto jsonObj = json.as_object();
+                    auto& jsonObj = json.as_object();
                     
                     if (jsonObj.if_contains("error"))
                         error = true;
