@@ -143,8 +143,7 @@ public:
 };
 
 
-/// Creates a LIMIT order on the test net, with the price slightly different from current price
-/// so that when it's filled, the user data stream will receive the update.
+
 class UserDataFuturesTest : public UserDataTest
 {
 public:
